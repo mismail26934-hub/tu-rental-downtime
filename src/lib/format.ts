@@ -47,9 +47,36 @@ export function formatStamp(value: string): string {
   return `${day} ${month} ${year} ${hour}:${minute}`;
 }
 
+function groupThousands(value: number, fractionDigits: number, trimFraction = false): string {
+  const negative = value < 0;
+  const rounded = Math.round(Math.abs(value) * 100) / 100;
+  const [whole, fraction = ""] = rounded.toFixed(2).split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const digits = fraction.slice(0, fractionDigits);
+  const shown = trimFraction ? digits.replace(/0+$/, "") : digits;
+  const sign = negative ? "-" : "";
+  return shown ? `${sign}${grouped}.${shown}` : `${sign}${grouped}`;
+}
+
 export function formatHours(value: number | null): string {
   if (value == null || !Number.isFinite(value)) return "—";
-  return (Math.round(value * 100) / 100).toFixed(2);
+  return groupThousands(value, 2);
+}
+
+export function formatQuotaDisplay(value: number): string {
+  if (!Number.isFinite(value)) return "—";
+  return groupThousands(value, 2, true);
+}
+
+export function formatHmDisplay(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "—";
+  const normalized = trimmed.replace(",", ".");
+  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return trimmed;
+  const number = Number(normalized);
+  if (!Number.isFinite(number)) return trimmed;
+  const fraction = normalized.split(".")[1]?.slice(0, 2).length ?? 0;
+  return groupThousands(number, fraction, true);
 }
 
 export function formatDt(label: string, total: number | null): string {

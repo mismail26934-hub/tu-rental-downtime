@@ -8,6 +8,11 @@ export type ListedRow = {
   metrics: Metrics;
 };
 
+function plainHours(value: number | null): string {
+  if (value == null || !Number.isFinite(value)) return "";
+  return String(Math.round(value * 100) / 100);
+}
+
 function rowMatches(row: HandoverRow, metrics: Metrics, needle: string): boolean {
   const haystack = [
     row.crew,
@@ -28,6 +33,10 @@ function rowMatches(row: HandoverRow, metrics: Metrics, needle: string): boolean
     formatHours(metrics.waitingLabourHours),
     formatHours(metrics.repairHours),
     formatDt(metrics.dtLabel, metrics.dtTotal),
+    plainHours(metrics.erdm),
+    plainHours(metrics.waitingLabourHours),
+    plainHours(metrics.repairHours),
+    plainHours(metrics.dtTotal),
   ]
     .join("\n")
     .toLowerCase();

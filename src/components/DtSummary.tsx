@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { SisaValue } from "@/components/SisaValue";
 import { Topbar } from "@/components/Topbar";
-import { formatHours, sheetTitle } from "@/lib/format";
+import { formatHours, formatQuotaDisplay, sheetTitle } from "@/lib/format";
 import { useSheetYear } from "@/lib/sheet-year";
 import { periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import {
@@ -15,7 +15,6 @@ import {
   type SummaryColumns,
   type SummaryMetric,
 } from "@/lib/summary-view";
-import { formatQuota } from "@/lib/units";
 import { groupByModel, sisaRemainder } from "@/lib/unit-sisa";
 
 async function fetchSummary(year: string): Promise<SummaryReport> {
@@ -571,7 +570,7 @@ function Cells({
   const dailyLeft = sisaRemainder(sisa.quota_hrs, sisa.daily);
   return (
     <>
-      <td className="col-num summary-pin summary-pin-2">{row.quota_hrs == null ? "—" : formatQuota(row.quota_hrs)}</td>
+      <td className="col-num summary-pin summary-pin-2">{row.quota_hrs == null ? "—" : formatQuotaDisplay(row.quota_hrs)}</td>
       <td className="col-units summary-pin summary-pin-3">
         <UnitNames row={row} units={units} />
       </td>
@@ -590,7 +589,7 @@ function Cells({
         const tone = `col-num summary-${period}`;
         return (
           <Fragment key={period}>
-            {columns.quota ? <td className={tone}>{quota == null ? "—" : formatQuota(quota)}</td> : null}
+            {columns.quota ? <td className={tone}>{quota == null ? "—" : formatQuotaDisplay(quota)}</td> : null}
             {columns.jam ? <td className={tone}>{formatHours(row[period])}</td> : null}
             {columns.sisa ? (
               <td className={left != null && left < 0 ? `${tone} is-over` : tone}>

@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import JSZip from "jszip";
 import { parseHm, parseLocal } from "@/lib/calc";
 import { sheetTitle } from "@/lib/format";
 import { visibleHandoverRows } from "@/lib/board-rows";
@@ -87,6 +88,47 @@ const SUMMARY_PERIODS: { key: PeriodKey; label: string }[] = [
 
 const SUMMARY_WIDTH = 3 + 2 + SUMMARY_PERIODS.length * 3;
 
+function fillGrid(sheet: XLSX.WorkSheet, startRow: number, endRow: number, startCol: number, endCol: number) {
+  for (let row = startRow; row <= endRow; row += 1) {
+    for (let column = startCol; column <= endCol; column += 1) {
+      const ref = XLSX.utils.encode_cell({ r: row, c: column });
+      if (!sheet[ref]) sheet[ref] = { t: "s", v: "" };
+    }
+  }
+}
+
+const THIN_BORDERS =
+  '<borders count="1"><border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom><diagonal/></border></borders>';
+
+async function workbookBlob(book: XLSX.WorkBook): Promise<Blob> {
+  const data = XLSX.write(book, { type: "array", bookType: "xlsx" });
+  const zip = await JSZip.loadAsync(data);
+  const stylesFile = zip.file("xl/styles.xml");
+  const styles = await stylesFile?.async("string");
+  if (styles) {
+    const bordered = styles
+      .replace(/<borders count="1">[\s\S]*?<\/borders>/, THIN_BORDERS)
+      .replace(/<xf\b([^>]*?)\/>/g, (tag, attrs: string) =>
+        /\bapplyBorder=/.test(attrs) ? tag : `<xf${attrs} applyBorder="1"/>`,
+      );
+    zip.file("xl/styles.xml", bordered);
+  }
+  const sheets = zip.file(/^xl\/worksheets\/sheet\d+\.xml$/);
+  await Promise.all(
+    sheets.map(async (file) => {
+      const xml = await file.async("string");
+      zip.file(
+        file.name,
+        xml.replace(/<c\b([^>]*?)>/g, (tag, attrs: string) => (/\bs=/.test(attrs) ? tag : `<c${attrs} s="0">`)),
+      );
+    }),
+  );
+  return zip.generateAsync({
+    type: "blob",
+    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+}
+
 function summaryNumber(value: number | null): number | "" {
   if (value == null || !Number.isFinite(value)) return "";
   return Math.round(value * 100) / 100;
@@ -162,14 +204,29 @@ function summaryBlock(title: string, label: string, rows: (string | number)[][])
 
 export function buildSummarySheet(report: SummaryReport): XLSX.WorkSheet {
   const now = summaryAsOfDate(report.asOf);
-  const unitRows = groupByModel(report.units).flatMap((group) => [
-    summaryDataRow(group, now, group, group.members),
-    ...group.members.map((member) => summaryDataRow(member, now, group)),
-  ]);
+  const detailRows: number[] = [];
+  let cursor = 3;
+  const unitRows = groupByModel(report.units).flatMap((group) => {
+    const parent = summaryDataRow(group, now, group, group.members);
+    cursor += 1;
+    if (group.members.length < 2) return [parent];
+    return [
+      parent,
+      ...group.members.map((member) => {
+        detailRows.push(cursor);
+        cursor += 1;
+        return summaryDataRow(member, now, group);
+      }),
+    ];
+  });
   const groupRows = report.groups.map((row) => summaryDataRow(row, now, row));
   const unitBlock = summaryBlock("SUMMARY UNIT", "Model", unitRows);
   const groupBlock = summaryBlock("SUMMARY GROUP", "Group", groupRows);
   const sheet = XLSX.utils.aoa_to_sheet([...unitBlock, [], ...groupBlock]);
+  const rows: XLSX.RowInfo[] = [];
+  for (const row of detailRows) rows[row] = { level: 1 };
+  sheet["!rows"] = rows;
+  sheet["!outline"] = { above: true };
   const groupStart = unitBlock.length + 1;
   sheet["!merges"] = [...summaryMerges(0), ...summaryMerges(groupStart)];
   sheet["!cols"] = [
@@ -190,6 +247,8 @@ export function buildSummarySheet(report: SummaryReport): XLSX.WorkSheet {
       if (cell && cell.t === "n") cell.z = "0.00";
     }
   }
+  fillGrid(sheet, 0, unitBlock.length - 1, 0, SUMMARY_WIDTH - 1);
+  fillGrid(sheet, groupStart, groupStart + groupBlock.length - 1, 0, SUMMARY_WIDTH - 1);
   return sheet;
 }
 
@@ -307,13 +366,15 @@ export function buildHandoverWorkbook(input: {
       if (cell && cell.t === "n") cell.z = "0.00";
     }
   }
+  const handoverRange = XLSX.utils.decode_range(sheet["!ref"] || "A1");
+  fillGrid(sheet, handoverRange.s.r, handoverRange.e.r, handoverRange.s.c, handoverRange.e.c);
   const book = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(book, sheet, "Handover");
   if (input.summary) XLSX.utils.book_append_sheet(book, buildSummarySheet(input.summary), "Summary");
   return book;
 }
 
-export function downloadHandoverExcel(input: {
+export async function downloadHandoverExcel(input: {
   date: string;
   shift: string;
   rows: HandoverRow[];
@@ -323,5 +384,11 @@ export function downloadHandoverExcel(input: {
   summary?: SummaryReport;
 }) {
   const book = buildHandoverWorkbook(input);
-  XLSX.writeFile(book, exportFileName());
+  const blob = await workbookBlob(book);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = exportFileName();
+  link.click();
+  URL.revokeObjectURL(url);
 }

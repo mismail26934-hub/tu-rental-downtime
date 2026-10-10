@@ -410,7 +410,7 @@ export function HandoverBoard() {
       const data = await fetchBoard(exportYear);
       const summary = await fetchSummary(exportYear);
       const { downloadHandoverExcel } = await import("@/lib/export-excel");
-      downloadHandoverExcel({
+      await downloadHandoverExcel({
         date: exportYear,
         shift: "",
         rows: data.rows,

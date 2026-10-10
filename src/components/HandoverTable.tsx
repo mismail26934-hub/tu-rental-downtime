@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SisaValue } from "@/components/SisaValue";
 import { parseHm, parseLocal } from "@/lib/calc";
-import { formatDt, formatHours, formatStamp } from "@/lib/format";
+import { formatDt, formatHmDisplay, formatHours, formatStamp } from "@/lib/format";
 import { visibleHandoverRows, type ListedRow } from "@/lib/board-rows";
 import { SISA_LABELS, type SisaCell } from "@/lib/unit-sisa";
 import type { HandoverRow } from "@/lib/types";
@@ -141,8 +141,8 @@ export function HandoverTable({
                   <td>{formatStamp(row.waiting_labour_at)}</td>
                   <td>{formatStamp(row.repair_started_at)}</td>
                   <td>{formatStamp(row.rd30_at)}</td>
-                  <td className="col-num">{row.hm_awal || "—"}</td>
-                  <td className="col-num">{row.hm_akhir || "—"}</td>
+                  <td className="col-num">{formatHmDisplay(row.hm_awal)}</td>
+                  <td className="col-num">{formatHmDisplay(row.hm_akhir)}</td>
                   <td className="col-num">{formatHours(metrics.erdm)}</td>
                   <td className="col-text">{row.breakdown_problem || "—"}</td>
                   <td className="col-text">{row.done_action || "—"}</td>
