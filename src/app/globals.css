@@ -307,6 +307,12 @@ html.topbar-scrolled .topbar-glass {
 .form-span { grid-column: 1 / -1; }
 .form label,
 .board-filters label { display: grid; gap: 4px; }
+.form label .req {
+  color: #b42318;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0;
+}
 
 .form input,
 .form textarea,
@@ -1012,6 +1018,18 @@ html[data-theme="light"] .form-modal {
   border: 2px solid #000;
 }
 .export-modal { width: min(420px, 100%); }
+.alert-backdrop { z-index: 10060; }
+.alert-modal {
+  width: min(380px, 100%);
+  display: grid;
+  gap: 12px;
+}
+.alert-modal h2 {
+  margin: 0;
+  font-family: var(--font-display), Impact, sans-serif;
+  letter-spacing: 0.04em;
+}
+.alert-modal p { margin: 0; }
 
 .nav-dialog-backdrop {
   position: fixed;
@@ -1144,14 +1162,6 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #000; }
   .top-actions { position: relative; flex: 0 0 auto; }
   .nav-burger { display: inline-flex; }
   .nav-burger.is-on { position: relative; z-index: 200; }
-  body:has(.sheet-backdrop)::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 170;
-    background: rgba(0, 0, 0, 0.82);
-    pointer-events: none;
-  }
   .kelola .sheet-backdrop,
   .summary-info .sheet-backdrop,
   .summary-settings .sheet-backdrop,
@@ -1241,6 +1251,16 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #000; }
     font-size: 1rem;
     line-height: 1.5;
   }
+  .form-modal-backdrop.alert-backdrop {
+    align-items: center;
+    place-items: center;
+    padding: 16px;
+  }
+  .form-modal.alert-modal {
+    width: min(380px, 100%);
+    max-height: none;
+  }
+  .form-modal.alert-modal::before { display: none; }
   .form-modal-backdrop,
   .nav-dialog-backdrop {
     align-items: end;

@@ -91,6 +91,7 @@ export function HandoverBoard() {
   const [notice, setNotice] = useState("");
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
   const [freezeCols, setFreezeCols] = useState(true);
   const editMode = useBoardView((state) => state.editMode);
   const setEditMode = useBoardView((state) => state.setEditMode);
@@ -200,6 +201,7 @@ export function HandoverBoard() {
   }, [draftKey, form, hydratedKey]);
 
   function closeForm() {
+    setSaveConfirm(false);
     setFormOpen(false);
     setMode("create");
     setEditingId(null);
@@ -225,7 +227,12 @@ export function HandoverBoard() {
   useEffect(() => {
     if (!formOpen) return;
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") closeForm();
+      if (event.key !== "Escape") return;
+      if (saveConfirm) {
+        setSaveConfirm(false);
+        return;
+      }
+      closeForm();
     }
     document.addEventListener("keydown", onKey);
     const previousOverflow = document.body.style.overflow;
@@ -234,7 +241,7 @@ export function HandoverBoard() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previousOverflow;
     };
-  }, [formOpen]);
+  }, [formOpen, saveConfirm]);
 
   const saveMutation = useMutation({
     mutationFn: async (payload: {
@@ -324,6 +331,7 @@ export function HandoverBoard() {
           : "Tersimpan."
       );
       setFormError("");
+      setSaveConfirm(false);
       setFormOpen(false);
       setMode("create");
       setEditingId(null);
@@ -373,6 +381,11 @@ export function HandoverBoard() {
       setFormError(error);
       return;
     }
+    setFormError("");
+    setSaveConfirm(true);
+  }
+
+  function confirmSave() {
     const rowId = editingId || crypto.randomUUID();
     const input = { ...form, status: deriveStatus(form) };
     saveMutation.mutate({ rowId, input, editing: mode === "edit" });
@@ -404,6 +417,7 @@ export function HandoverBoard() {
         now,
         query: "",
         sisa: sisaByUnit(summary.units, summary.asOf),
+        summary,
       });
       setExportOpen(false);
     } catch (error) {
@@ -522,6 +536,29 @@ export function HandoverBoard() {
                 onCancel={closeForm}
                 onDiscardDraft={() => void discardDraft()}
               />
+            </div>
+          </div>
+        ) : null}
+
+        {saveConfirm ? (
+          <div className="form-modal-backdrop alert-backdrop" onMouseDown={() => setSaveConfirm(false)}>
+            <div
+              className="form-modal alert-modal"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="save-confirm-title"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <h2 id="save-confirm-title">Simpan data?</h2>
+              <p>Data unit {form.unit.trim() || "ini"} akan disimpan.</p>
+              <div className="form-actions">
+                <button className="btn btn-primary" type="button" onClick={confirmSave} disabled={saveMutation.isPending}>
+                  {saveMutation.isPending ? "Menyimpan…" : "Simpan"}
+                </button>
+                <button className="btn" type="button" onClick={() => setSaveConfirm(false)} disabled={saveMutation.isPending}>
+                  Batal
+                </button>
+              </div>
             </div>
           </div>
         ) : null}

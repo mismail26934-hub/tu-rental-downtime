@@ -26,7 +26,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Di summary, menu Kelola berisi Daftar unit, Master group, dan Master unit. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Master group, dan Master unit. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
 - Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil dan Hapus memakai ikon tong sampah. Di layar sempit hanya ikon yang tampil.
 - Di layar sempit, tombol Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting menampilkan ikon saja. Filter tahun ada di bawah kolom pencarian.
-- Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya tertutup lapisan gelap. Mengetuk area di luar panel menutupnya.
+- Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya diredupkan satu lapisan, sama seperti modal form. Mengetuk area di luar panel menutupnya.
 - Tambah unit ada di daftar unit.
 - Tabel penuh, teks remark membungkus, angka rata kanan.
 - Tiga kolom pertama (#, Crew, Unit) bisa dibekukan. Pengaturan "Freeze kolom" disimpan di perangkat. Default menyala.
@@ -38,7 +38,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Filter papan adalah tahun saja, dan tahun yang sama dipakai summary. Pilihan disimpan di perangkat. Daftar menampilkan semua baris handover tahun itu, kedua shift. Di layar lebar pemilih tahun ada di navbar. Di layar sempit pemilih tahun ada di daftar unit, di bawah pencarian.
 - Urutan bawaan daftar adalah DT Total: baris N/Y Ready di atas, lalu angka DT terbesar. Klik judul kolom mengubah urutan; klik lagi membalik arahnya. Panah di judul menunjukkan kolom yang aktif.
 - Unit baru pada tahun berjalan masuk ke sheet hari ini dan shift bawaan. Jika tahun yang dipilih bukan tahun ini, sheet-nya 1 Januari shift DS. Mengubah baris tidak memindahkan sheet-nya.
-- Export membuka modal tahun. Bawaannya tahun ini, bukan tahun yang sedang dipilih di papan. File `handover-YYYY.xlsx` berisi seluruh baris tahun itu, termasuk SO dan Sisa Quota Hrs, tidak mengikuti pencarian yang aktif.
+- Export membuka modal tahun. Bawaannya tahun ini, bukan tahun yang sedang dipilih di papan. File `Export Data Armor yyyymmdd hhmm.xlsx` memakai waktu saat tombol Export diklik. Isinya dua sheet: Handover (seluruh baris tahun itu, termasuk SO dan Sisa Quota Hrs, tidak mengikuti pencarian yang aktif) dan Summary (SUMMARY UNIT beserta rincian unit, lalu SUMMARY GROUP, dengan Quota Hrs, Jam, dan Sisa).
 
 ### Perhitungan
 
@@ -65,7 +65,8 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Group di form unit adalah pencarian dari master group. Nama yang tidak ada di master tidak disimpan. Memilih group tidak mengubah Quota Hrs unit itu sendiri.
 - Quota Hrs (GROUP) di tabel unit diambil dari master group. Group kosong menampilkan —.
 - Master group: Group dan Quota Hrs, di halaman `/master/group`. Group wajib dan unik. Mengganti nama group ikut memperbarui unit yang memakainya. Group yang masih dipakai unit tidak bisa dihapus.
-- Field Unit di form handover adalah pilihan yang bisa dicari dari master (kode unit atau model).
+- Field Unit di form handover wajib, ditandai bintang merah, dan merupakan pilihan yang bisa dicari dari master (kode unit atau model). Tombol Simpan nonaktif selama unit masih kosong.
+- Jika data valid, Simpan menampilkan modal "Simpan data?" beserta nama unit. Data baru tertulis setelah Simpan di modal itu diklik. Batal menutup modal dan form tetap terbuka.
 - Model dan quota jam unit yang dipilih tampil di bawah field.
 - Unit yang tidak ada di master tidak bisa disimpan.
 

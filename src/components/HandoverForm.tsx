@@ -74,7 +74,9 @@ export function HandoverForm({
           />
         </label>
         <label>
-          Unit
+          <span>
+            Unit <abbr className="req" title="Wajib diisi">*</abbr>
+          </span>
           <UnitSelect
             value={value.unit}
             disabled={!ready || busy}
@@ -206,7 +208,7 @@ export function HandoverForm({
       {notice ? <div className="notice">{notice}</div> : null}
       {error && !hmMessage ? <div className="error">{error}</div> : null}
       <div className="form-actions">
-        <button className="btn btn-primary" type="submit" disabled={!ready || busy}>
+        <button className="btn btn-primary" type="submit" disabled={!ready || busy || !value.unit.trim()}>
           {busy ? "Menyimpan…" : "Simpan"}
         </button>
         <button className="btn" type="button" onClick={onCancel} disabled={busy}>

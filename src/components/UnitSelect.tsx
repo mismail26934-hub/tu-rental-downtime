@@ -88,6 +88,7 @@ export function UnitSelect({ value, disabled, onChange }: Props) {
     <div className="unit-select" ref={rootRef}>
       <input
         role="combobox"
+        aria-required="true"
         aria-expanded={open}
         aria-controls={listId}
         aria-autocomplete="list"
