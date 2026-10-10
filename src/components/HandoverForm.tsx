@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { computeMetrics, deriveStatus } from "@/lib/calc";
 import { formatDateTimeDMY, formatDt, formatHours, parseDateTimeDMY, todayISO } from "@/lib/format";
 import { hmLiveError } from "@/lib/row-input";
@@ -221,6 +222,10 @@ export function HandoverForm({
   );
 }
 
+function nowClock(date = new Date()): string {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
 function DateTimeField({
   value,
   disabled,
@@ -231,16 +236,48 @@ function DateTimeField({
   onChange: (next: string) => void;
 }) {
   const dateRef = useRef<HTMLInputElement>(null);
-  const timeRef = useRef<HTMLInputElement>(null);
+  const timeButtonRef = useRef<HTMLButtonElement>(null);
+  const timePanelRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState(() => formatDateTimeDMY(value));
   const [focused, setFocused] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
+  const [timePos, setTimePos] = useState({ top: 0, left: 0 });
   const parts = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(value.trim());
   const datePart = parts?.[1] || "";
   const timePart = parts?.[2] || "";
+  const shownTime = timePart || nowClock();
+  const [shownHour, shownMinute] = shownTime.split(":");
 
   useEffect(() => {
     if (!focused) setText(formatDateTimeDMY(value));
   }, [focused, value]);
+
+  useEffect(() => {
+    if (!timeOpen) return;
+    const panel = timePanelRef.current;
+    panel?.querySelectorAll<HTMLElement>(".time-col").forEach((col) => {
+      const selected = col.querySelector<HTMLElement>(".is-on");
+      if (!selected) return;
+      col.scrollTop = selected.offsetTop - col.clientHeight / 2 + selected.clientHeight / 2;
+    });
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setTimeOpen(false);
+    }
+    function onPointer(event: MouseEvent) {
+      const target = event.target as Node;
+      if (panel?.contains(target) || timeButtonRef.current?.contains(target)) return;
+      setTimeOpen(false);
+    }
+    document.addEventListener("keydown", onKey, true);
+    document.addEventListener("mousedown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      document.removeEventListener("mousedown", onPointer);
+    };
+  }, [timeOpen]);
 
   function commitParts(date: string, time: string) {
     if (!date && !time) {
@@ -248,9 +285,28 @@ function DateTimeField({
       setText("");
       return;
     }
-    const iso = `${date || todayISO()}T${time || "00:00"}`;
+    const iso = `${date || todayISO()}T${time || nowClock()}`;
     onChange(iso);
     setText(formatDateTimeDMY(iso));
+  }
+
+  function openTime() {
+    if (disabled) return;
+    if (timeOpen) {
+      setTimeOpen(false);
+      return;
+    }
+    if (!timePart) commitParts(datePart, nowClock());
+    const rect = timeButtonRef.current?.getBoundingClientRect();
+    if (rect) {
+      const width = 148;
+      const height = 240;
+      const left = Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8));
+      const below = rect.bottom + 6;
+      const top = below + height > window.innerHeight ? Math.max(8, rect.top - height - 6) : below;
+      setTimePos({ top, left });
+    }
+    setTimeOpen(true);
   }
 
   function openPicker(input: HTMLInputElement | null) {
@@ -324,25 +380,62 @@ function DateTimeField({
       </span>
       <span className="picker-slot">
         <button
+          ref={timeButtonRef}
           className="picker-btn"
           type="button"
           aria-label="Pilih jam"
+          aria-expanded={timeOpen}
+          aria-haspopup="listbox"
           disabled={disabled}
-          onClick={() => openPicker(timeRef.current)}
+          onClick={openTime}
         >
           <ClockIcon />
         </button>
-        <input
-          ref={timeRef}
-          className="picker-proxy"
-          type="time"
-          step={60}
-          tabIndex={-1}
-          value={timePart}
-          disabled={disabled}
-          aria-hidden="true"
-          onChange={(event) => commitParts(datePart, event.target.value.slice(0, 5))}
-        />
+        {timeOpen
+          ? createPortal(
+              <div
+                ref={timePanelRef}
+                className="time-panel"
+                style={{ top: timePos.top, left: timePos.left }}
+              >
+                <div className="time-col" role="listbox" aria-label="Jam">
+                  {Array.from({ length: 24 }, (_, hour) => {
+                    const label = String(hour).padStart(2, "0");
+                    return (
+                      <button
+                        key={label}
+                        className={label === shownHour ? "is-on" : undefined}
+                        type="button"
+                        role="option"
+                        aria-selected={label === shownHour}
+                        onClick={() => commitParts(datePart, `${label}:${shownMinute}`)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="time-col" role="listbox" aria-label="Menit">
+                  {Array.from({ length: 60 }, (_, minute) => {
+                    const label = String(minute).padStart(2, "0");
+                    return (
+                      <button
+                        key={label}
+                        className={label === shownMinute ? "is-on" : undefined}
+                        type="button"
+                        role="option"
+                        aria-selected={label === shownMinute}
+                        onClick={() => commitParts(datePart, `${shownHour}:${label}`)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>,
+              document.body,
+            )
+          : null}
       </span>
     </div>
   );

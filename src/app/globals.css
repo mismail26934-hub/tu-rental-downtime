@@ -526,6 +526,44 @@ html.topbar-scrolled .topbar-glass {
 }
 [data-theme="dark"] .picker-proxy { color-scheme: dark; }
 [data-theme="light"] .picker-proxy { color-scheme: light; }
+.time-panel {
+  position: fixed;
+  z-index: 10055;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 148px;
+  background: var(--bg-1);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.time-col {
+  max-height: 240px;
+  margin: 0;
+  padding: 4px;
+  overflow: auto;
+}
+.time-col + .time-col { border-left: 1px solid var(--line); }
+.time-col button {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 7px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+.time-col button.is-on {
+  background: var(--amber);
+  color: var(--amber-ink);
+}
 
 .btn {
   border: 1px solid var(--line);
