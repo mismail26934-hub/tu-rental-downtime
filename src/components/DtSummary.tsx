@@ -11,9 +11,11 @@ import { periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from
 import {
   dailyColumnCount,
   periodColumnCount,
+  toSummaryAmount,
   useSummaryView,
   type SummaryColumns,
   type SummaryMetric,
+  type SummaryUnit,
 } from "@/lib/summary-view";
 import { groupByModel, sisaRemainder } from "@/lib/unit-sisa";
 
@@ -26,6 +28,7 @@ async function fetchSummary(year: string): Promise<SummaryReport> {
 export function DtSummary() {
   const year = useSheetYear((state) => state.year);
   const [ready, setReady] = useState(false);
+  const [freezeCols, setFreezeCols] = useState(true);
   const summaryQuery = useQuery({
     queryKey: ["dt-summary", year],
     queryFn: () => fetchSummary(year),
@@ -39,6 +42,7 @@ export function DtSummary() {
     void (async () => {
       await useSheetYear.persist.rehydrate();
       await useSummaryView.persist.rehydrate();
+      if (localStorage.getItem("tu-rental-freeze") === "0") setFreezeCols(false);
       if (!cancel) setReady(true);
     })();
     return () => {
@@ -54,13 +58,20 @@ export function DtSummary() {
           <div className="panel-head">
             <h2>SUMMARY UNIT</h2>
             <div className="panel-actions">
+              <SummaryUnitToggle />
               <Link className="btn desktop-only" href="/daftar">
                 <ListIcon />
                 <span className="btn-label">Daftar unit</span>
               </Link>
               <SummaryInfo report={report} />
               <SummarySettings />
-              <SummaryManage />
+              <SummaryManage
+                freezeCols={freezeCols}
+                onFreeze={(next) => {
+                  setFreezeCols(next);
+                  localStorage.setItem("tu-rental-freeze", next ? "1" : "0");
+                }}
+              />
             </div>
           </div>
           {summaryQuery.isError ? (
@@ -73,6 +84,7 @@ export function DtSummary() {
             labelHeader="Model"
             grouped
             asOf={report?.asOf}
+            frozen={freezeCols}
             empty={summaryQuery.isSuccess ? "Belum ada unit di daftar." : "Memuat…"}
           />
         </section>
@@ -84,6 +96,7 @@ export function DtSummary() {
             rows={report?.groups || []}
             labelHeader="Group"
             asOf={report?.asOf}
+            frozen={freezeCols}
             empty={summaryQuery.isSuccess ? "Belum ada group di daftar." : "Memuat…"}
           />
         </section>
@@ -92,13 +105,29 @@ export function DtSummary() {
   );
 }
 
-const METRICS: { key: SummaryMetric; label: string }[] = [
-  { key: "quota", label: "Quota Hrs" },
-  { key: "jam", label: "Jam" },
-  { key: "sisa", label: "Sisa" },
+const METRICS: { key: SummaryMetric; hours: string; days: string }[] = [
+  { key: "quota", hours: "Quota Hrs", days: "Quota Hari" },
+  { key: "jam", hours: "Jam", days: "Hari" },
+  { key: "sisa", hours: "Sisa", days: "Sisa" },
 ];
 
+function SummaryUnitToggle() {
+  const unit = useSummaryView((state) => state.unit);
+  const setUnit = useSummaryView((state) => state.setUnit);
+  return (
+    <div className="summary-unit" role="group" aria-label="Satuan summary">
+      <button className={unit === "jam" ? "btn btn-primary" : "btn"} type="button" aria-pressed={unit === "jam"} onClick={() => setUnit("jam")}>
+        Jam
+      </button>
+      <button className={unit === "hari" ? "btn btn-primary" : "btn"} type="button" aria-pressed={unit === "hari"} onClick={() => setUnit("hari")}>
+        Hari
+      </button>
+    </div>
+  );
+}
+
 function SummaryInfo({ report }: { report?: SummaryReport }) {
+  const unit = useSummaryView((state) => state.unit);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -128,7 +157,7 @@ function SummaryInfo({ report }: { report?: SummaryReport }) {
           <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
           <div className="summary-info-menu" role="note">
             <p className="sheet-title">Info</p>
-            <p className="sheet-copy">{note(report)}</p>
+            <p className="sheet-copy">{note(report, unit)}</p>
           </div>
         </>
       ) : null}
@@ -158,6 +187,7 @@ function SettingsIcon() {
 function SummarySettings() {
   const columns = useSummaryView((state) => state.columns);
   const setColumn = useSummaryView((state) => state.setColumn);
+  const unit = useSummaryView((state) => state.unit);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const visibleCount = METRICS.filter((metric) => columns[metric.key]).length;
@@ -190,7 +220,7 @@ function SummarySettings() {
                   disabled={columns[metric.key] && visibleCount === 1}
                   onChange={(event) => setColumn(metric.key, event.target.checked)}
                 />
-                {metric.label}
+                {unit === "hari" ? metric.days : metric.hours}
               </label>
             ))}
           </div>
@@ -200,7 +230,7 @@ function SummarySettings() {
   );
 }
 
-function SummaryManage() {
+function SummaryManage({ freezeCols, onFreeze }: { freezeCols: boolean; onFreeze: (next: boolean) => void }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -230,6 +260,10 @@ function SummaryManage() {
           <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
           <div className="kelola-menu" role="menu">
             <p className="sheet-title">Kelola</p>
+            <label className="freeze-toggle kelola-item">
+              <input type="checkbox" checked={freezeCols} onChange={(event) => onFreeze(event.target.checked)} />
+              Freeze kolom
+            </label>
             <Link className="kelola-item mobile-only" role="menuitem" href="/daftar" onClick={() => setOpen(false)}>
             <ListIcon />
             Daftar unit
@@ -294,13 +328,17 @@ function UnitIcon() {
   );
 }
 
-function note(report: SummaryReport): string {
+function note(report: SummaryReport, unit: SummaryUnit): string {
   const date = sheetTitle(report.asOf, "").trim();
   const open =
     report.openUnits === 0
       ? "Tidak ada unit N/Y Ready."
       : `${report.openUnits} unit masih N/Y Ready, jam repair-nya terus bertambah.`;
-  return `Per ${date}. ${open} Jam = Waiting Labour + Repair time. Quota periode = Quota Hrs × hari (WTD Senin sampai hari ini, MTD tanggal hari ini, HYTD 1 sampai 30 Jun, HYTD 2 dari 1 Jul, YTD dari 1 Jan). Sisa = quota − jam, kosong jika jam 0, merah jika negatif.`;
+  const scale =
+    unit === "hari"
+      ? "Semua angka dalam hari (1 hari = 24 jam)."
+      : "Jam = Waiting Labour + Repair time.";
+  return `Per ${date}. ${open} ${scale} Quota periode = Quota Hrs × hari (WTD Senin sampai hari ini, MTD tanggal hari ini, HYTD 1 sampai 30 Jun, HYTD 2 dari 1 Jul, YTD dari 1 Jan). Sisa = quota − jam, kosong jika jam 0, merah jika negatif.`;
 }
 
 function SummaryTable({
@@ -309,16 +347,19 @@ function SummaryTable({
   empty,
   grouped = false,
   asOf,
+  frozen = false,
 }: {
   rows: SummaryRow[];
   labelHeader: string;
   empty: string;
   grouped?: boolean;
   asOf?: string;
+  frozen?: boolean;
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [sort, setSort] = useState<SummarySort>(null);
   const columns = useSummaryView((state) => state.columns);
+  const unit = useSummaryView((state) => state.unit);
   const groups = grouped ? groupByModel(rows) : [];
   const now = asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf) ? localDate(asOf) : new Date();
   const viewGroups = sort ? groups.map((group) => ({ ...group, members: [...group.members].sort((a, b) => compareSummary(a, b, sort, now)) })).sort((a, b) => compareSummary(a, b, sort, now)) : groups;
@@ -340,11 +381,11 @@ function SummaryTable({
 
   return (
     <div className="handover-table-wrap">
-      <table className="handover-table summary-table">
+      <table className={`handover-table summary-table${frozen ? " is-frozen" : ""}`}>
         <thead>
           <tr>
             <SortTh className="summary-pin summary-pin-1" rowSpan={2} label={labelHeader} active={sort?.kind === "label"} dir={sort?.kind === "label" ? sort.dir : "asc"} onSort={() => toggleSort({ kind: "label", dir: "asc" })} />
-            <SortTh className="col-num summary-pin summary-pin-2" rowSpan={2} label={<>Quota<br />Hrs</>} active={sort?.kind === "quota"} dir={sort?.kind === "quota" ? sort.dir : "desc"} onSort={() => toggleSort({ kind: "quota", dir: "desc" })} />
+            <SortTh className="col-num summary-pin summary-pin-2" rowSpan={2} label={unit === "hari" ? <>Quota<br />Hari</> : <>Quota<br />Hrs</>} active={sort?.kind === "quota"} dir={sort?.kind === "quota" ? sort.dir : "desc"} onSort={() => toggleSort({ kind: "quota", dir: "desc" })} />
             <SortTh className="summary-pin summary-pin-3" rowSpan={2} label="Unit" active={sort?.kind === "unit"} dir={sort?.kind === "unit" ? sort.dir : "asc"} onSort={() => toggleSort({ kind: "unit", dir: "asc" })} />
             {dailySpan > 0 ? (
               <th colSpan={dailySpan} className="summary-daily">
@@ -358,9 +399,9 @@ function SummaryTable({
             ))}
           </tr>
           <tr>
-            <DailyHeads columns={columns} sort={sort} onSort={toggleSort} />
+            <DailyHeads columns={columns} unit={unit} sort={sort} onSort={toggleSort} />
             {SCALED_PERIODS.map((period) => (
-              <PeriodHeads key={period} period={period} columns={columns} sort={sort} onSort={toggleSort} />
+              <PeriodHeads key={period} period={period} columns={columns} unit={unit} sort={sort} onSort={toggleSort} />
             ))}
           </tr>
         </thead>
@@ -393,7 +434,7 @@ function SummaryTable({
                       ) : null}
                     </span>
                   </td>
-                  <Cells row={group} units={group.members} asOf={asOf} columns={columns} />
+                  <Cells row={group} units={group.members} asOf={asOf} columns={columns} unit={unit} />
                 </tr>
               );
               if (!expanded) return [parent];
@@ -404,7 +445,7 @@ function SummaryTable({
                     <td className="summary-pin summary-pin-1">
                       {row.label}
                     </td>
-                    <Cells row={row} asOf={asOf} sisaRow={group} columns={columns} />
+                    <Cells row={row} asOf={asOf} sisaRow={group} columns={columns} unit={unit} />
                   </tr>
                 )),
               ];
@@ -413,7 +454,7 @@ function SummaryTable({
             viewRows.map((row) => (
               <tr key={row.id}>
                 <td className="summary-pin summary-pin-1">{row.label}</td>
-                <Cells row={row} asOf={asOf} columns={columns} />
+                <Cells row={row} asOf={asOf} columns={columns} unit={unit} />
               </tr>
             ))
           )}
@@ -517,11 +558,12 @@ function compareText(a: string, b: string, dir: SortDir): number {
   return dir === "asc" ? order : -order;
 }
 
-function DailyHeads({ columns, sort, onSort }: { columns: SummaryColumns; sort: SummarySort; onSort: (next: ActiveSummarySort) => void }) {
+function DailyHeads({ columns, unit, sort, onSort }: { columns: SummaryColumns; unit: SummaryUnit; sort: SummarySort; onSort: (next: ActiveSummarySort) => void }) {
+  const amount = unit === "hari" ? "Hari" : "Jam";
   return (
     <>
       {columns.jam ? (
-        <SortTh className="col-num summary-daily" label="Jam" active={isCell(sort, "daily", "jam")} dir={cellDir(sort, "daily", "jam")} onSort={() => onSort({ kind: "cell", period: "daily", metric: "jam", dir: "desc" })} />
+        <SortTh className="col-num summary-daily" label={amount} active={isCell(sort, "daily", "jam")} dir={cellDir(sort, "daily", "jam")} onSort={() => onSort({ kind: "cell", period: "daily", metric: "jam", dir: "desc" })} />
       ) : null}
       {columns.sisa ? (
         <SortTh className="col-num summary-daily" label="Sisa" active={isCell(sort, "daily", "sisa")} dir={cellDir(sort, "daily", "sisa")} onSort={() => onSort({ kind: "cell", period: "daily", metric: "sisa", dir: "desc" })} />
@@ -530,15 +572,16 @@ function DailyHeads({ columns, sort, onSort }: { columns: SummaryColumns; sort: 
   );
 }
 
-function PeriodHeads({ period, columns, sort, onSort }: { period: PeriodKey; columns: SummaryColumns; sort: SummarySort; onSort: (next: ActiveSummarySort) => void }) {
+function PeriodHeads({ period, columns, unit, sort, onSort }: { period: PeriodKey; columns: SummaryColumns; unit: SummaryUnit; sort: SummarySort; onSort: (next: ActiveSummarySort) => void }) {
   const tone = `summary-${period}`;
+  const amount = unit === "hari" ? "Hari" : "Jam";
   return (
     <>
       {columns.quota ? (
-        <SortTh className={`col-num ${tone}`} label={<>Quota<br />Hrs</>} active={isCell(sort, period, "quota")} dir={cellDir(sort, period, "quota")} onSort={() => onSort({ kind: "cell", period, metric: "quota", dir: "desc" })} />
+        <SortTh className={`col-num ${tone}`} label={unit === "hari" ? <>Quota<br />Hari</> : <>Quota<br />Hrs</>} active={isCell(sort, period, "quota")} dir={cellDir(sort, period, "quota")} onSort={() => onSort({ kind: "cell", period, metric: "quota", dir: "desc" })} />
       ) : null}
       {columns.jam ? (
-        <SortTh className={`col-num ${tone}`} label="Jam" active={isCell(sort, period, "jam")} dir={cellDir(sort, period, "jam")} onSort={() => onSort({ kind: "cell", period, metric: "jam", dir: "desc" })} />
+        <SortTh className={`col-num ${tone}`} label={amount} active={isCell(sort, period, "jam")} dir={cellDir(sort, period, "jam")} onSort={() => onSort({ kind: "cell", period, metric: "jam", dir: "desc" })} />
       ) : null}
       {columns.sisa ? (
         <SortTh className={`col-num ${tone}`} label="Sisa" active={isCell(sort, period, "sisa")} dir={cellDir(sort, period, "sisa")} onSort={() => onSort({ kind: "cell", period, metric: "sisa", dir: "desc" })} />
@@ -558,39 +601,43 @@ function Cells({
   asOf,
   sisaRow,
   columns,
+  unit,
 }: {
   row: SummaryRow;
   units?: SummaryRow[];
   asOf?: string;
   sisaRow?: SummaryRow;
   columns: SummaryColumns;
+  unit: SummaryUnit;
 }) {
   const now = asOf ? localDate(asOf) : new Date();
   const sisa = sisaRow ?? row;
-  const dailyLeft = sisaRemainder(sisa.quota_hrs, sisa.daily);
+  const dailyLeft = toSummaryAmount(sisaRemainder(sisa.quota_hrs, sisa.daily), unit);
+  const dailyQuota = toSummaryAmount(sisa.quota_hrs, unit);
+  const show = (value: number | null) => toSummaryAmount(value, unit);
   return (
     <>
-      <td className="col-num summary-pin summary-pin-2">{row.quota_hrs == null ? "—" : formatQuotaDisplay(row.quota_hrs)}</td>
+      <td className="col-num summary-pin summary-pin-2">{row.quota_hrs == null ? "—" : formatQuotaDisplay(show(row.quota_hrs) ?? 0)}</td>
       <td className="col-units summary-pin summary-pin-3">
         <UnitNames row={row} units={units} />
       </td>
       {columns.jam ? (
-        <td className={row.overDaily ? "col-num summary-daily is-over" : "col-num summary-daily"}>{formatHours(row.daily)}</td>
+        <td className={row.overDaily ? "col-num summary-daily is-over" : "col-num summary-daily"}>{formatHours(show(row.daily))}</td>
       ) : null}
       {columns.sisa ? (
         <td className={dailyLeft != null && dailyLeft < 0 ? "col-num summary-daily is-over" : "col-num summary-daily"}>
-          <SisaValue cell={{ left: dailyLeft, quota: sisa.quota_hrs }} />
+          <SisaValue cell={{ left: dailyLeft, quota: dailyQuota }} />
         </td>
       ) : null}
       {SCALED_PERIODS.map((period) => {
-        const quota = periodQuota(row.quota_hrs, period, now);
-        const sisaQuota = periodQuota(sisa.quota_hrs, period, now);
-        const left = sisaRemainder(sisaQuota, sisa[period]);
+        const quota = show(periodQuota(row.quota_hrs, period, now));
+        const sisaQuota = show(periodQuota(sisa.quota_hrs, period, now));
+        const left = show(sisaRemainder(periodQuota(sisa.quota_hrs, period, now), sisa[period]));
         const tone = `col-num summary-${period}`;
         return (
           <Fragment key={period}>
             {columns.quota ? <td className={tone}>{quota == null ? "—" : formatQuotaDisplay(quota)}</td> : null}
-            {columns.jam ? <td className={tone}>{formatHours(row[period])}</td> : null}
+            {columns.jam ? <td className={tone}>{formatHours(show(row[period]))}</td> : null}
             {columns.sisa ? (
               <td className={left != null && left < 0 ? `${tone} is-over` : tone}>
                 <SisaValue cell={{ left, quota: sisaQuota }} />

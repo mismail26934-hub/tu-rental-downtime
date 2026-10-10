@@ -46,6 +46,8 @@ export function OfflineChip() {
     tone = "offline";
   }
 
+  if (tone === "online") return null;
+
   return (
     <button
       className={`offline-sync-chip offline-sync-chip--${tone}`}

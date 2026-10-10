@@ -93,7 +93,7 @@ function NavStats({ stats }: { stats: NonNullable<Props["stats"]> }) {
         <span className="nav-stat-name">Baris</span>
         <strong>{stats.rows}</strong>
       </span>
-      <span className="nav-stat" tabIndex={0} aria-label={`N/Y Ready ${stats.ready}`}>
+      <span className="nav-stat nav-stat--ready" tabIndex={0} aria-label={`N/Y Ready ${stats.ready}`}>
         <ReadyIcon />
         <span className="nav-stat-name">N/Y Ready</span>
         <strong>{stats.ready}</strong>
