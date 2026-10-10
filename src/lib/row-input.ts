@@ -18,6 +18,13 @@ const LIMITS: Record<keyof RowInput, number> = {
   so: 8000,
 };
 
+export function sameRowInput(left: RowInput, right: RowInput): boolean {
+  const a = normalizeRowInput(left);
+  const b = normalizeRowInput(right);
+  if (!a || !b) return false;
+  return (Object.keys(a) as (keyof RowInput)[]).every((key) => a[key] === b[key]);
+}
+
 export function normalizeRowInput(body: unknown): RowInput | null {
   if (!body || typeof body !== "object") return null;
   const source = body as Record<string, unknown>;

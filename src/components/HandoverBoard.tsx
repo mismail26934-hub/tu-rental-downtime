@@ -13,7 +13,7 @@ import { computeMetrics, deriveStatus } from "@/lib/calc";
 import { defaultShift, todayISO } from "@/lib/format";
 import { deleteDraft, loadDraft, saveDraft } from "@/lib/offline/draft";
 import { flushOutbox } from "@/lib/offline/outbox";
-import { isHmValidationMessage, validateRowInput } from "@/lib/row-input";
+import { isHmValidationMessage, sameRowInput, validateRowInput } from "@/lib/row-input";
 import { useOfflineReady } from "@/app/providers";
 import { useBoardView } from "@/lib/board-view";
 import { useSummaryView } from "@/lib/summary-view";
@@ -89,6 +89,7 @@ export function HandoverBoard() {
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<RowInput>(emptyRowInput);
+  const [editBaseline, setEditBaseline] = useState<RowInput | null>(null);
   const [hydratedKey, setHydratedKey] = useState("");
   const [notice, setNotice] = useState("");
   const [formError, setFormError] = useState("");
@@ -131,6 +132,7 @@ export function HandoverBoard() {
     setFormOpen(false);
     setMode("create");
     setEditingId(null);
+    setEditBaseline(null);
     setForm(emptyRowInput());
     setFormError("");
   }, [year, filtersReady]);
@@ -208,6 +210,7 @@ export function HandoverBoard() {
     setFormOpen(false);
     setMode("create");
     setEditingId(null);
+    setEditBaseline(null);
     setForm(emptyRowInput());
     setFormError("");
   }
@@ -219,9 +222,11 @@ export function HandoverBoard() {
   }
 
   function openEdit(row: HandoverRow) {
+    const input = toRowInput(row);
     setMode("edit");
     setEditingId(row.id);
-    setForm(toRowInput(row));
+    setEditBaseline(input);
+    setForm(input);
     setFormError("");
     setNotice("");
     setFormOpen(true);
@@ -338,6 +343,7 @@ export function HandoverBoard() {
       setFormOpen(false);
       setMode("create");
       setEditingId(null);
+      setEditBaseline(null);
       setForm(emptyRowInput());
       if (!result.queued) void flushOutbox();
     },
@@ -379,6 +385,7 @@ export function HandoverBoard() {
   }
 
   function submitForm() {
+    if (mode === "edit" && editBaseline && sameRowInput(form, editBaseline)) return;
     const error = validateRowInput(form);
     if (error) {
       setFormError(error);
@@ -539,6 +546,7 @@ export function HandoverBoard() {
                 ready={hydratedKey === draftKey}
                 notice={notice}
                 error={formError}
+                unchanged={mode === "edit" && editBaseline != null && sameRowInput(form, editBaseline)}
                 onChange={setForm}
                 onHmCheck={applyHmError}
                 onSubmit={submitForm}

@@ -30,6 +30,7 @@ export function GroupMaster() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: GroupSortKey; dir: SortDir } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [editBaseline, setEditBaseline] = useState<Draft | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -74,7 +75,7 @@ export function GroupMaster() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["groups"] });
-      setDraft(null);
+      closeDraft();
       setNotice("Tersimpan.");
     },
     onError: (saveError) => {
@@ -100,22 +101,37 @@ export function GroupMaster() {
   function openCreate() {
     setError("");
     setNotice("");
+    setEditBaseline(null);
     setDraft(emptyDraft());
   }
 
   function openEdit(group: UnitGroup) {
-    setError("");
-    setNotice("");
-    setDraft({
+    const next = {
       id: group.id,
       group: group.group,
       quota: formatQuota(group.quota_hrs),
-    });
+    };
+    setError("");
+    setNotice("");
+    setEditBaseline(next);
+    setDraft({ ...next });
   }
+
+  function closeDraft() {
+    setEditBaseline(null);
+    setDraft(null);
+  }
+
+  const groupUnchanged = Boolean(
+    draft?.id &&
+      editBaseline &&
+      draft.group.trim() === editBaseline.group.trim() &&
+      sameQuota(draft.quota, editBaseline.quota)
+  );
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!draft) return;
+    if (!draft || groupUnchanged) return;
     const message = validateGroupInput(draft);
     if (message) {
       setError(message);
@@ -222,7 +238,7 @@ export function GroupMaster() {
           </div>
         </section>
         {draft ? (
-          <div className="form-modal-backdrop" onMouseDown={() => setDraft(null)}>
+          <div className="form-modal-backdrop" onMouseDown={closeDraft}>
             <div
               className="form-modal"
               role="dialog"
@@ -255,10 +271,10 @@ export function GroupMaster() {
                 </div>
                 {error ? <div className="error">{error}</div> : null}
                 <div className="form-actions">
-                  <button className="btn btn-primary" type="submit" disabled={saveMutation.isPending}>
+                  <button className="btn btn-primary" type="submit" disabled={saveMutation.isPending || groupUnchanged}>
                     {saveMutation.isPending ? "Menyimpan…" : "Simpan"}
                   </button>
-                  <button className="btn" type="button" onClick={() => setDraft(null)}>
+                  <button className="btn" type="button" onClick={closeDraft}>
                     Batal
                   </button>
                 </div>
@@ -269,6 +285,13 @@ export function GroupMaster() {
       </main>
     </>
   );
+}
+
+function sameQuota(left: string, right: string): boolean {
+  const a = parseQuota(left);
+  const b = parseQuota(right);
+  if (a == null || b == null) return left.trim() === right.trim();
+  return a === b;
 }
 
 function UnitIcon() {

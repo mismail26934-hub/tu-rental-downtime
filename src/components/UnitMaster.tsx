@@ -34,6 +34,7 @@ export function UnitMaster() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: UnitSortKey; dir: SortDir } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [editBaseline, setEditBaseline] = useState<Draft | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -80,7 +81,7 @@ export function UnitMaster() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["units"] });
-      setDraft(null);
+      closeDraft();
       setNotice("Tersimpan.");
     },
     onError: (saveError) => {
@@ -106,24 +107,41 @@ export function UnitMaster() {
   function openCreate() {
     setError("");
     setNotice("");
+    setEditBaseline(null);
     setDraft(emptyDraft());
   }
 
   function openEdit(unit: UnitMaster) {
-    setError("");
-    setNotice("");
-    setDraft({
+    const next = {
       id: unit.id,
       model: unit.model,
       quota: formatQuota(unit.quota_hrs),
       unit: unit.unit,
       group: unit.group,
-    });
+    };
+    setError("");
+    setNotice("");
+    setEditBaseline(next);
+    setDraft({ ...next });
   }
+
+  function closeDraft() {
+    setEditBaseline(null);
+    setDraft(null);
+  }
+
+  const unitUnchanged = Boolean(
+    draft?.id &&
+      editBaseline &&
+      draft.model.trim() === editBaseline.model.trim() &&
+      draft.unit.trim() === editBaseline.unit.trim() &&
+      draft.group.trim() === editBaseline.group.trim() &&
+      sameQuota(draft.quota, editBaseline.quota)
+  );
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!draft) return;
+    if (!draft || unitUnchanged) return;
     const message = validateUnitInput(draft);
     if (message) {
       setError(message);
@@ -236,7 +254,7 @@ export function UnitMaster() {
           </div>
         </section>
         {draft ? (
-          <div className="form-modal-backdrop" onMouseDown={() => setDraft(null)}>
+          <div className="form-modal-backdrop" onMouseDown={closeDraft}>
             <div
               className="form-modal"
               role="dialog"
@@ -284,10 +302,10 @@ export function UnitMaster() {
                 </div>
                 {error ? <div className="error">{error}</div> : null}
                 <div className="form-actions">
-                  <button className="btn btn-primary" type="submit" disabled={saveMutation.isPending}>
+                  <button className="btn btn-primary" type="submit" disabled={saveMutation.isPending || unitUnchanged}>
                     {saveMutation.isPending ? "Menyimpan…" : "Simpan"}
                   </button>
-                  <button className="btn" type="button" onClick={() => setDraft(null)}>
+                  <button className="btn" type="button" onClick={closeDraft}>
                     Batal
                   </button>
                 </div>
@@ -298,6 +316,13 @@ export function UnitMaster() {
       </main>
     </>
   );
+}
+
+function sameQuota(left: string, right: string): boolean {
+  const a = parseQuota(left);
+  const b = parseQuota(right);
+  if (a == null || b == null) return left.trim() === right.trim();
+  return a === b;
 }
 
 function compareUnits(a: UnitMaster, b: UnitMaster, key: UnitSortKey, dir: SortDir): number {

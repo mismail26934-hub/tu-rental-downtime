@@ -15,6 +15,7 @@ type Props = {
   ready: boolean;
   notice: string;
   error: string;
+  unchanged?: boolean;
   onChange: (next: RowInput) => void;
   onHmCheck: (message: string | null) => void;
   onSubmit: () => void;
@@ -30,6 +31,7 @@ export function HandoverForm({
   ready,
   notice,
   error,
+  unchanged = false,
   onChange,
   onHmCheck,
   onSubmit,
@@ -208,7 +210,7 @@ export function HandoverForm({
       {notice ? <div className="notice">{notice}</div> : null}
       {error && !hmMessage ? <div className="error">{error}</div> : null}
       <div className="form-actions">
-        <button className="btn btn-primary" type="submit" disabled={!ready || busy || !value.unit.trim()}>
+        <button className="btn btn-primary" type="submit" disabled={!ready || busy || !value.unit.trim() || unchanged}>
           {busy ? "Menyimpan…" : "Simpan"}
         </button>
         <button className="btn" type="button" onClick={onCancel} disabled={busy}>
