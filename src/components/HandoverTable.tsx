@@ -161,11 +161,13 @@ export function HandoverTable({
                   })}
                   {editable ? (
                     <td className="col-act">
-                      <button className="btn btn-sm" type="button" onClick={() => onEdit(row)}>
-                        Ubah
+                      <button className="btn btn-sm" type="button" aria-label="Ubah" onClick={() => onEdit(row)}>
+                        <EditIcon />
+                        <span className="btn-label">Ubah</span>
                       </button>
-                      <button className="btn btn-sm btn-danger" type="button" onClick={() => onDelete(row)}>
-                        Hapus
+                      <button className="btn btn-sm btn-danger" type="button" aria-label="Hapus" onClick={() => onDelete(row)}>
+                        <TrashIcon />
+                        <span className="btn-label">Hapus</span>
                       </button>
                     </td>
                   ) : null}
@@ -286,4 +288,23 @@ function compareText(a: string, b: string, dir: SortDir): number {
   if (!right) return -1;
   const order = left.localeCompare(right, "id", { sensitivity: "base", numeric: true });
   return dir === "asc" ? order : -order;
+}
+
+function EditIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 7h16" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+      <path d="M7 7l1 13h8l1-13" />
+    </svg>
+  );
 }

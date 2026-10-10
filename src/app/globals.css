@@ -766,7 +766,13 @@ html[data-theme="light"] .kelola-menu { background: #fff; border: 2px solid #000
 .sort-btn.is-desc .sort-mark { opacity: 1; }
 .sort-btn:not(.is-asc):not(.is-desc) .sort-mark { opacity: 0.35; }
 .col-act { white-space: nowrap; }
+.col-act .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 .col-act .btn + .btn { margin-left: 6px; }
+.col-act .btn svg { flex: none; }
 html[data-theme="light"] .handover-table th,
 html[data-theme="light"] .handover-table td { border-color: #000; }
 html[data-theme="light"] .handover-table td { background: #fff; }
@@ -1115,12 +1121,37 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #000; }
   }
   .panel-actions .btn:has(.btn-label) svg { margin-right: 0; }
   .panel-actions .btn.desktop-only { display: none; }
+  .col-act .btn:has(.btn-label) {
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+  }
+  .col-act .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metric-row, .form-grid { grid-template-columns: 1fr; }
   .topbar { align-items: center; }
   .top-actions { position: relative; flex: 0 0 auto; }
   .nav-burger { display: inline-flex; }
   .nav-burger.is-on { position: relative; z-index: 200; }
+  body:has(.sheet-backdrop)::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 170;
+    background: rgba(0, 0, 0, 0.82);
+    pointer-events: none;
+  }
   .kelola .sheet-backdrop,
   .summary-info .sheet-backdrop,
   .summary-settings .sheet-backdrop,
@@ -1133,7 +1164,7 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #000; }
     margin: 0;
     padding: 0;
     border: 0;
-    background: rgba(8, 10, 14, 0.62);
+    background: rgba(0, 0, 0, 0.82);
     cursor: pointer;
   }
   .session-sheet-backdrop { z-index: 10020; }
@@ -1215,7 +1246,7 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #000; }
     align-items: end;
     padding: 12px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
-    background: rgba(8, 10, 14, 0.62);
+    background: rgba(0, 0, 0, 0.82);
   }
   .form-modal,
   .nav-dialog,

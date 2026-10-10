@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { SisaValue } from "@/components/SisaValue";
 import { Topbar } from "@/components/Topbar";
 import { formatHours, sheetTitle } from "@/lib/format";
@@ -318,8 +318,12 @@ function SummaryTable({
   asOf?: string;
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [sort, setSort] = useState<SummarySort>(null);
   const columns = useSummaryView((state) => state.columns);
   const groups = grouped ? groupByModel(rows) : [];
+  const now = asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf) ? localDate(asOf) : new Date();
+  const viewGroups = sort ? groups.map((group) => ({ ...group, members: [...group.members].sort((a, b) => compareSummary(a, b, sort, now)) })).sort((a, b) => compareSummary(a, b, sort, now)) : groups;
+  const viewRows = sort && !grouped ? [...rows].sort((a, b) => compareSummary(a, b, sort, now)) : rows;
   const dailySpan = dailyColumnCount(columns);
   const periodSpan = periodColumnCount(columns);
   const tableSpan = 3 + dailySpan + periodSpan * SCALED_PERIODS.length;
@@ -328,22 +332,21 @@ function SummaryTable({
     setOpen((current) => ({ ...current, [id]: !current[id] }));
   }
 
+  function toggleSort(next: ActiveSummarySort) {
+    setSort((current) => {
+      if (current && sameSort(current, next)) return { ...current, dir: current.dir === "asc" ? "desc" : "asc" };
+      return next;
+    });
+  }
+
   return (
     <div className="handover-table-wrap">
       <table className="handover-table summary-table">
         <thead>
           <tr>
-            <th rowSpan={2} className="summary-pin summary-pin-1">
-              {labelHeader}
-            </th>
-            <th rowSpan={2} className="col-num summary-pin summary-pin-2">
-              Quota
-              <br />
-              Hrs
-            </th>
-            <th rowSpan={2} className="summary-pin summary-pin-3">
-              Unit
-            </th>
+            <SortTh className="summary-pin summary-pin-1" rowSpan={2} label={labelHeader} active={sort?.kind === "label"} dir={sort?.kind === "label" ? sort.dir : "asc"} onSort={() => toggleSort({ kind: "label", dir: "asc" })} />
+            <SortTh className="col-num summary-pin summary-pin-2" rowSpan={2} label={<>Quota<br />Hrs</>} active={sort?.kind === "quota"} dir={sort?.kind === "quota" ? sort.dir : "desc"} onSort={() => toggleSort({ kind: "quota", dir: "desc" })} />
+            <SortTh className="summary-pin summary-pin-3" rowSpan={2} label="Unit" active={sort?.kind === "unit"} dir={sort?.kind === "unit" ? sort.dir : "asc"} onSort={() => toggleSort({ kind: "unit", dir: "asc" })} />
             {dailySpan > 0 ? (
               <th colSpan={dailySpan} className="summary-daily">
                 Daily
@@ -356,21 +359,21 @@ function SummaryTable({
             ))}
           </tr>
           <tr>
-            <DailyHeads columns={columns} />
+            <DailyHeads columns={columns} sort={sort} onSort={toggleSort} />
             {SCALED_PERIODS.map((period) => (
-              <PeriodHeads key={period} period={period} columns={columns} />
+              <PeriodHeads key={period} period={period} columns={columns} sort={sort} onSort={toggleSort} />
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.length === 0 ? (
+          {viewRows.length === 0 ? (
             <tr>
               <td className="handover-empty" colSpan={tableSpan}>
                 {empty}
               </td>
             </tr>
           ) : grouped ? (
-            groups.flatMap((group) => {
+            viewGroups.flatMap((group) => {
               const expanded = Boolean(open[group.id]);
               const canToggle = group.members.length > 1;
               const parent = (
@@ -408,7 +411,7 @@ function SummaryTable({
               ];
             })
           ) : (
-            rows.map((row) => (
+            viewRows.map((row) => (
               <tr key={row.id}>
                 <td className="summary-pin summary-pin-1">{row.label}</td>
                 <Cells row={row} asOf={asOf} columns={columns} />
@@ -431,28 +434,116 @@ const PERIOD_LABEL: Record<(typeof SCALED_PERIODS)[number], string> = {
   ytd: "YTD",
 };
 
-function DailyHeads({ columns }: { columns: SummaryColumns }) {
+type SortDir = "asc" | "desc";
+type SortMetric = "quota" | "jam" | "sisa";
+type ActiveSummarySort =
+  | { kind: "label" | "quota" | "unit"; dir: SortDir }
+  | { kind: "cell"; period: PeriodKey; metric: SortMetric; dir: SortDir };
+type SummarySort = ActiveSummarySort | null;
+
+function sameSort(current: ActiveSummarySort, next: ActiveSummarySort): boolean {
+  if (current.kind !== next.kind) return false;
+  if (current.kind === "cell" && next.kind === "cell") return current.period === next.period && current.metric === next.metric;
+  return true;
+}
+
+function isCell(sort: SummarySort, period: PeriodKey, metric: SortMetric): boolean {
+  return sort?.kind === "cell" && sort.period === period && sort.metric === metric;
+}
+
+function cellDir(sort: SummarySort, period: PeriodKey, metric: SortMetric): SortDir {
+  return isCell(sort, period, metric) && sort ? sort.dir : "desc";
+}
+
+function SortTh({
+  label,
+  active,
+  dir,
+  className,
+  rowSpan,
+  onSort,
+}: {
+  label: ReactNode;
+  active: boolean;
+  dir: SortDir;
+  className?: string;
+  rowSpan?: number;
+  onSort: () => void;
+}) {
+  return (
+    <th className={className} rowSpan={rowSpan} aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}>
+      <button className={active ? `sort-btn is-${dir}` : "sort-btn"} type="button" onClick={onSort}>
+        <span>{label}</span>
+        <span className="sort-mark" aria-hidden="true">
+          {active ? (dir === "asc" ? "↑" : "↓") : "↕"}
+        </span>
+      </button>
+    </th>
+  );
+}
+
+function compareSummary(a: SummaryRow, b: SummaryRow, sort: ActiveSummarySort, now: Date): number {
+  const av = sortValue(a, sort, now);
+  const bv = sortValue(b, sort, now);
+  const result = typeof av === "string" || typeof bv === "string"
+    ? compareText(String(av ?? ""), String(bv ?? ""), sort.dir)
+    : compareNumber(typeof av === "number" ? av : null, typeof bv === "number" ? bv : null, sort.dir);
+  return result || a.label.localeCompare(b.label, "id", { sensitivity: "base", numeric: true }) || a.unit.localeCompare(b.unit, "id", { sensitivity: "base", numeric: true });
+}
+
+function sortValue(row: SummaryRow, sort: ActiveSummarySort, now: Date): string | number | null {
+  if (sort.kind === "label") return row.label;
+  if (sort.kind === "quota") return row.quota_hrs;
+  if (sort.kind === "unit") return row.unit;
+  if (sort.metric === "jam") return row[sort.period];
+  const quota = sort.period === "daily" ? row.quota_hrs : periodQuota(row.quota_hrs, sort.period, now);
+  if (sort.metric === "quota") return quota;
+  return sisaRemainder(quota, row[sort.period]);
+}
+
+function compareNumber(a: number | null, b: number | null, dir: SortDir): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  return dir === "asc" ? a - b : b - a;
+}
+
+function compareText(a: string, b: string, dir: SortDir): number {
+  const left = a.trim();
+  const right = b.trim();
+  if (!left && !right) return 0;
+  if (!left) return 1;
+  if (!right) return -1;
+  const order = left.localeCompare(right, "id", { sensitivity: "base", numeric: true });
+  return dir === "asc" ? order : -order;
+}
+
+function DailyHeads({ columns, sort, onSort }: { columns: SummaryColumns; sort: SummarySort; onSort: (next: ActiveSummarySort) => void }) {
   return (
     <>
-      {columns.jam ? <th className="col-num summary-daily">Jam</th> : null}
-      {columns.sisa ? <th className="col-num summary-daily">Sisa</th> : null}
+      {columns.jam ? (
+        <SortTh className="col-num summary-daily" label="Jam" active={isCell(sort, "daily", "jam")} dir={cellDir(sort, "daily", "jam")} onSort={() => onSort({ kind: "cell", period: "daily", metric: "jam", dir: "desc" })} />
+      ) : null}
+      {columns.sisa ? (
+        <SortTh className="col-num summary-daily" label="Sisa" active={isCell(sort, "daily", "sisa")} dir={cellDir(sort, "daily", "sisa")} onSort={() => onSort({ kind: "cell", period: "daily", metric: "sisa", dir: "desc" })} />
+      ) : null}
     </>
   );
 }
 
-function PeriodHeads({ period, columns }: { period: PeriodKey; columns: SummaryColumns }) {
+function PeriodHeads({ period, columns, sort, onSort }: { period: PeriodKey; columns: SummaryColumns; sort: SummarySort; onSort: (next: ActiveSummarySort) => void }) {
   const tone = `summary-${period}`;
   return (
     <>
       {columns.quota ? (
-        <th className={`col-num ${tone}`}>
-          Quota
-          <br />
-          Hrs
-        </th>
+        <SortTh className={`col-num ${tone}`} label={<>Quota<br />Hrs</>} active={isCell(sort, period, "quota")} dir={cellDir(sort, period, "quota")} onSort={() => onSort({ kind: "cell", period, metric: "quota", dir: "desc" })} />
       ) : null}
-      {columns.jam ? <th className={`col-num ${tone}`}>Jam</th> : null}
-      {columns.sisa ? <th className={`col-num ${tone}`}>Sisa</th> : null}
+      {columns.jam ? (
+        <SortTh className={`col-num ${tone}`} label="Jam" active={isCell(sort, period, "jam")} dir={cellDir(sort, period, "jam")} onSort={() => onSort({ kind: "cell", period, metric: "jam", dir: "desc" })} />
+      ) : null}
+      {columns.sisa ? (
+        <SortTh className={`col-num ${tone}`} label="Sisa" active={isCell(sort, period, "sisa")} dir={cellDir(sort, period, "sisa")} onSort={() => onSort({ kind: "cell", period, metric: "sisa", dir: "desc" })} />
+      ) : null}
     </>
   );
 }
