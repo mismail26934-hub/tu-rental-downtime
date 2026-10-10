@@ -649,28 +649,30 @@ export function HandoverBoard() {
                 <SummaryIcon />
                 <span className="btn-label">Summary</span>
               </Link>
-              <input
-                ref={searchRef}
-                className="unit-search"
-                type="search"
-                placeholder="Unit, crew, teknisi, masalah…"
-                value={searchDraft}
-                onChange={(event) => {
-                  const next = event.target.value;
-                  setSearchDraft(next);
-                  if (!next.trim()) setSearch("");
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    setSearch(searchDraft.trim());
-                  }
-                }}
-              />
-              <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
-                <SearchIcon />
-                <span className="btn-label">Cari</span>
-              </button>
+              <div className="search-pair">
+                <input
+                  ref={searchRef}
+                  className="unit-search"
+                  type="search"
+                  placeholder="Unit, crew, teknisi, masalah…"
+                  value={searchDraft}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    setSearchDraft(next);
+                    if (!next.trim()) setSearch("");
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      setSearch(searchDraft.trim());
+                    }
+                  }}
+                />
+                <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
+                  <SearchIcon />
+                  <span className="btn-label">Cari</span>
+                </button>
+              </div>
               <ManageMenu
                 freezeCols={freezeCols}
                 onFreeze={(next) => {

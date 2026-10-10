@@ -26,12 +26,13 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Di summary, menu Kelola berisi Freeze kolom, Daftar unit, Master group, Master unit, dan Backup data. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Master group, Master unit, dan Backup data. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
 - Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil berwarna oranye dan Hapus memakai ikon tong sampah berwarna merah. Di layar sempit hanya ikon yang tampil.
 - Di layar sempit, tombol toolbar (Jam, Hari, Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting) menampilkan ikon saja, berukuran 34 px, lebih kecil dari tombol desktop. Nama tombol muncul saat ikon di-hover atau diketuk. Di daftar unit, baris tombol itu ada di atas kolom pencarian. Filter tahun ada di samping judul DAFTAR UNIT dan SUMMARY UNIT, sejajar dengan tulisan judul, dengan huruf lebih kecil dari judul.
+- Kotak pencarian dan tombol Cari menempel jadi satu kontrol: tanpa jarak, tinggi sama, dan sudut yang berhadapan rata. Di layar sempit tinggi keduanya 34 px. Penyaringan daftar unit, backup, master unit, dan master group baru jalan setelah tombol Cari diklik, atau setelah Enter. Mengosongkan kotak menampilkan semua baris lagi.
 - Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya diredupkan satu lapisan, sama seperti modal form. Mengetuk area di luar panel menutupnya.
 - Tambah unit ada di daftar unit.
 - Tabel penuh, teks remark membungkus, angka rata kanan. Jam di DAFTAR UNIT, SUMMARY UNIT, dan SUMMARY GROUP memakai pemisah ribuan (contoh 6,792.50). Quota di input master tetap tanpa pemisah.
 - Mode terang memakai latar halaman kuning CAT. Kartu putih, tombol utama hitam dengan teks kuning. Tombol dan kartu terangkat sedikit saat kursor di atasnya.
 - Tiga kolom pertama di daftar unit (#, Crew, Unit) dan di summary (Model atau Group, Quota, Unit) bisa dibekukan lewat "Freeze kolom" di menu Kelola. Pengaturan disimpan di perangkat dan dipakai kedua halaman. Default menyala.
-- Pencarian daftar unit selalu tampil. Penyaringan jalan setelah tombol Cari diklik, atau setelah Enter. Tombol X mengosongkan pencarian dan menampilkan semua baris. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok."
+- Pencarian daftar unit selalu tampil, menempel dengan tombol Cari. Penyaringan jalan setelah tombol Cari diklik, atau setelah Enter. Tombol X mengosongkan pencarian dan menampilkan semua baris. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok."
 - Nomor baris asli tetap saat hasil pencarian disaring.
 - Di layar sempit, tombol navbar masuk ke menu hamburger. Lembaran menu itu memakai latar yang sama dengan menu Kelola: kartu di bagian bawah, bukan layar hitam penuh.
 - Kartu ringkasan (Baris, N/Y Ready, RD30, Status RT) mengikuti kartu PRIMA: ikon di kotak berwarna, label di atas, angka di bawah, dan garis warna di sisi kiri. Baris emas, N/Y Ready merah, RD30 hijau, Status RT abu-abu. Di layar lebar ikon dan angka sejajar. Di layar sempit kartu tersusun 2×2, ikon di atas, dan ikonnya lebih kecil (kotak 18 px). Saat kartu tergeser ke luar layar, angka yang sama tampil di navbar, lalu hilang lagi saat kartu terlihat. Chip N/Y Ready di navbar juga merah. Di layar sempit, nama kartu (Baris, N/Y Ready, RD30, Status RT) muncul saat chip di-hover atau diketuk.
@@ -63,6 +64,8 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 ### Master unit dan master group
 
 - Master unit: Model, Quota Hrs, Unit, Group, dan Quota Hrs (GROUP). Bisa tambah, ubah, dan hapus lewat tombol Master unit. Group boleh kosong.
+- Halaman master unit, master group, dan backup punya tombol Kembali berikon panah. Pencarian (Cari group, Cari model atau unit, Cari data atau pengguna) menempel dengan tombol Cari dan baru menyaring setelah tombol itu diklik. Tombol Tambah ada sebelum pencarian.
+- Di layar sempit pada ketiga halaman itu, Kembali hanya ikon dan berada di kanan judul. Tombol Master unit atau Master group hanya ikon. Tombol Tambah hanya ikon + dan tetap sebelum pencarian. Di layar lebar ketiga tombol itu menampilkan ikon beserta tulisannya.
 - Group di form unit adalah pencarian dari master group. Nama yang tidak ada di master tidak disimpan. Memilih group tidak mengubah Quota Hrs unit itu sendiri.
 - Quota Hrs (GROUP) di tabel unit diambil dari master group. Group kosong menampilkan —.
 - Master group: Group dan Quota Hrs, di halaman `/master/group`. Group wajib dan unik. Mengganti nama group ikut memperbarui unit yang memakainya. Group yang masih dipakai unit tidak bisa dihapus.
@@ -98,7 +101,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 
 - Ubah dan hapus pada baris daftar unit, master unit, dan master group menyimpan cadangan di tabel `data_backups` sebelum data berubah. Data yang baru ditambah tidak dicadangkan.
 - Setiap cadangan menyimpan isi data sebelumnya, pengguna (id, nama, dan username), serta tanggal dan waktu aksi.
-- Menu Kelola → Backup data membuka halaman `/backup`. Daftar menampilkan waktu, aksi (Ubah atau Hapus), jenis, nama data, dan pengguna. Tombol Lihat membuka isi cadangan.
+- Menu Kelola → Backup data membuka halaman `/backup`. Daftar menampilkan waktu, aksi (Ubah atau Hapus), jenis, nama data, dan pengguna. Tombol Lihat membuka isi cadangan. Pencarian data atau pengguna menempel dengan tombol Cari. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok." Di layar sempit tombol Kembali hanya ikon dan berada di kanan judul.
 
 ### Login dan offline
 

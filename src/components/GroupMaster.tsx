@@ -23,6 +23,7 @@ const emptyDraft = (): Draft => ({
 export function GroupMaster() {
   const queryClient = useQueryClient();
   const groupsQuery = useGroups();
+  const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState("");
@@ -118,24 +119,43 @@ export function GroupMaster() {
           <div className="panel-head">
             <h2>Master group</h2>
             <div className="panel-actions">
-              <Link className="btn" href="/">
-                Kembali
+              <Link className="btn back-btn" href="/" aria-label="Kembali">
+                <BackIcon />
+                <span className="btn-label">Kembali</span>
               </Link>
-              <Link className="btn" href="/master/unit">
-                <UnitIcon />
-                Master unit
-              </Link>
+              <div className="action-row">
+                <Link className="btn" href="/master/unit" aria-label="Master unit">
+                  <UnitIcon />
+                  <span className="btn-label">Master unit</span>
+                </Link>
+                <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
+                  <PlusIcon />
+                  <span className="btn-label">Tambah</span>
+                </button>
+              </div>
+              <div className="search-pair">
               <input
                 className="unit-search"
                 type="search"
                 placeholder="Cari group"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                value={searchDraft}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setSearchDraft(next);
+                  if (!next.trim()) setSearch("");
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    setSearch(searchDraft.trim());
+                  }
+                }}
               />
-              <button className="btn btn-primary" type="button" onClick={openCreate}>
-                <PlusIcon />
-                Tambah
+              <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
+                <SearchIcon />
+                <span className="btn-label">Cari</span>
               </button>
+              </div>
             </div>
           </div>
           {notice ? <div className="notice">{notice}</div> : null}
@@ -250,6 +270,24 @@ function PlusIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 12H5" />
+      <path d="M12 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" />
     </svg>
   );
 }

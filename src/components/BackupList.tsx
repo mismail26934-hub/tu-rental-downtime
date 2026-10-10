@@ -76,6 +76,7 @@ export function BackupList() {
     queryKey: ["backups"],
     queryFn: fetchBackups,
   });
+  const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const rows = useMemo(() => {
@@ -105,16 +106,33 @@ export function BackupList() {
           <div className="panel-head">
             <h2>BACKUP DATA</h2>
             <div className="panel-actions">
-              <Link className="btn" href="/">
-                Kembali
+              <Link className="btn back-btn" href="/" aria-label="Kembali">
+                <BackIcon />
+                <span className="btn-label">Kembali</span>
               </Link>
+              <div className="search-pair">
               <input
                 className="unit-search"
                 type="search"
                 placeholder="Cari data atau pengguna"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                value={searchDraft}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setSearchDraft(next);
+                  if (!next.trim()) setSearch("");
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    setSearch(searchDraft.trim());
+                  }
+                }}
               />
+              <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
+                <SearchIcon />
+                <span className="btn-label">Cari</span>
+              </button>
+              </div>
             </div>
           </div>
           {backupsQuery.isError ? (
@@ -137,7 +155,9 @@ export function BackupList() {
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={6}>{backupsQuery.isSuccess ? "Belum ada backup." : "Memuat…"}</td>
+                    <td colSpan={6}>
+                      {backupsQuery.isSuccess ? (search ? "Tidak ada data yang cocok." : "Belum ada backup.") : "Memuat…"}
+                    </td>
                   </tr>
                 ) : (
                   rows.map((item) => {
@@ -201,5 +221,23 @@ export function BackupList() {
         </section>
       </main>
     </>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 12H5" />
+      <path d="M12 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" />
+    </svg>
   );
 }
