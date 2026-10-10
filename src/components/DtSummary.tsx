@@ -6,7 +6,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { SisaValue } from "@/components/SisaValue";
 import { Topbar } from "@/components/Topbar";
 import { formatHours, sheetTitle } from "@/lib/format";
-import { useSheetYear, yearChoices } from "@/lib/sheet-year";
+import { useSheetYear } from "@/lib/sheet-year";
 import { periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import {
   dailyColumnCount,
@@ -26,7 +26,6 @@ async function fetchSummary(year: string): Promise<SummaryReport> {
 
 export function DtSummary() {
   const year = useSheetYear((state) => state.year);
-  const setYear = useSheetYear((state) => state.setYear);
   const [ready, setReady] = useState(false);
   const summaryQuery = useQuery({
     queryKey: ["dt-summary", year],
@@ -54,17 +53,12 @@ export function DtSummary() {
       <main className="app">
         <section className="panel">
           <div className="panel-head">
-            <h2>Summary unit</h2>
+            <h2>SUMMARY UNIT</h2>
             <div className="panel-actions">
-              <div className="board-filters">
-                <select aria-label="Tahun" value={year} onChange={(event) => setYear(event.target.value)}>
-                  {yearChoices(year, report?.years || []).map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Link className="btn desktop-only" href="/daftar">
+                <ListIcon />
+                <span className="btn-label">Daftar unit</span>
+              </Link>
               <SummaryInfo report={report} />
               <SummarySettings />
               <SummaryManage />
@@ -85,7 +79,7 @@ export function DtSummary() {
         </section>
         <section className="panel">
           <div className="panel-head">
-            <h2>Summary group</h2>
+            <h2>SUMMARY GROUP</h2>
           </div>
           <SummaryTable
             rows={report?.groups || []}
@@ -131,9 +125,13 @@ function SummaryInfo({ report }: { report?: SummaryReport }) {
         <span className="btn-label">Info</span>
       </button>
       {open && report ? (
-        <p className="summary-info-menu" role="note">
-          {note(report)}
-        </p>
+        <>
+          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
+          <div className="summary-info-menu" role="note">
+            <p className="sheet-title">Info</p>
+            <p className="sheet-copy">{note(report)}</p>
+          </div>
+        </>
       ) : null}
     </div>
   );
@@ -181,19 +179,23 @@ function SummarySettings() {
         <span className="btn-label">Setting</span>
       </button>
       {open ? (
-        <div className="summary-settings-menu" role="group" aria-label="Kolom summary">
-          {METRICS.map((metric) => (
-            <label key={metric.key}>
-              <input
-                type="checkbox"
-                checked={columns[metric.key]}
-                disabled={columns[metric.key] && visibleCount === 1}
-                onChange={(event) => setColumn(metric.key, event.target.checked)}
-              />
-              {metric.label}
-            </label>
-          ))}
-        </div>
+        <>
+          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
+          <div className="summary-settings-menu" role="group" aria-label="Kolom summary">
+            <p className="sheet-title">Setting</p>
+            {METRICS.map((metric) => (
+              <label key={metric.key}>
+                <input
+                  type="checkbox"
+                  checked={columns[metric.key]}
+                  disabled={columns[metric.key] && visibleCount === 1}
+                  onChange={(event) => setColumn(metric.key, event.target.checked)}
+                />
+                {metric.label}
+              </label>
+            ))}
+          </div>
+        </>
       ) : null}
     </div>
   );
@@ -225,8 +227,11 @@ function SummaryManage() {
         <span className="btn-label">Kelola</span>
       </button>
       {open ? (
-        <div className="kelola-menu" role="menu">
-          <Link className="kelola-item" role="menuitem" href="/daftar" onClick={() => setOpen(false)}>
+        <>
+          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
+          <div className="kelola-menu" role="menu">
+            <p className="sheet-title">Kelola</p>
+            <Link className="kelola-item mobile-only" role="menuitem" href="/daftar" onClick={() => setOpen(false)}>
             <ListIcon />
             Daftar unit
           </Link>
@@ -238,7 +243,8 @@ function SummaryManage() {
             <UnitIcon />
             Master unit
           </Link>
-        </div>
+          </div>
+        </>
       ) : null}
     </div>
   );

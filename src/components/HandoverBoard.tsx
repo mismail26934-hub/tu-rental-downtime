@@ -120,6 +120,17 @@ export function HandoverBoard() {
     };
   }, []);
 
+  const previousYear = useRef(year);
+  useEffect(() => {
+    if (!filtersReady || previousYear.current === year) return;
+    previousYear.current = year;
+    setFormOpen(false);
+    setMode("create");
+    setEditingId(null);
+    setForm(emptyRowInput());
+    setFormError("");
+  }, [year, filtersReady]);
+
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
     return () => window.clearInterval(timer);
@@ -408,6 +419,25 @@ export function HandoverBoard() {
     setExportOpen(true);
   }
 
+  const [statsNode, setStatsNode] = useState<HTMLDivElement | null>(null);
+  const [statsAway, setStatsAway] = useState(false);
+
+  useEffect(() => {
+    if (!statsNode) return;
+    const sync = () => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue("--topbar-height");
+      const height = Number.parseFloat(raw) || 72;
+      const bottom = statsNode.getBoundingClientRect().bottom;
+      setStatsAway((away) => (away ? bottom <= height + 48 : bottom <= height + 8));
+    };
+    sync();
+    window.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    return () => {
+      window.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+    };
+  }, [statsNode]);
   const rows = boardQuery.data?.rows || [];
   const readyCount = rows.filter((row) => computeMetrics(row, now).dtLabel === "N/Y Ready").length;
   const rd30Count = rows.filter((row) => row.rd30_at.trim()).length;
@@ -422,30 +452,14 @@ export function HandoverBoard() {
       <Topbar
         busy={boardQuery.isFetching}
         onRefresh={() => void boardQuery.refetch()}
+        stats={
+          statsAway
+            ? { rows: rows.length, ready: readyCount, rd30: rd30Count, rt: rtCount }
+            : undefined
+        }
       />
       <main className="app">
         <section className="panel">
-          <div className="panel-head">
-            <h2>{year}</h2>
-            <div className="board-filters">
-              <label>
-                Tahun
-                <select
-                  value={year}
-                  onChange={(event) => {
-                    setYear(event.target.value);
-                    closeForm();
-                  }}
-                >
-                  {yearChoices(year, yearOptions).map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </div>
           {boardQuery.isError ? (
             <div className="error">
               {boardQuery.error instanceof Error
@@ -453,21 +467,33 @@ export function HandoverBoard() {
                 : "Gagal memuat data"}
             </div>
           ) : null}
-          <div className="summary">
+          <div className="summary" ref={setStatsNode}>
             <div className="stat">
-              <div className="label">Baris</div>
+              <div className="label">
+                <RowsIcon />
+                Baris
+              </div>
               <div className="value">{rows.length}</div>
             </div>
             <div className="stat">
-              <div className="label">N/Y Ready</div>
+              <div className="label">
+                <ReadyIcon />
+                N/Y Ready
+              </div>
               <div className="value">{readyCount}</div>
             </div>
             <div className="stat">
-              <div className="label">RD30</div>
+              <div className="label">
+                <DoneIcon />
+                RD30
+              </div>
               <div className="value">{rd30Count}</div>
             </div>
             <div className="stat">
-              <div className="label">Status RT</div>
+              <div className="label">
+                <RepairIcon />
+                Status RT
+              </div>
               <div className="value">{rtCount}</div>
             </div>
           </div>
@@ -552,9 +578,28 @@ export function HandoverBoard() {
         ) : null}
 
         <section className="panel">
-          <div className="panel-head">
-            <h2>Daftar unit</h2>
+          <div className="panel-head board-bar">
+            <h2>DAFTAR UNIT</h2>
             <div className="panel-actions">
+              <Link className="btn desktop-only" href="/">
+                <SummaryIcon />
+                <span className="btn-label">Summary</span>
+              </Link>
+              <select
+                className="year-filter"
+                aria-label="Tahun"
+                value={year}
+                onChange={(event) => {
+                  setYear(event.target.value);
+                  closeForm();
+                }}
+              >
+                {yearChoices(year, yearOptions).map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
               <input
                 ref={searchRef}
                 className="unit-search"
@@ -651,7 +696,14 @@ function ManageMenu({
         <span className="btn-label">Kelola</span>
       </button>
       {open ? (
-        <div className="kelola-menu" role="menu">
+        <>
+          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
+          <div className="kelola-menu" role="menu">
+            <p className="sheet-title">Kelola</p>
+            <Link className="kelola-item mobile-only" role="menuitem" href="/" onClick={() => setOpen(false)}>
+            <SummaryIcon />
+            Summary
+          </Link>
           <label className="freeze-toggle kelola-item">
             <input type="checkbox" checked={freezeCols} onChange={(event) => onFreeze(event.target.checked)} />
             Freeze kolom
@@ -668,10 +720,6 @@ function ManageMenu({
             <DownloadIcon />
             Export
           </button>
-          <Link className="kelola-item" role="menuitem" href="/" onClick={() => setOpen(false)}>
-            <SummaryIcon />
-            Summary
-          </Link>
           <Link className="kelola-item" role="menuitem" href="/master/group" onClick={() => setOpen(false)}>
             <GroupIcon />
             Master group
@@ -680,9 +728,44 @@ function ManageMenu({
             <UnitIcon />
             Master unit
           </Link>
-        </div>
+          </div>
+        </>
       ) : null}
     </div>
+  );
+}
+
+function RowsIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </svg>
+  );
+}
+
+function ReadyIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v5l3 2" />
+    </svg>
+  );
+}
+
+function DoneIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M8.5 12.5l2.5 2.5 4.5-5" />
+    </svg>
+  );
+}
+
+function RepairIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L3 18v3h3l6.1-6.1a4 4 0 0 0 5.6-5.6l-2.2 2.2-2.8-2.8z" />
+    </svg>
   );
 }
 

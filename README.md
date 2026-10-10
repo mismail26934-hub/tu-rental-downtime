@@ -19,7 +19,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Kolom: crew, unit, location, technician, status, waiting labour, repair time, RD30, HM awal, HM akhir, breakdown problem, done / action, continue / handover, SO, lalu waktu output. SO disimpan sebagai teks dan ikut pencarian serta export.
 - Equipment Type dan User MSD/MOD dihapus dari form, tabel, dan database.
 - Form tambah dan ubah unit dibuka sebagai modal.
-- Navbar memakai gaya terang: muat ulang, bahasa, tema, dan akun (edit profil, ubah password, logout).
+- Navbar memakai gaya terang: muat ulang, tema, dan akun (edit profil, ubah password, logout).
 - Halaman pertama adalah summary. Daftar unit ada di `/daftar`, dibuka dari menu Kelola.
 - Di summary, menu Kelola berisi Daftar unit, Master group, dan Master unit. Di daftar unit, menu Kelola berisi Freeze kolom, Export, Summary, Master group, dan Master unit. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
 - Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala.

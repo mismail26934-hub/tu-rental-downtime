@@ -41,7 +41,7 @@ function LoginForm() {
   return (
     <main className="app app-login">
       <section className="login-card">
-        <h1>HANDOVER</h1>
+        <h1>ARMOR</h1>
         <p>Masuk untuk input data downtime shift.</p>
         <form className="form" onSubmit={onSubmit}>
           <label>

@@ -17,7 +17,7 @@ const body = Source_Sans_3({
 const themeScript = `try{var t=localStorage.getItem("tu-rental-theme");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){}`;
 
 export const metadata: Metadata = {
-  title: "HANDOVER — Input downtime shift",
+  title: "ARMOR — Input downtime shift",
   description: "Input data handover unit, jam downtime, dan HM",
 };
 

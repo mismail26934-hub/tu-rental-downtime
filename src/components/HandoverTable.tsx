@@ -132,7 +132,9 @@ export function HandoverTable({
                 <tr key={row.id} className={row.id === selectedId ? "is-selected" : undefined}>
                   <td className="col-no col-pin col-pin-1">{number}</td>
                   <td className="col-pin col-pin-2">{row.crew || "—"}</td>
-                  <td className="col-pin col-pin-3">{row.unit}</td>
+                  <td className="col-pin col-pin-3">
+                    {metrics.dtLabel === "N/Y Ready" ? <span className="is-ny">{row.unit}*</span> : row.unit || "—"}
+                  </td>
                   <td>{row.location || "—"}</td>
                   <td>{row.technician || "—"}</td>
                   <td>{row.status || "—"}</td>

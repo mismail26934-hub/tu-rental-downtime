@@ -2,57 +2,149 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { OfflineChip } from "@/components/OfflineChip";
+import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 
-type Locale = "id" | "en";
-type Copy = (typeof COPY)[Locale];
+type Copy = {
+  refresh: string;
+  menu: string;
+  account: string;
+  profile: string;
+  password: string;
+  logout: string;
+  light: string;
+  dark: string;
+  name: string;
+  save: string;
+  cancel: string;
+  current: string;
+  next: string;
+  confirm: string;
+  mismatch: string;
+  saved: string;
+};
 
-const COPY = {
-  id: {
-    refresh: "Muat ulang",
-    menu: "Menu",
-    account: "Menu akun",
-    profile: "Edit profil",
-    password: "Ubah password",
-    logout: "Logout",
-    light: "Tema terang",
-    dark: "Tema gelap",
-    lang: "Ganti ke English",
-    name: "Nama",
-    save: "Simpan",
-    cancel: "Batal",
-    current: "Password sekarang",
-    next: "Password baru",
-    confirm: "Ulangi password baru",
-    mismatch: "Password baru tidak sama",
-    saved: "Tersimpan.",
-  },
-  en: {
-    refresh: "Refresh",
-    menu: "Menu",
-    account: "Account menu",
-    profile: "Edit profile",
-    password: "Change password",
-    logout: "Logout",
-    light: "Light theme",
-    dark: "Dark theme",
-    lang: "Switch to Indonesian",
-    name: "Name",
-    save: "Save",
-    cancel: "Cancel",
-    current: "Current password",
-    next: "New password",
-    confirm: "Repeat new password",
-    mismatch: "New passwords do not match",
-    saved: "Saved.",
-  },
-} as const;
+const text: Copy = {
+  refresh: "Muat ulang",
+  menu: "Menu",
+  account: "Menu akun",
+  profile: "Edit profil",
+  password: "Ubah password",
+  logout: "Logout",
+  light: "Tema terang",
+  dark: "Tema gelap",
+  name: "Nama",
+  save: "Simpan",
+  cancel: "Batal",
+  current: "Password sekarang",
+  next: "Password baru",
+  confirm: "Ulangi password baru",
+  mismatch: "Password baru tidak sama",
+  saved: "Tersimpan.",
+};
 
 type Props = {
   busy?: boolean;
   onRefresh: () => void;
+  stats?: { rows: number; ready: number; rd30: number; rt: number };
 };
+
+function YearFilter() {
+  const year = useSheetYear((state) => state.year);
+  const setYear = useSheetYear((state) => state.setYear);
+  const [ready, setReady] = useState(false);
+  const yearsQuery = useQuery({
+    queryKey: ["dt-summary", year],
+    queryFn: async () => {
+      const response = await fetch(`/api/summary?year=${year}`);
+      if (!response.ok) throw new Error("Gagal memuat tahun");
+      return (await response.json()) as { years?: number[] };
+    },
+    enabled: ready,
+  });
+
+  useEffect(() => {
+    void useSheetYear.persist.rehydrate().then(() => setReady(true));
+  }, []);
+
+  return (
+    <select
+      className="year-filter nav-year"
+      aria-label="Tahun"
+      value={year}
+      onChange={(event) => setYear(event.target.value)}
+    >
+      {yearChoices(year, yearsQuery.data?.years || []).map((value) => (
+        <option key={value} value={value}>
+          {value}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function NavStats({ stats }: { stats: NonNullable<Props["stats"]> }) {
+  return (
+    <div className="nav-stats" aria-label="Ringkasan daftar">
+      <span className="nav-stat">
+        <RowsIcon />
+        <span className="nav-stat-name">Baris</span>
+        <strong>{stats.rows}</strong>
+      </span>
+      <span className="nav-stat">
+        <ReadyIcon />
+        <span className="nav-stat-name">N/Y Ready</span>
+        <strong>{stats.ready}</strong>
+      </span>
+      <span className="nav-stat">
+        <DoneIcon />
+        <span className="nav-stat-name">RD30</span>
+        <strong>{stats.rd30}</strong>
+      </span>
+      <span className="nav-stat">
+        <RepairIcon />
+        <span className="nav-stat-name">Status RT</span>
+        <strong>{stats.rt}</strong>
+      </span>
+    </div>
+  );
+}
+
+function RowsIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </svg>
+  );
+}
+
+function ReadyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v5l3 2" />
+    </svg>
+  );
+}
+
+function DoneIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M8.5 12.5l2.5 2.5 4.5-5" />
+    </svg>
+  );
+}
+
+function RepairIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L3 18v3h3l6.1-6.1a4 4 0 0 0 5.6-5.6l-2.2 2.2-2.8-2.8z" />
+    </svg>
+  );
+}
 
 function shortName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -65,10 +157,9 @@ function levelLabel(level: string) {
   return level.charAt(0).toUpperCase() + level.slice(1);
 }
 
-export function Topbar({ busy = false, onRefresh }: Props) {
+export function Topbar({ busy = false, onRefresh, stats }: Props) {
   const { data, update } = useSession();
   const [light, setLight] = useState(false);
-  const [locale, setLocale] = useState<Locale>("id");
   const [sessionOpen, setSessionOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [dialog, setDialog] = useState<"profile" | "password" | null>(null);
@@ -76,14 +167,10 @@ export function Topbar({ busy = false, onRefresh }: Props) {
   const sessionRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const topbarRef = useRef<HTMLElement>(null);
-  const text = COPY[locale];
-
   const name = data?.user?.name || data?.user?.email || "Pengguna";
   const level = levelLabel(data?.user?.level || "");
 
   useEffect(() => {
-    const storedLocale = localStorage.getItem("tu-rental-locale");
-    if (storedLocale === "en" || storedLocale === "id") setLocale(storedLocale);
     setLight(document.documentElement.getAttribute("data-theme") === "light");
   }, []);
 
@@ -130,6 +217,10 @@ export function Topbar({ busy = false, onRefresh }: Props) {
     function onPointer(event: MouseEvent) {
       const target = event.target as Node;
       const menu = document.getElementById("nav-session-menu");
+      if ((target as Element).closest?.(".session-sheet-backdrop")) {
+        setSessionOpen(false);
+        return;
+      }
       if (menu?.contains(target)) return;
       if (sessionRef.current && !sessionRef.current.contains(target)) setSessionOpen(false);
       if (navRef.current && !navRef.current.contains(target)) setNavOpen(false);
@@ -155,23 +246,18 @@ export function Topbar({ busy = false, onRefresh }: Props) {
     setLight(next === "light");
   }
 
-  function toggleLocale() {
-    const next: Locale = locale === "id" ? "en" : "id";
-    setLocale(next);
-    localStorage.setItem("tu-rental-locale", next);
-  }
-
   return (
     <>
       <div className="topbar-glass" />
-      <header className="topbar" ref={topbarRef}>
+      <header className={`topbar${stats ? " has-stats" : ""}`} ref={topbarRef}>
         <div className="brand-row">
           <div className="brand">
-            HANDOVER
-            <span>TU Rental</span>
+            ARMOR
+            <span className="brand-tagline">Asset Readiness &amp; Monitoring of Operational Repair</span>
           </div>
           <OfflineChip />
         </div>
+        {stats ? <NavStats stats={stats} /> : null}
         <div className={`top-actions${navOpen ? " is-open" : ""}`} ref={navRef}>
           <button
             className={`btn btn-icon nav-burger${navOpen ? " is-on" : ""}`}
@@ -185,8 +271,13 @@ export function Topbar({ busy = false, onRefresh }: Props) {
           >
             <BurgerIcon open={navOpen} />
           </button>
+          {navOpen ? (
+            <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setNavOpen(false)} />
+          ) : null}
           <div className="top-actions-panel top-actions-panel--bar">
+            <p className="sheet-title">Menu</p>
             <div className="nav-tools">
+            <YearFilter />
             <button
               className="btn btn-icon"
               type="button"
@@ -199,18 +290,7 @@ export function Topbar({ busy = false, onRefresh }: Props) {
               }}
             >
               <RefreshIcon />
-            </button>
-            <button
-              className="btn btn-icon lang-toggle-icon"
-              type="button"
-              aria-label={text.lang}
-              title={text.lang}
-              onClick={() => {
-                toggleLocale();
-                setNavOpen(false);
-              }}
-            >
-              <span className="lang-toggle-code">{locale === "id" ? "EN" : "ID"}</span>
+              <span className="sheet-label">{text.refresh}</span>
             </button>
             <button
               className="btn btn-icon"
@@ -223,6 +303,7 @@ export function Topbar({ busy = false, onRefresh }: Props) {
               }}
             >
               {light ? <MoonIcon /> : <SunIcon />}
+              <span className="sheet-label">{light ? text.dark : text.light}</span>
             </button>
             </div>
             <div className="nav-end">
@@ -249,12 +330,20 @@ export function Topbar({ busy = false, onRefresh }: Props) {
       </header>
       {sessionOpen && menuPos
         ? createPortal(
-            <div
-              id="nav-session-menu"
-              className="nav-manage-menu nav-session-portal-menu"
-              role="menu"
-              style={{ top: menuPos.top, right: menuPos.right }}
-            >
+            <>
+              <button
+                className="sheet-backdrop session-sheet-backdrop"
+                type="button"
+                aria-label="Tutup"
+                onClick={() => setSessionOpen(false)}
+              />
+              <div
+                id="nav-session-menu"
+                className="nav-manage-menu nav-session-portal-menu"
+                role="menu"
+                style={{ top: menuPos.top, right: menuPos.right }}
+              >
+                <p className="sheet-title">Akun</p>
               <button
                 type="button"
                 role="menuitem"
@@ -285,7 +374,8 @@ export function Topbar({ busy = false, onRefresh }: Props) {
               >
                 {text.logout}
               </button>
-            </div>,
+            </div>
+            </>,
             document.body
           )
         : null}
