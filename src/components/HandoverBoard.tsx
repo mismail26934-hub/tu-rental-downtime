@@ -473,45 +473,51 @@ export function HandoverBoard() {
         }
       />
       <main className="app">
-        <section className="panel">
-          {boardQuery.isError ? (
-            <div className="error">
-              {boardQuery.error instanceof Error
-                ? boardQuery.error.message
-                : "Gagal memuat data"}
-            </div>
-          ) : null}
-          <div className="summary" ref={setStatsNode}>
-            <div className="stat">
-              <div className="label">
-                <RowsIcon />
-                Baris
-              </div>
+        {boardQuery.isError ? (
+          <div className="error">
+            {boardQuery.error instanceof Error
+              ? boardQuery.error.message
+              : "Gagal memuat data"}
+          </div>
+        ) : null}
+        <div className="summary" ref={setStatsNode}>
+          <div className="stat stat--queue">
+            <span className="stat-icon" aria-hidden="true">
+              <RowsIcon />
+            </span>
+            <div className="stat-body">
+              <div className="label">Baris</div>
               <div className="value">{rows.length}</div>
             </div>
-            <div className="stat">
-              <div className="label">
-                <ReadyIcon />
-                N/Y Ready
-              </div>
+          </div>
+          <div className="stat stat--busy">
+            <span className="stat-icon" aria-hidden="true">
+              <ReadyIcon />
+            </span>
+            <div className="stat-body">
+              <div className="label">N/Y Ready</div>
               <div className="value">{readyCount}</div>
             </div>
-            <div className="stat">
-              <div className="label">
-                <DoneIcon />
-                RD30
-              </div>
+          </div>
+          <div className="stat stat--available">
+            <span className="stat-icon" aria-hidden="true">
+              <DoneIcon />
+            </span>
+            <div className="stat-body">
+              <div className="label">RD30</div>
               <div className="value">{rd30Count}</div>
             </div>
-            <div className="stat">
-              <div className="label">
-                <RepairIcon />
-                Status RT
-              </div>
+          </div>
+          <div className="stat stat--offline">
+            <span className="stat-icon" aria-hidden="true">
+              <RepairIcon />
+            </span>
+            <div className="stat-body">
+              <div className="label">Status RT</div>
               <div className="value">{rtCount}</div>
             </div>
           </div>
-        </section>
+        </div>
 
         {formOpen ? (
           <div className="form-modal-backdrop" onMouseDown={closeForm}>
@@ -774,7 +780,7 @@ function ManageMenu({
 
 function RowsIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
       <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
     </svg>
   );
@@ -782,7 +788,7 @@ function RowsIcon() {
 
 function ReadyIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="8" />
       <path d="M12 8v5l3 2" />
     </svg>
@@ -791,7 +797,7 @@ function ReadyIcon() {
 
 function DoneIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="8" />
       <path d="M8.5 12.5l2.5 2.5 4.5-5" />
     </svg>
@@ -800,7 +806,7 @@ function DoneIcon() {
 
 function RepairIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L3 18v3h3l6.1-6.1a4 4 0 0 0 5.6-5.6l-2.2 2.2-2.8-2.8z" />
     </svg>
   );
@@ -808,7 +814,7 @@ function RepairIcon() {
 
 function ManageIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 7h16" />
       <path d="M4 12h16" />
       <path d="M4 17h16" />
@@ -821,7 +827,7 @@ function ManageIcon() {
 
 function DownloadIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 4v11" />
       <path d="M7 11l5 5 5-5" />
       <path d="M5 20h14" />
@@ -831,7 +837,7 @@ function DownloadIcon() {
 
 function SummaryIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 20V10" />
       <path d="M10 20V4" />
       <path d="M16 20v-6" />
@@ -842,7 +848,7 @@ function SummaryIcon() {
 
 function GroupIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M20 7h-3a2 2 0 0 1-2-2V2" />
       <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z" />
       <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8" />
@@ -852,7 +858,7 @@ function GroupIcon() {
 
 function UnitIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
       <path d="M14 2v4a2 2 0 0 0 2 2h4" />
     </svg>
@@ -861,7 +867,7 @@ function UnitIcon() {
 
 function EditIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
     </svg>
@@ -878,7 +884,7 @@ function PlusIcon() {
 
 function SearchIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="7" />
       <path d="M20 20l-3.5-3.5" />
     </svg>

@@ -1,17 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Bebas_Neue, Source_Sans_3 } from "next/font/google";
+import localFont from "next/font/local";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const display = Bebas_Neue({
+const display = localFont({
+  src: "../fonts/bebas-neue-latin.woff2",
   weight: "400",
-  subsets: ["latin"],
+  style: "normal",
+  display: "swap",
   variable: "--font-display",
+  adjustFontFallback: "Arial",
 });
 
-const body = Source_Sans_3({
-  subsets: ["latin"],
+const body = localFont({
+  src: "../fonts/source-sans-3-latin.woff2",
+  weight: "200 900",
+  style: "normal",
+  display: "swap",
   variable: "--font-body",
+  adjustFontFallback: "Arial",
 });
 
 const themeScript = `try{var t=localStorage.getItem("tu-rental-theme");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){}`;
