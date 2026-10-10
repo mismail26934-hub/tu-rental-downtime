@@ -15,6 +15,7 @@ const LIMITS: Record<keyof RowInput, number> = {
   breakdown_problem: 8000,
   done_action: 8000,
   continue_handover: 8000,
+  so: 8000,
 };
 
 export function normalizeRowInput(body: unknown): RowInput | null {

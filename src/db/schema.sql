@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS handover_rows (
   breakdown_problem  TEXT,
   done_action        TEXT,
   continue_handover  TEXT,
+  so                 TEXT,
   updated_at         VARCHAR(64)  NOT NULL DEFAULT '',
   updated_by         VARCHAR(64)  NOT NULL DEFAULT '',
   KEY idx_rows_sheet (sheet_id, sort_order),
@@ -45,12 +46,26 @@ CREATE TABLE IF NOT EXISTS handover_rows (
     FOREIGN KEY (sheet_id) REFERENCES handover_sheets (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE handover_rows ADD COLUMN IF NOT EXISTS so TEXT NULL;
+
 CREATE TABLE IF NOT EXISTS units (
   id         VARCHAR(64)   NOT NULL PRIMARY KEY,
   model      VARCHAR(64)   NOT NULL,
   quota_hrs  DECIMAL(10,2) NOT NULL,
   unit_code  VARCHAR(128)  NOT NULL,
+  group_name VARCHAR(128)  NOT NULL DEFAULT '',
   created_at VARCHAR(64)   NOT NULL DEFAULT '',
   updated_at VARCHAR(64)   NOT NULL DEFAULT '',
   UNIQUE KEY uk_units_code (unit_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE units ADD COLUMN IF NOT EXISTS group_name VARCHAR(128) NOT NULL DEFAULT '';
+
+CREATE TABLE IF NOT EXISTS unit_groups (
+  id         VARCHAR(64)   NOT NULL PRIMARY KEY,
+  group_name VARCHAR(128)  NOT NULL,
+  quota_hrs  DECIMAL(10,2) NOT NULL,
+  created_at VARCHAR(64)   NOT NULL DEFAULT '',
+  updated_at VARCHAR(64)   NOT NULL DEFAULT '',
+  UNIQUE KEY uk_unit_groups_name (group_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

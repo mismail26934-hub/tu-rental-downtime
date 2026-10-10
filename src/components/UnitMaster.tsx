@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
+import { GroupSelect } from "@/components/GroupSelect";
 import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
 import { formatQuota, parseQuota, validateUnitInput, type UnitMaster } from "@/lib/units";
@@ -12,6 +13,7 @@ type Draft = {
   model: string;
   quota: string;
   unit: string;
+  group: string;
 };
 
 const emptyDraft = (): Draft => ({
@@ -19,6 +21,7 @@ const emptyDraft = (): Draft => ({
   model: "",
   quota: "",
   unit: "",
+  group: "",
 });
 
 export function UnitMaster() {
@@ -34,7 +37,7 @@ export function UnitMaster() {
     const units = unitsQuery.data || [];
     if (!needle) return units;
     return units.filter((unit) =>
-      `${unit.unit} ${unit.model} ${formatQuota(unit.quota_hrs)}`.toLowerCase().includes(needle)
+      `${unit.unit} ${unit.model} ${unit.group || ""} ${formatQuota(unit.quota_hrs)} ${unit.group_quota_hrs == null ? "" : formatQuota(unit.group_quota_hrs)}`.toLowerCase().includes(needle)
     );
   }, [search, unitsQuery.data]);
 
@@ -54,6 +57,7 @@ export function UnitMaster() {
           model: input.model.trim(),
           quota_hrs: String(quota),
           unit: input.unit.trim(),
+          group: input.group.trim(),
         }),
       });
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -98,6 +102,7 @@ export function UnitMaster() {
       model: unit.model,
       quota: formatQuota(unit.quota_hrs),
       unit: unit.unit,
+      group: unit.group,
     });
   }
 
@@ -123,6 +128,10 @@ export function UnitMaster() {
             <div className="panel-actions">
               <Link className="btn" href="/">
                 Kembali
+              </Link>
+              <Link className="btn" href="/master/group">
+                <GroupIcon />
+                Master group
               </Link>
               <input
                 className="unit-search"
@@ -150,13 +159,15 @@ export function UnitMaster() {
                   <th>Model</th>
                   <th className="col-num">Quota Hrs</th>
                   <th>Unit</th>
+                  <th>Group</th>
+                  <th className="col-num">Quota Hrs (GROUP)</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td className="handover-empty" colSpan={4}>
+                    <td className="handover-empty" colSpan={6}>
                       {search.trim() ? "Tidak ada data yang cocok." : "Belum ada master unit."}
                     </td>
                   </tr>
@@ -166,6 +177,8 @@ export function UnitMaster() {
                       <td>{unit.model}</td>
                       <td className="col-num">{formatQuota(unit.quota_hrs)}</td>
                       <td>{unit.unit}</td>
+                      <td>{unit.group || "—"}</td>
+                      <td className="col-num">{unit.group_quota_hrs == null ? "—" : formatQuota(unit.group_quota_hrs)}</td>
                       <td className="col-act">
                         <button className="btn btn-sm" type="button" onClick={() => openEdit(unit)}>
                           Ubah
@@ -227,6 +240,13 @@ export function UnitMaster() {
                       required
                     />
                   </label>
+                  <label>
+                    Group
+                    <GroupSelect
+                      value={draft.group}
+                      onChange={(group) => setDraft((current) => (current ? { ...current, group } : current))}
+                    />
+                  </label>
                 </div>
                 {error ? <div className="error">{error}</div> : null}
                 <div className="form-actions">
@@ -243,6 +263,16 @@ export function UnitMaster() {
         ) : null}
       </main>
     </>
+  );
+}
+
+function GroupIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 7h-3a2 2 0 0 1-2-2V2" />
+      <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z" />
+      <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8" />
+    </svg>
   );
 }
 

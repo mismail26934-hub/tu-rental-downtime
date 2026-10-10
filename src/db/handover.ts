@@ -19,6 +19,7 @@ const ROW_FIELDS: (keyof RowInput)[] = [
   "breakdown_problem",
   "done_action",
   "continue_handover",
+  "so",
 ];
 
 function text(value: unknown): string {
@@ -54,6 +55,7 @@ function mapRow(row: RowPacket): HandoverRow {
     breakdown_problem: text(row.breakdown_problem),
     done_action: text(row.done_action),
     continue_handover: text(row.continue_handover),
+    so: text(row.so),
     updated_at: text(row.updated_at),
     updated_by: text(row.updated_by),
   };
@@ -72,6 +74,28 @@ export async function getBoard(date: string, shift: Shift): Promise<BoardData> {
     [sheet.id]
   );
   return { sheet, rows: rows.map(mapRow) };
+}
+
+export async function listSheetYears(): Promise<number[]> {
+  const [yearRows] = await getPool().query<RowDataPacket[]>(
+    "SELECT DISTINCT LEFT(sheet_date, 4) AS y FROM handover_sheets WHERE sheet_date <> '' ORDER BY y DESC"
+  );
+  return yearRows
+    .map((row) => Number(row.y))
+    .filter((value) => Number.isInteger(value) && value >= 2000);
+}
+
+export async function getBoardYear(year: string): Promise<{ rows: HandoverRow[]; years: number[] }> {
+  const pool = getPool();
+  const [rows] = await pool.query<RowPacket[]>(
+    `SELECT r.*
+     FROM handover_rows r
+     INNER JOIN handover_sheets s ON s.id = r.sheet_id
+     WHERE s.sheet_date >= ? AND s.sheet_date <= ?
+     ORDER BY s.sheet_date ASC, s.shift ASC, r.sort_order ASC, r.unit ASC`,
+    [`${year}-01-01`, `${year}-12-31`]
+  );
+  return { rows: rows.map(mapRow), years: await listSheetYears() };
 }
 
 async function readRow(id: string): Promise<HandoverRow | null> {
@@ -128,7 +152,7 @@ export async function saveRow(input: {
         `UPDATE handover_rows SET
           sheet_id = ?, crew = ?, unit = ?, location = ?, technician = ?, status = ?,
           waiting_labour_at = ?, repair_started_at = ?, rd30_at = ?, hm_awal = ?,
-          hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?,
+          hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
           updated_at = ?, updated_by = ?
          WHERE id = ?`,
         [sheetId, ...values, now, input.userId, input.row.id]
@@ -143,8 +167,8 @@ export async function saveRow(input: {
         `INSERT INTO handover_rows (
           id, sheet_id, sort_order, crew, unit, location, technician, status,
           waiting_labour_at, repair_started_at, rd30_at, hm_awal, hm_akhir,
-          breakdown_problem, done_action, continue_handover, updated_at, updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          breakdown_problem, done_action, continue_handover, so, updated_at, updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [input.row.id, sheetId, sortOrder, ...values, now, input.userId]
       );
     }
@@ -174,7 +198,7 @@ export async function updateRow(
     `UPDATE handover_rows SET
       crew = ?, unit = ?, location = ?, technician = ?, status = ?,
       waiting_labour_at = ?, repair_started_at = ?, rd30_at = ?, hm_awal = ?,
-      hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?,
+      hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
       updated_at = ?, updated_by = ?
      WHERE id = ?`,
     [...values, now, userId, id]

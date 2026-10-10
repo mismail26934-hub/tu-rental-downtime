@@ -25,7 +25,7 @@ export function useUnits() {
 }
 
 function matches(unit: UnitMaster, needle: string) {
-  const haystack = `${unit.unit} ${unit.model} ${formatQuota(unit.quota_hrs)}`.toLowerCase();
+  const haystack = `${unit.unit} ${unit.model} ${unit.group || ""} ${formatQuota(unit.quota_hrs)}`.toLowerCase();
   return haystack.includes(needle);
 }
 

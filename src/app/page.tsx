@@ -1,7 +1,10 @@
-"use client";
+import type { Metadata } from "next";
+import { DtSummary } from "@/components/DtSummary";
 
-import { HandoverBoard } from "@/components/HandoverBoard";
+export const metadata: Metadata = {
+  title: "Summary DT — HANDOVER",
+};
 
 export default function HomePage() {
-  return <HandoverBoard />;
+  return <DtSummary />;
 }

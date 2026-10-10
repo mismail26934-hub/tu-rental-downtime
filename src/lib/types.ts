@@ -37,6 +37,7 @@ export type RowInput = {
   breakdown_problem: string;
   done_action: string;
   continue_handover: string;
+  so: string;
 };
 
 export type HandoverSheet = {
@@ -82,6 +83,7 @@ export const EMPTY_ROW: RowInput = {
   breakdown_problem: "",
   done_action: "",
   continue_handover: "",
+  so: "",
 };
 
 export function emptyRowInput(): RowInput {
@@ -103,5 +105,6 @@ export function toRowInput(row: RowInput): RowInput {
     breakdown_problem: row.breakdown_problem,
     done_action: row.done_action,
     continue_handover: row.continue_handover,
+    so: row.so,
   };
 }

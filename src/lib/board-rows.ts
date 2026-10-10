@@ -20,6 +20,7 @@ function rowMatches(row: HandoverRow, metrics: Metrics, needle: string): boolean
     row.breakdown_problem,
     row.done_action,
     row.continue_handover,
+    row.so,
     formatStamp(row.waiting_labour_at),
     formatStamp(row.repair_started_at),
     formatStamp(row.rd30_at),

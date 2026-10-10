@@ -175,6 +175,15 @@ export function HandoverForm({
             onChange={(event) => setField("continue_handover", event.target.value)}
           />
         </label>
+        <label className="form-span">
+          SO
+          <textarea
+            rows={2}
+            value={value.so}
+            disabled={!ready || busy}
+            onChange={(event) => setField("so", event.target.value)}
+          />
+        </label>
       </div>
       <div className="metric-row" aria-live="polite">
         <div className="metric">
