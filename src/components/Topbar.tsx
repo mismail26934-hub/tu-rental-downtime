@@ -88,22 +88,22 @@ function YearFilter() {
 function NavStats({ stats }: { stats: NonNullable<Props["stats"]> }) {
   return (
     <div className="nav-stats" aria-label="Ringkasan daftar">
-      <span className="nav-stat">
+      <span className="nav-stat" tabIndex={0} aria-label={`Baris ${stats.rows}`}>
         <RowsIcon />
         <span className="nav-stat-name">Baris</span>
         <strong>{stats.rows}</strong>
       </span>
-      <span className="nav-stat">
+      <span className="nav-stat" tabIndex={0} aria-label={`N/Y Ready ${stats.ready}`}>
         <ReadyIcon />
         <span className="nav-stat-name">N/Y Ready</span>
         <strong>{stats.ready}</strong>
       </span>
-      <span className="nav-stat">
+      <span className="nav-stat" tabIndex={0} aria-label={`RD30 ${stats.rd30}`}>
         <DoneIcon />
         <span className="nav-stat-name">RD30</span>
         <strong>{stats.rd30}</strong>
       </span>
-      <span className="nav-stat">
+      <span className="nav-stat" tabIndex={0} aria-label={`Status RT ${stats.rt}`}>
         <RepairIcon />
         <span className="nav-stat-name">Status RT</span>
         <strong>{stats.rt}</strong>
@@ -550,7 +550,7 @@ function SunIcon() {
 function PersonAvatar() {
   return (
     <span className="nav-avatar" aria-hidden="true">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
       </svg>
