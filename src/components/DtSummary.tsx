@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { SisaValue } from "@/components/SisaValue";
+import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { Topbar } from "@/components/Topbar";
 import { formatHours, formatQuotaDisplay, sheetTitle } from "@/lib/format";
 import { useSheetYear } from "@/lib/sheet-year";
@@ -110,21 +111,6 @@ const METRICS: { key: SummaryMetric; hours: string; days: string }[] = [
   { key: "jam", hours: "Jam", days: "Hari" },
   { key: "sisa", hours: "Sisa", days: "Sisa" },
 ];
-
-function SummaryUnitToggle() {
-  const unit = useSummaryView((state) => state.unit);
-  const setUnit = useSummaryView((state) => state.setUnit);
-  return (
-    <div className="summary-unit" role="group" aria-label="Satuan summary">
-      <button className={unit === "jam" ? "btn btn-primary" : "btn"} type="button" aria-pressed={unit === "jam"} onClick={() => setUnit("jam")}>
-        Jam
-      </button>
-      <button className={unit === "hari" ? "btn btn-primary" : "btn"} type="button" aria-pressed={unit === "hari"} onClick={() => setUnit("hari")}>
-        Hari
-      </button>
-    </div>
-  );
-}
 
 function SummaryInfo({ report }: { report?: SummaryReport }) {
   const unit = useSummaryView((state) => state.unit);

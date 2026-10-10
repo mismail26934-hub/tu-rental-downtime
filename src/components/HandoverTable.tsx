@@ -5,6 +5,7 @@ import { SisaValue } from "@/components/SisaValue";
 import { parseHm, parseLocal } from "@/lib/calc";
 import { formatDt, formatHmDisplay, formatHours, formatStamp } from "@/lib/format";
 import { visibleHandoverRows, type ListedRow } from "@/lib/board-rows";
+import { toSummaryAmount, useSummaryView } from "@/lib/summary-view";
 import { SISA_LABELS, type SisaCell } from "@/lib/unit-sisa";
 import type { HandoverRow } from "@/lib/types";
 
@@ -61,6 +62,8 @@ export function HandoverTable({
 }: Props) {
   const needle = query.trim().toLowerCase();
   const [sort, setSort] = useState<SortState>({ key: "dt", dir: "desc" });
+  const unit = useSummaryView((state) => state.unit);
+  const show = (value: number | null) => toSummaryAmount(value, unit);
   const listed = sortRows(visibleHandoverRows(rows, now, query), sort, sisa);
   const columnCount = editable ? 26 : 25;
 
@@ -89,7 +92,7 @@ export function HandoverTable({
             <th className="col-group" colSpan={3}>Remark</th>
             <SortTh rowSpan={2} label="SO" sortKey="so" sort={sort} onSort={toggleSort} />
             <th className="col-group" colSpan={3}>Output Time</th>
-            <th className="col-group" colSpan={SISA_LABELS.length}>Sisa Quota Hrs</th>
+            <th className="col-group" colSpan={SISA_LABELS.length}>{unit === "hari" ? "Sisa Quota Hari" : "Sisa Quota Hrs"}</th>
             {editable ? <th rowSpan={2}>Aksi</th> : null}
           </tr>
           <tr>
@@ -148,11 +151,11 @@ export function HandoverTable({
                   <td className="col-text">{row.done_action || "—"}</td>
                   <td className="col-text">{row.continue_handover || "—"}</td>
                   <td className="col-text">{row.so || "—"}</td>
-                  <td className="col-num">{formatHours(metrics.waitingLabourHours)}</td>
-                  <td className="col-num">{formatHours(metrics.repairHours)}</td>
-                  <td className="col-num">{formatDt(metrics.dtLabel, metrics.dtTotal)}</td>
+                  <td className="col-num">{formatHours(show(metrics.waitingLabourHours))}</td>
+                  <td className="col-num">{formatHours(show(metrics.repairHours))}</td>
+                  <td className="col-num">{formatDt(metrics.dtLabel, show(metrics.dtTotal))}</td>
                   {SISA_LABELS.map((label, index) => {
-                    const cell = cells?.[index];
+                    const cell = daysCell(cells?.[index], unit);
                     return (
                       <td key={label} className={cell?.left != null && cell.left < 0 ? "col-num is-over" : "col-num"}>
                         <SisaValue cell={cell} />
@@ -161,7 +164,7 @@ export function HandoverTable({
                   })}
                   {editable ? (
                     <td className="col-act">
-                      <button className="btn btn-sm" type="button" aria-label="Ubah" onClick={() => onEdit(row)}>
+                      <button className="btn btn-sm btn-edit" type="button" aria-label="Ubah" onClick={() => onEdit(row)}>
                         <EditIcon />
                         <span className="btn-label">Ubah</span>
                       </button>
@@ -213,6 +216,11 @@ function SortTh({
       </button>
     </th>
   );
+}
+
+function daysCell(cell: SisaCell | undefined, unit: "jam" | "hari"): SisaCell | undefined {
+  if (!cell) return cell;
+  return { left: toSummaryAmount(cell.left, unit), quota: toSummaryAmount(cell.quota, unit) };
 }
 
 function defaultDir(key: SortKey): SortDir {

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { HandoverForm } from "@/components/HandoverForm";
 import { HandoverTable } from "@/components/HandoverTable";
+import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { Topbar } from "@/components/Topbar";
 import { sendMutation, type MutationResult } from "@/lib/api";
 import { computeMetrics, deriveStatus } from "@/lib/calc";
@@ -15,6 +16,7 @@ import { flushOutbox } from "@/lib/offline/outbox";
 import { isHmValidationMessage, validateRowInput } from "@/lib/row-input";
 import { useOfflineReady } from "@/app/providers";
 import { useBoardView } from "@/lib/board-view";
+import { useSummaryView } from "@/lib/summary-view";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 import type { SummaryReport } from "@/lib/summary";
 import { sisaByUnit } from "@/lib/unit-sisa";
@@ -111,6 +113,7 @@ export function HandoverBoard() {
     let cancel = false;
     void (async () => {
       await useSheetYear.persist.rehydrate();
+      await useSummaryView.persist.rehydrate();
       if (cancel) return;
       if (localStorage.getItem("tu-rental-freeze") === "0") setFreezeCols(false);
       setFiltersReady(true);
@@ -622,14 +625,10 @@ export function HandoverBoard() {
 
         <section className="panel">
           <div className="panel-head board-bar">
-            <h2>DAFTAR UNIT</h2>
-            <div className="panel-actions">
-              <Link className="btn desktop-only" href="/">
-                <SummaryIcon />
-                <span className="btn-label">Summary</span>
-              </Link>
+            <div className="board-title">
+              <h2>DAFTAR UNIT</h2>
               <select
-                className="year-filter"
+                className="year-filter board-year"
                 aria-label="Tahun"
                 value={year}
                 onChange={(event) => {
@@ -643,6 +642,13 @@ export function HandoverBoard() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="panel-actions">
+              <SummaryUnitToggle />
+              <Link className="btn desktop-only" href="/">
+                <SummaryIcon />
+                <span className="btn-label">Summary</span>
+              </Link>
               <input
                 ref={searchRef}
                 className="unit-search"
