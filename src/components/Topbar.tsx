@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -251,10 +252,10 @@ export function Topbar({ busy = false, onRefresh, stats }: Props) {
       <div className="topbar-glass" />
       <header className={`topbar${stats ? " has-stats" : ""}`} ref={topbarRef}>
         <div className="brand-row">
-          <div className="brand">
+          <Link className="brand" href="/" aria-label="Halaman utama">
             ARMOR
             <span className="brand-tagline">Asset Readiness &amp; Monitoring of Operational Repair</span>
-          </div>
+          </Link>
           <OfflineChip />
         </div>
         {stats ? <NavStats stats={stats} /> : null}

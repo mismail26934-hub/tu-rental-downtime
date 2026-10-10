@@ -7,7 +7,7 @@ import { SisaValue } from "@/components/SisaValue";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { Topbar } from "@/components/Topbar";
 import { formatHours, formatQuotaDisplay, sheetTitle } from "@/lib/format";
-import { useSheetYear } from "@/lib/sheet-year";
+import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 import { periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import {
   dailyColumnCount,
@@ -28,6 +28,7 @@ async function fetchSummary(year: string): Promise<SummaryReport> {
 
 export function DtSummary() {
   const year = useSheetYear((state) => state.year);
+  const setYear = useSheetYear((state) => state.setYear);
   const [ready, setReady] = useState(false);
   const [freezeCols, setFreezeCols] = useState(true);
   const summaryQuery = useQuery({
@@ -57,7 +58,21 @@ export function DtSummary() {
       <main className="app">
         <section className="panel">
           <div className="panel-head">
-            <h2>SUMMARY UNIT</h2>
+            <div className="board-title">
+              <h2>SUMMARY UNIT</h2>
+              <select
+                className="year-filter board-year"
+                aria-label="Tahun"
+                value={year}
+                onChange={(event) => setYear(event.target.value)}
+              >
+                {yearChoices(year, report?.years || []).map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="panel-actions">
               <SummaryUnitToggle />
               <Link className="btn desktop-only" href="/daftar">
