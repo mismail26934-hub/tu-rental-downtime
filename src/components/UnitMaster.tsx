@@ -1,0 +1,255 @@
+"use client";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { FormEvent, useMemo, useState } from "react";
+import { useUnits } from "@/components/UnitSelect";
+import { Topbar } from "@/components/Topbar";
+import { formatQuota, parseQuota, validateUnitInput, type UnitMaster } from "@/lib/units";
+
+type Draft = {
+  id: string;
+  model: string;
+  quota: string;
+  unit: string;
+};
+
+const emptyDraft = (): Draft => ({
+  id: "",
+  model: "",
+  quota: "",
+  unit: "",
+});
+
+export function UnitMaster() {
+  const queryClient = useQueryClient();
+  const unitsQuery = useUnits();
+  const [search, setSearch] = useState("");
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const rows = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    const units = unitsQuery.data || [];
+    if (!needle) return units;
+    return units.filter((unit) =>
+      `${unit.unit} ${unit.model} ${formatQuota(unit.quota_hrs)}`.toLowerCase().includes(needle)
+    );
+  }, [search, unitsQuery.data]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (input: Draft) => {
+      const message = validateUnitInput(input);
+      if (message) throw new Error(message);
+      const quota = parseQuota(input.quota);
+      if (quota == null) throw new Error("Quota Hrs harus angka");
+      const creating = !input.id;
+      const id = input.id || crypto.randomUUID();
+      const response = await fetch(creating ? "/api/units" : `/api/units/${id}`, {
+        method: creating ? "POST" : "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          id,
+          model: input.model.trim(),
+          quota_hrs: String(quota),
+          unit: input.unit.trim(),
+        }),
+      });
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) throw new Error(body?.error || "Gagal menyimpan");
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["units"] });
+      setDraft(null);
+      setNotice("Tersimpan.");
+    },
+    onError: (saveError) => {
+      setError(saveError instanceof Error ? saveError.message : "Gagal menyimpan");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (unit: UnitMaster) => {
+      const response = await fetch(`/api/units/${unit.id}`, { method: "DELETE" });
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) throw new Error(body?.error || "Gagal menghapus");
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["units"] });
+      setNotice("Unit dihapus.");
+    },
+    onError: (deleteError) => {
+      setNotice(deleteError instanceof Error ? deleteError.message : "Gagal menghapus");
+    },
+  });
+
+  function openCreate() {
+    setError("");
+    setNotice("");
+    setDraft(emptyDraft());
+  }
+
+  function openEdit(unit: UnitMaster) {
+    setError("");
+    setNotice("");
+    setDraft({
+      id: unit.id,
+      model: unit.model,
+      quota: formatQuota(unit.quota_hrs),
+      unit: unit.unit,
+    });
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!draft) return;
+    const message = validateUnitInput(draft);
+    if (message) {
+      setError(message);
+      return;
+    }
+    setError("");
+    saveMutation.mutate(draft);
+  }
+
+  return (
+    <>
+      <Topbar busy={unitsQuery.isFetching} onRefresh={() => void unitsQuery.refetch()} />
+      <main className="app">
+        <section className="panel">
+          <div className="panel-head">
+            <h2>Master unit</h2>
+            <div className="panel-actions">
+              <Link className="btn" href="/">
+                Kembali
+              </Link>
+              <input
+                className="unit-search"
+                type="search"
+                placeholder="Cari model atau unit"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+              <button className="btn btn-primary" type="button" onClick={openCreate}>
+                <PlusIcon />
+                Tambah
+              </button>
+            </div>
+          </div>
+          {notice ? <div className="notice">{notice}</div> : null}
+          {unitsQuery.isError ? (
+            <div className="error">
+              {unitsQuery.error instanceof Error ? unitsQuery.error.message : "Gagal memuat data"}
+            </div>
+          ) : null}
+          <div className="handover-table-wrap">
+            <table className="handover-table master-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th className="col-num">Quota Hrs</th>
+                  <th>Unit</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td className="handover-empty" colSpan={4}>
+                      {search.trim() ? "Tidak ada data yang cocok." : "Belum ada master unit."}
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((unit) => (
+                    <tr key={unit.id}>
+                      <td>{unit.model}</td>
+                      <td className="col-num">{formatQuota(unit.quota_hrs)}</td>
+                      <td>{unit.unit}</td>
+                      <td className="col-act">
+                        <button className="btn btn-sm" type="button" onClick={() => openEdit(unit)}>
+                          Ubah
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          type="button"
+                          onClick={() => {
+                            if (!window.confirm(`Hapus unit ${unit.unit}?`)) return;
+                            deleteMutation.mutate(unit);
+                          }}
+                        >
+                          Hapus
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        {draft ? (
+          <div className="form-modal-backdrop" onMouseDown={() => setDraft(null)}>
+            <div
+              className="form-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="unit-master-title"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <form className="form" onSubmit={submit}>
+                <div className="panel-head">
+                  <h2 id="unit-master-title">{draft.id ? "Ubah unit" : "Tambah unit"}</h2>
+                </div>
+                <div className="form-grid">
+                  <label>
+                    Model
+                    <input
+                      value={draft.model}
+                      onChange={(event) => setDraft({ ...draft, model: event.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Quota Hrs
+                    <input
+                      inputMode="decimal"
+                      value={draft.quota}
+                      onChange={(event) => setDraft({ ...draft, quota: event.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Unit
+                    <input
+                      value={draft.unit}
+                      onChange={(event) => setDraft({ ...draft, unit: event.target.value })}
+                      required
+                    />
+                  </label>
+                </div>
+                {error ? <div className="error">{error}</div> : null}
+                <div className="form-actions">
+                  <button className="btn btn-primary" type="submit" disabled={saveMutation.isPending}>
+                    {saveMutation.isPending ? "Menyimpan…" : "Simpan"}
+                  </button>
+                  <button className="btn" type="button" onClick={() => setDraft(null)}>
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+      </main>
+    </>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
