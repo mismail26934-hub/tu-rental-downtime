@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { GroupSelect } from "@/components/GroupSelect";
+import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
 import { formatQuota, parseQuota, validateUnitInput, type UnitMaster } from "@/lib/units";
@@ -15,6 +16,8 @@ type Draft = {
   unit: string;
   group: string;
 };
+
+type UnitSortKey = "model" | "quota" | "unit" | "group" | "groupQuota";
 
 const emptyDraft = (): Draft => ({
   id: "",
@@ -29,6 +32,7 @@ export function UnitMaster() {
   const unitsQuery = useUnits();
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<{ key: UnitSortKey; dir: SortDir } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -36,11 +40,21 @@ export function UnitMaster() {
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
     const units = unitsQuery.data || [];
-    if (!needle) return units;
-    return units.filter((unit) =>
-      `${unit.unit} ${unit.model} ${unit.group || ""} ${formatQuota(unit.quota_hrs)} ${unit.group_quota_hrs == null ? "" : formatQuota(unit.group_quota_hrs)}`.toLowerCase().includes(needle)
-    );
-  }, [search, unitsQuery.data]);
+    const filtered = needle
+      ? units.filter((unit) =>
+          `${unit.unit} ${unit.model} ${unit.group || ""} ${formatQuota(unit.quota_hrs)} ${unit.group_quota_hrs == null ? "" : formatQuota(unit.group_quota_hrs)}`.toLowerCase().includes(needle)
+        )
+      : units;
+    if (!sort) return filtered;
+    return [...filtered].sort((a, b) => compareUnits(a, b, sort.key, sort.dir));
+  }, [search, unitsQuery.data, sort]);
+
+  function toggleSort(key: UnitSortKey) {
+    setSort((current) => {
+      if (current?.key === key) return { key, dir: current.dir === "asc" ? "desc" : "asc" };
+      return { key, dir: key === "quota" || key === "groupQuota" ? "desc" : "asc" };
+    });
+  }
 
   const saveMutation = useMutation({
     mutationFn: async (input: Draft) => {
@@ -176,11 +190,11 @@ export function UnitMaster() {
             <table className="handover-table master-table">
               <thead>
                 <tr>
-                  <th>Model</th>
-                  <th className="col-num">Quota Hrs</th>
-                  <th>Unit</th>
-                  <th>Group</th>
-                  <th className="col-num">Quota Hrs (GROUP)</th>
+                  <SortColumn label="Model" column="model" sort={sort} onSort={toggleSort} />
+                  <SortColumn className="col-num" label="Quota Hrs" column="quota" sort={sort} onSort={toggleSort} />
+                  <SortColumn label="Unit" column="unit" sort={sort} onSort={toggleSort} />
+                  <SortColumn label="Group" column="group" sort={sort} onSort={toggleSort} />
+                  <SortColumn className="col-num" label="Quota Hrs (GROUP)" column="groupQuota" sort={sort} onSort={toggleSort} />
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -284,6 +298,14 @@ export function UnitMaster() {
       </main>
     </>
   );
+}
+
+function compareUnits(a: UnitMaster, b: UnitMaster, key: UnitSortKey, dir: SortDir): number {
+  if (key === "quota") return compareNumber(a.quota_hrs, b.quota_hrs, dir);
+  if (key === "groupQuota") return compareNumber(a.group_quota_hrs, b.group_quota_hrs, dir);
+  if (key === "unit") return compareText(a.unit, b.unit, dir);
+  if (key === "group") return compareText(a.group, b.group, dir);
+  return compareText(a.model, b.model, dir);
 }
 
 function GroupIcon() {

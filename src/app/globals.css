@@ -1447,25 +1447,58 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
   .board-bar .panel-actions > .btn-primary,
   .board-bar .panel-actions > .btn:last-child { order: 0; }
   .panel-head:has(.back-btn) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
     align-items: center;
+    column-gap: 12px;
+    row-gap: 12px;
+  }
+  .panel-head:has(.action-row) {
+    grid-template-rows: auto auto auto;
   }
   .panel-head:has(.back-btn) > h2 {
-    flex: 1 1 auto;
+    grid-column: 1;
+    grid-row: 1;
     min-width: 0;
     line-height: 1;
   }
   .panel-head:has(.back-btn) > .panel-actions {
-    display: contents;
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    pointer-events: none;
   }
-  .panel-head .back-btn { order: 1; }
+  .panel-head:has(.back-btn) > .panel-actions > * {
+    pointer-events: auto;
+  }
+  .panel-head .back-btn {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    z-index: 3;
+  }
   .action-row {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 12px;
-    order: 2;
-    flex: 1 0 100%;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    position: relative;
+    z-index: 2;
   }
+  .panel-head:has(.back-btn) .search-pair {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    position: relative;
+    z-index: 1;
+    flex: none;
+    width: 100%;
+  }
+  .panel-head:has(.action-row) .search-pair { grid-row: 3; }
   .panel-actions .search-pair {
     flex: 1 0 100%;
     flex-wrap: nowrap;
@@ -1509,6 +1542,24 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+  .panel-head:has(.btn:hover),
+  .panel-head:has(.btn:focus) {
+    position: relative;
+    z-index: 30;
+  }
+  .panel-actions .btn:has(.btn-label):hover,
+  .panel-actions .btn:has(.btn-label):focus,
+  .summary-unit:hover,
+  .summary-unit:focus-within,
+  .kelola:hover,
+  .kelola:focus-within,
+  .action-row:hover,
+  .action-row:focus-within,
+  .search-pair:hover,
+  .search-pair:focus-within {
+    position: relative;
+    z-index: 6;
   }
   .panel-actions .btn:hover .btn-label,
   .panel-actions .btn:focus .btn-label {

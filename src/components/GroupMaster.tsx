@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useGroups } from "@/components/GroupSelect";
+import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { Topbar } from "@/components/Topbar";
 import { validateGroupInput, type UnitGroup } from "@/lib/groups";
 import { formatQuota, parseQuota } from "@/lib/units";
@@ -13,6 +14,8 @@ type Draft = {
   group: string;
   quota: string;
 };
+
+type GroupSortKey = "group" | "quota";
 
 const emptyDraft = (): Draft => ({
   id: "",
@@ -25,6 +28,7 @@ export function GroupMaster() {
   const groupsQuery = useGroups();
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<{ key: GroupSortKey; dir: SortDir } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -32,11 +36,21 @@ export function GroupMaster() {
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
     const groups = groupsQuery.data || [];
-    if (!needle) return groups;
-    return groups.filter((group) =>
-      `${group.group} ${formatQuota(group.quota_hrs)}`.toLowerCase().includes(needle)
+    const filtered = needle
+      ? groups.filter((group) => `${group.group} ${formatQuota(group.quota_hrs)}`.toLowerCase().includes(needle))
+      : groups;
+    if (!sort) return filtered;
+    return [...filtered].sort((a, b) =>
+      sort.key === "quota" ? compareNumber(a.quota_hrs, b.quota_hrs, sort.dir) : compareText(a.group, b.group, sort.dir)
     );
-  }, [search, groupsQuery.data]);
+  }, [search, groupsQuery.data, sort]);
+
+  function toggleSort(key: GroupSortKey) {
+    setSort((current) => {
+      if (current?.key === key) return { key, dir: current.dir === "asc" ? "desc" : "asc" };
+      return { key, dir: key === "quota" ? "desc" : "asc" };
+    });
+  }
 
   const saveMutation = useMutation({
     mutationFn: async (input: Draft) => {
@@ -168,8 +182,8 @@ export function GroupMaster() {
             <table className="handover-table master-table">
               <thead>
                 <tr>
-                  <th>Group</th>
-                  <th className="col-num">Quota Hrs</th>
+                  <SortColumn label="Group" column="group" sort={sort} onSort={toggleSort} />
+                  <SortColumn className="col-num" label="Quota Hrs" column="quota" sort={sort} onSort={toggleSort} />
                   <th>Aksi</th>
                 </tr>
               </thead>
