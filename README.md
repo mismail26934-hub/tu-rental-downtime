@@ -1,6 +1,6 @@
-# TU Rental — Handover
+# ARMOR — TU Rental
 
-Aplikasi input handover downtime shift. Data mengikuti kolom sheet Excel handover. Tampilan berbahasa Indonesia.
+Aplikasi input handover downtime shift. ARMOR adalah Asset Readiness & Monitoring of Operational Repair. Data mengikuti kolom sheet Excel handover. Tampilan berbahasa Indonesia.
 
 ## Menjalankan
 
@@ -19,20 +19,23 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Kolom: crew, unit, location, technician, status, waiting labour, repair time, RD30, HM awal, HM akhir, breakdown problem, done / action, continue / handover, SO, lalu waktu output. SO disimpan sebagai teks dan ikut pencarian serta export.
 - Equipment Type dan User MSD/MOD dihapus dari form, tabel, dan database.
 - Form tambah dan ubah unit dibuka sebagai modal.
-- Navbar memakai gaya terang: muat ulang, tema, dan akun (edit profil, ubah password, logout).
-- Halaman pertama adalah summary. Daftar unit ada di `/daftar`, dibuka dari menu Kelola.
-- Di summary, menu Kelola berisi Daftar unit, Master group, dan Master unit. Di daftar unit, menu Kelola berisi Freeze kolom, Export, Summary, Master group, dan Master unit. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
-- Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala.
-- Di layar sempit, tombol Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting menampilkan ikon saja.
+- Merek di navbar adalah ARMOR. Di layar lebar, teks "Asset Readiness & Monitoring of Operational Repair" tampil di bawahnya. Di layar sempit, navbar hanya menampilkan ARMOR.
+- Navbar memakai gaya terang: muat ulang, tema, dan akun (edit profil, ubah password, logout). Tahun tampil di navbar pada layar lebar, tanpa label "Tahun".
+- Halaman pertama adalah summary. Judul bagian memakai huruf besar: SUMMARY UNIT, SUMMARY GROUP, dan DAFTAR UNIT.
+- Di layar lebar, Daftar unit adalah tombol pertama di toolbar summary, dan Summary adalah tombol pertama di toolbar daftar unit. Di layar sempit keduanya tetap di dalam menu Kelola.
+- Di summary, menu Kelola berisi Daftar unit, Master group, dan Master unit. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Master group, dan Master unit. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
+- Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil dan Hapus memakai ikon tong sampah. Di layar sempit hanya ikon yang tampil.
+- Di layar sempit, tombol Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting menampilkan ikon saja. Filter tahun ada di bawah kolom pencarian.
+- Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya tertutup lapisan gelap. Mengetuk area di luar panel menutupnya.
 - Tambah unit ada di daftar unit.
 - Tabel penuh, teks remark membungkus, angka rata kanan.
 - Tiga kolom pertama (#, Crew, Unit) bisa dibekukan. Pengaturan "Freeze kolom" disimpan di perangkat. Default menyala.
 - Pencarian daftar unit selalu tampil. Penyaringan jalan setelah tombol Cari diklik, atau setelah Enter. Tombol X mengosongkan pencarian dan menampilkan semua baris. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok."
 - Nomor baris asli tetap saat hasil pencarian disaring.
 - Di layar sempit, tombol navbar masuk ke menu hamburger.
-- Kartu ringkasan (Baris, N/Y Ready, RD30, Status RT) di layar mobile tersusun 2×2.
+- Kartu ringkasan (Baris, N/Y Ready, RD30, Status RT) punya ikon. Di layar mobile tersusun 2×2. Saat kartu tergeser ke luar layar, angka yang sama tampil di navbar, lalu hilang lagi saat kartu terlihat.
 - Tombol Tambah unit menampilkan ikon +.
-- Filter papan adalah tahun saja, dan tahun yang sama dipakai summary. Pilihan disimpan di perangkat. Daftar menampilkan semua baris handover tahun itu, kedua shift.
+- Filter papan adalah tahun saja, dan tahun yang sama dipakai summary. Pilihan disimpan di perangkat. Daftar menampilkan semua baris handover tahun itu, kedua shift. Di layar lebar pemilih tahun ada di navbar. Di layar sempit pemilih tahun ada di daftar unit, di bawah pencarian.
 - Urutan bawaan daftar adalah DT Total: baris N/Y Ready di atas, lalu angka DT terbesar. Klik judul kolom mengubah urutan; klik lagi membalik arahnya. Panah di judul menunjukkan kolom yang aktif.
 - Unit baru pada tahun berjalan masuk ke sheet hari ini dan shift bawaan. Jika tahun yang dipilih bukan tahun ini, sheet-nya 1 Januari shift DS. Mengubah baris tidak memindahkan sheet-nya.
 - Export membuka modal tahun. Bawaannya tahun ini, bukan tahun yang sedang dipilih di papan. File `handover-YYYY.xlsx` berisi seluruh baris tahun itu, termasuk SO dan Sisa Quota Hrs, tidak mengikuti pencarian yang aktif.
@@ -68,7 +71,8 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 
 ### Summary DT
 
-- Summary adalah halaman pertama. `/summary` ikut membuka halaman itu. Daftar unit dibuka dari Kelola.
+- Summary adalah halaman pertama. `/summary` ikut membuka halaman itu. Di layar lebar, Daftar unit dibuka dari tombol pertama di toolbar. Di layar sempit, Daftar unit dibuka dari Kelola.
+- Klik judul kolom di summary unit dan summary group mengubah urutan. Klik lagi membalik arahnya. Panah di judul menunjukkan kolom yang aktif. Baris rincian tetap mengikuti modelnya.
 - Tombol Info menampilkan catatan tanggal, jumlah unit N/Y Ready, dan rumus jam, quota, serta sisa. Tombol Setting memilih kolom Quota Hrs, Jam, dan Sisa. Pilihan disimpan di perangkat, dan minimal satu kolom tetap tampil.
 - Dua tabel terpisah supaya jam unit tidak terhitung dua kali: summary unit (per model) dan summary group.
 - Dropdown tahun di summary memakai pilihan yang sama dengan daftar unit. Tahun berjalan dihitung sampai hari ini. Tahun lain dihitung sampai 31 Desember tahun itu, dan hanya baris pada jendela tahun itu yang masuk.
