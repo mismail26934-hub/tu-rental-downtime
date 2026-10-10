@@ -19,13 +19,13 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Kolom: crew, unit, location, technician, status, waiting labour, repair time, RD30, HM awal, HM akhir, breakdown problem, done / action, continue / handover, SO, lalu waktu output. SO disimpan sebagai teks dan ikut pencarian serta export.
 - Equipment Type dan User MSD/MOD dihapus dari form, tabel, dan database.
 - Form tambah dan ubah unit dibuka sebagai modal.
-- Merek di navbar adalah ARMOR, memakai Bebas Neue. Di layar lebar, tagline "Asset Readiness & Monitoring of Operational Repair" memakai Source Sans 3 di bawahnya. Di layar sempit, navbar hanya menampilkan ARMOR. Kedua font disimpan di proyek supaya tetap tampil tanpa unduhan Google. Di mode gelap wordmark berwarna emas; di mode terang wordmark dan tagline hitam.
+- Merek di navbar adalah ARMOR, memakai Bebas Neue. Klik tulisan ARMOR membuka halaman utama (summary). Di layar lebar, tagline "Asset Readiness & Monitoring of Operational Repair" memakai Source Sans 3 di bawahnya. Di layar sempit, navbar hanya menampilkan ARMOR. Kedua font disimpan di proyek supaya tetap tampil tanpa unduhan Google. Di mode gelap wordmark berwarna emas; di mode terang wordmark dan tagline hitam.
 - Navbar memakai gaya terang: muat ulang, tema, dan akun (edit profil, ubah password, logout). Tombol akun berbentuk seperti PRIMA: nama dan level di kiri, avatar di kanan. Mode terang berlatar putih dengan garis hitam; mode gelap berlatar gelap dengan garis tipis. Tahun tampil di navbar pada layar lebar, tanpa label "Tahun".
 - Halaman pertama adalah summary. Judul bagian memakai huruf besar: SUMMARY UNIT, SUMMARY GROUP, dan DAFTAR UNIT.
 - Di layar lebar, Daftar unit adalah tombol pertama di toolbar summary, dan Summary adalah tombol pertama di toolbar daftar unit. Di layar sempit keduanya tetap di dalam menu Kelola.
-- Di summary, menu Kelola berisi Freeze kolom, Daftar unit, Master group, dan Master unit. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Master group, dan Master unit. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
-- Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil dan Hapus memakai ikon tong sampah. Di layar sempit hanya ikon yang tampil.
-- Di layar sempit, tombol Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting menampilkan ikon saja. Filter tahun ada di bawah kolom pencarian.
+- Di summary, menu Kelola berisi Freeze kolom, Daftar unit, Master group, Master unit, dan Backup data. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Master group, Master unit, dan Backup data. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
+- Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil berwarna oranye dan Hapus memakai ikon tong sampah berwarna merah. Di layar sempit hanya ikon yang tampil.
+- Di layar sempit, tombol toolbar (Jam, Hari, Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting) menampilkan ikon saja, berukuran 34 px, lebih kecil dari tombol desktop. Nama tombol muncul saat ikon di-hover atau diketuk. Di daftar unit, baris tombol itu ada di atas kolom pencarian. Filter tahun ada di samping judul DAFTAR UNIT dan SUMMARY UNIT, sejajar dengan tulisan judul, dengan huruf lebih kecil dari judul.
 - Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya diredupkan satu lapisan, sama seperti modal form. Mengetuk area di luar panel menutupnya.
 - Tambah unit ada di daftar unit.
 - Tabel penuh, teks remark membungkus, angka rata kanan. Jam di DAFTAR UNIT, SUMMARY UNIT, dan SUMMARY GROUP memakai pemisah ribuan (contoh 6,792.50). Quota di input master tetap tanpa pemisah.
@@ -36,7 +36,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Di layar sempit, tombol navbar masuk ke menu hamburger. Lembaran menu itu memakai latar yang sama dengan menu Kelola: kartu di bagian bawah, bukan layar hitam penuh.
 - Kartu ringkasan (Baris, N/Y Ready, RD30, Status RT) mengikuti kartu PRIMA: ikon di kotak berwarna, label di atas, angka di bawah, dan garis warna di sisi kiri. Baris emas, N/Y Ready merah, RD30 hijau, Status RT abu-abu. Di layar lebar ikon dan angka sejajar. Di layar sempit kartu tersusun 2×2, ikon di atas, dan ikonnya lebih kecil (kotak 18 px). Saat kartu tergeser ke luar layar, angka yang sama tampil di navbar, lalu hilang lagi saat kartu terlihat. Chip N/Y Ready di navbar juga merah. Di layar sempit, nama kartu (Baris, N/Y Ready, RD30, Status RT) muncul saat chip di-hover atau diketuk.
 - Tombol Tambah unit menampilkan ikon +.
-- Filter papan adalah tahun saja, dan tahun yang sama dipakai summary. Pilihan disimpan di perangkat. Daftar menampilkan semua baris handover tahun itu, kedua shift. Di layar lebar pemilih tahun ada di navbar. Di layar sempit pemilih tahun ada di daftar unit, di bawah pencarian.
+- Filter papan adalah tahun saja, dan tahun yang sama dipakai summary. Pilihan disimpan di perangkat. Daftar menampilkan semua baris handover tahun itu, kedua shift. Di layar lebar pemilih tahun ada di navbar. Di layar sempit pemilih tahun ada di samping judul DAFTAR UNIT dan SUMMARY UNIT.
 - Urutan bawaan daftar adalah DT Total: baris N/Y Ready di atas, lalu angka DT terbesar. Klik judul kolom mengubah urutan; klik lagi membalik arahnya. Panah di judul menunjukkan kolom yang aktif.
 - Unit baru pada tahun berjalan masuk ke sheet hari ini dan shift bawaan. Jika tahun yang dipilih bukan tahun ini, sheet-nya 1 Januari shift DS. Mengubah baris tidak memindahkan sheet-nya.
 - Export membuka modal tahun. Bawaannya tahun ini, bukan tahun yang sedang dipilih di papan. File `Export Data Armor yyyymmdd hhmm.xlsx` memakai waktu saat tombol Export diklik. Isinya dua sheet: Handover (seluruh baris tahun itu, termasuk SO dan Sisa Quota Hrs, tidak mengikuti pencarian yang aktif) dan Summary (SUMMARY UNIT beserta rincian unit, lalu SUMMARY GROUP, dengan Quota Hrs, Jam, dan Sisa). Model dengan lebih dari satu unit menulis baris rincian di bawah model dan bisa dilipat di Excel. Sel tabel berbingkai garis tipis.
@@ -76,7 +76,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Summary adalah halaman pertama. `/summary` ikut membuka halaman itu. Di layar lebar, Daftar unit dibuka dari tombol pertama di toolbar. Di layar sempit, Daftar unit dibuka dari Kelola.
 - Klik judul kolom di summary unit dan summary group mengubah urutan. Klik lagi membalik arahnya. Panah di judul menunjukkan kolom yang aktif. Baris rincian tetap mengikuti modelnya.
 - Tombol Info menampilkan catatan tanggal, jumlah unit N/Y Ready, dan rumus jam, quota, serta sisa. Tombol Setting memilih kolom Quota Hrs, Jam, dan Sisa. Pilihan disimpan di perangkat, dan minimal satu kolom tetap tampil.
-- Tombol Jam dan Hari di toolbar summary mengubah satuan kedua tabel. Hari membagi quota, jam, dan sisa dengan 24 (1 hari = 24 jam). Judul kolom ikut berubah menjadi Quota Hari dan Hari. Jam mengembalikan angka semula. Pilihan disimpan di perangkat.
+- Tombol Jam dan Hari ada di toolbar summary dan daftar unit, dengan ikon jam dan kalender, serta jarak yang sama seperti tombol lain. Pilihan yang sama dipakai kedua halaman dan disimpan di perangkat. Hari membagi quota, jam, sisa, Waiting Labour, Repair time, dan DT Total dengan 24 (1 hari = 24 jam). Judul kolom summary menjadi Quota Hari dan Hari; judul sisa di daftar unit menjadi Sisa Quota Hari. N/Y Ready tetap teks. Waktu, HM, dan ERDM tidak dikonversi. Jam mengembalikan angka semula. Export Excel tetap dalam jam.
 - Dua tabel terpisah supaya jam unit tidak terhitung dua kali: summary unit (per model) dan summary group.
 - Dropdown tahun di summary memakai pilihan yang sama dengan daftar unit. Tahun berjalan dihitung sampai hari ini. Tahun lain dihitung sampai 31 Desember tahun itu, dan hanya baris pada jendela tahun itu yang masuk.
 - Yang tampil hanya unit yang pernah ada di daftar handover. Group tanpa anggota di daftar disembunyikan.
@@ -93,6 +93,12 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
   - YTD = Quota Hrs × hari dari 1 Jan sampai hari ini.
 - Baris model dikelompokkan dan tertutup secara bawaan. Tombol + di sebelah kanan nama model membuka rincian unit. Model dengan satu unit tidak punya tombol. Quota di baris model adalah quota unit yang sama; jika quota anggotanya berbeda, yang tampil —. Jam baris model adalah jumlah jam unit di dalamnya. Sisa rincian unit mengikuti sisa modelnya.
 - Baris group memakai quota group, dan jam-nya adalah jumlah jam unit anggota yang ada di daftar.
+
+### Backup data
+
+- Ubah dan hapus pada baris daftar unit, master unit, dan master group menyimpan cadangan di tabel `data_backups` sebelum data berubah. Data yang baru ditambah tidak dicadangkan.
+- Setiap cadangan menyimpan isi data sebelumnya, pengguna (id, nama, dan username), serta tanggal dan waktu aksi.
+- Menu Kelola → Backup data membuka halaman `/backup`. Daftar menampilkan waktu, aksi (Ubah atau Hapus), jenis, nama data, dan pengguna. Tombol Lihat membuka isi cadangan.
 
 ### Login dan offline
 

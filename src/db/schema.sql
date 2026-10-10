@@ -69,3 +69,19 @@ CREATE TABLE IF NOT EXISTS unit_groups (
   updated_at VARCHAR(64)   NOT NULL DEFAULT '',
   UNIQUE KEY uk_unit_groups_name (group_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS data_backups (
+  id            VARCHAR(64)  NOT NULL PRIMARY KEY,
+  action        VARCHAR(16)  NOT NULL,
+  entity        VARCHAR(32)  NOT NULL,
+  record_id     VARCHAR(64)  NOT NULL,
+  record_label  VARCHAR(255) NOT NULL DEFAULT '',
+  snapshot      LONGTEXT     NOT NULL,
+  user_id       VARCHAR(64)  NOT NULL DEFAULT '',
+  user_name     VARCHAR(255) NOT NULL DEFAULT '',
+  username      VARCHAR(64)  NOT NULL DEFAULT '',
+  acted_at      DATETIME(3)  NOT NULL,
+  KEY idx_backups_record (entity, record_id, acted_at),
+  KEY idx_backups_user (user_id, acted_at),
+  KEY idx_backups_acted (acted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

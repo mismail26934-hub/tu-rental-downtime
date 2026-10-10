@@ -1,4 +1,5 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
+import { recordBackup, type BackupActor } from "@/db/backup";
 import { getPool } from "@/db/pool";
 import type { UnitGroup, UnitGroupInput } from "@/lib/groups";
 
@@ -42,25 +43,50 @@ export async function insertGroup(id: string, input: UnitGroupInput): Promise<Un
   return { id, ...input };
 }
 
-export async function updateGroup(id: string, input: UnitGroupInput): Promise<UnitGroup | null> {
-  const [current] = await getPool().query<GroupRow[]>(
-    "SELECT id, group_name, quota_hrs FROM unit_groups WHERE id = ? LIMIT 1",
-    [id]
-  );
-  if (!current[0]) return null;
-  const previous = current[0].group_name;
+export async function updateGroup(id: string, input: UnitGroupInput, actor: BackupActor): Promise<UnitGroup | null> {
+  const conn = await getPool().getConnection();
   const now = new Date().toISOString();
-  const [result] = await getPool().query<ResultSetHeader>(
-    "UPDATE unit_groups SET group_name = ?, quota_hrs = ?, updated_at = ? WHERE id = ?",
-    [input.group, input.quota_hrs, now, id]
-  );
-  if (!result.affectedRows) return null;
-  if (previous !== input.group) {
-    await getPool().query("UPDATE units SET group_name = ?, updated_at = ? WHERE group_name = ?", [
+  try {
+    await conn.beginTransaction();
+    const [current] = await conn.query<RowDataPacket[]>(
+      "SELECT id, group_name, quota_hrs, created_at, updated_at FROM unit_groups WHERE id = ? LIMIT 1 FOR UPDATE",
+      [id]
+    );
+    if (!current[0]) {
+      await conn.rollback();
+      return null;
+    }
+    const previousName = String(current[0].group_name || "");
+    await recordBackup(
+      {
+        action: "ubah",
+        entity: "group",
+        recordId: id,
+        label: previousName,
+        snapshot: current[0],
+        actor,
+      },
+      conn
+    );
+    await conn.query("UPDATE unit_groups SET group_name = ?, quota_hrs = ?, updated_at = ? WHERE id = ?", [
       input.group,
+      input.quota_hrs,
       now,
-      previous,
+      id,
     ]);
+    if (previousName !== input.group) {
+      await conn.query("UPDATE units SET group_name = ?, updated_at = ? WHERE group_name = ?", [
+        input.group,
+        now,
+        previousName,
+      ]);
+    }
+    await conn.commit();
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
   }
   return { id, ...input };
 }
@@ -73,9 +99,42 @@ export async function countUnitsInGroup(group: string): Promise<number> {
   return Number(rows[0]?.total || 0);
 }
 
-export async function deleteGroup(id: string): Promise<boolean> {
-  const [result] = await getPool().query<ResultSetHeader>("DELETE FROM unit_groups WHERE id = ?", [id]);
-  return result.affectedRows > 0;
+export async function deleteGroup(id: string, actor: BackupActor): Promise<boolean> {
+  const conn = await getPool().getConnection();
+  try {
+    await conn.beginTransaction();
+    const [current] = await conn.query<RowDataPacket[]>(
+      "SELECT id, group_name, quota_hrs, created_at, updated_at FROM unit_groups WHERE id = ? LIMIT 1 FOR UPDATE",
+      [id]
+    );
+    if (!current[0]) {
+      await conn.rollback();
+      return false;
+    }
+    await recordBackup(
+      {
+        action: "hapus",
+        entity: "group",
+        recordId: id,
+        label: String(current[0].group_name || ""),
+        snapshot: current[0],
+        actor,
+      },
+      conn
+    );
+    const [result] = await conn.query<ResultSetHeader>("DELETE FROM unit_groups WHERE id = ?", [id]);
+    if (!result.affectedRows) {
+      await conn.rollback();
+      return false;
+    }
+    await conn.commit();
+    return true;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }
 
 export function isDuplicateGroupError(error: unknown): boolean {

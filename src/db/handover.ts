@@ -1,4 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
+import type { PoolConnection } from "mysql2/promise";
+import { recordBackup, type BackupActor } from "@/db/backup";
 import { getPool } from "@/db/pool";
 import type { BoardData, HandoverRow, HandoverSheet, RowInput, Shift } from "@/lib/types";
 
@@ -98,10 +100,10 @@ export async function getBoardYear(year: string): Promise<{ rows: HandoverRow[];
   return { rows: rows.map(mapRow), years: await listSheetYears() };
 }
 
-async function readRow(id: string): Promise<HandoverRow | null> {
-  const pool = getPool();
-  const [rows] = await pool.query<RowPacket[]>(
-    "SELECT * FROM handover_rows WHERE id = ? LIMIT 1",
+async function readRow(id: string, conn?: PoolConnection, lock = false): Promise<HandoverRow | null> {
+  const db = conn ?? getPool();
+  const [rows] = await db.query<RowPacket[]>(
+    `SELECT * FROM handover_rows WHERE id = ? LIMIT 1${lock ? " FOR UPDATE" : ""}`,
     [id]
   );
   return rows[0] ? mapRow(rows[0]) : null;
@@ -119,7 +121,7 @@ async function readSheet(id: string): Promise<HandoverSheet | null> {
 export async function saveRow(input: {
   sheet: { id: string; sheet_date: string; shift: Shift };
   row: RowInput & { id: string };
-  userId: string;
+  actor: BackupActor;
 }): Promise<{ sheet: HandoverSheet; row: HandoverRow }> {
   const pool = getPool();
   const conn = await pool.getConnection();
@@ -137,17 +139,29 @@ export async function saveRow(input: {
       await conn.query(
         `INSERT INTO handover_sheets (id, sheet_date, shift, created_by, created_at)
          VALUES (?, ?, ?, ?, ?)`,
-        [input.sheet.id, input.sheet.sheet_date, input.sheet.shift, input.userId, now]
+        [input.sheet.id, input.sheet.sheet_date, input.sheet.shift, input.actor.id, now]
       );
       sheetId = input.sheet.id;
     }
 
     const [found] = await conn.query<RowPacket[]>(
-      "SELECT id, sort_order FROM handover_rows WHERE id = ? LIMIT 1",
+      "SELECT * FROM handover_rows WHERE id = ? LIMIT 1 FOR UPDATE",
       [input.row.id]
     );
     const values = ROW_FIELDS.map((key) => input.row[key]);
     if (found[0]) {
+      const previous = mapRow(found[0]);
+      await recordBackup(
+        {
+          action: "ubah",
+          entity: "handover_row",
+          recordId: previous.id,
+          label: previous.unit,
+          snapshot: previous,
+          actor: input.actor,
+        },
+        conn
+      );
       await conn.query(
         `UPDATE handover_rows SET
           sheet_id = ?, crew = ?, unit = ?, location = ?, technician = ?, status = ?,
@@ -155,7 +169,7 @@ export async function saveRow(input: {
           hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
           updated_at = ?, updated_by = ?
          WHERE id = ?`,
-        [sheetId, ...values, now, input.userId, input.row.id]
+        [sheetId, ...values, now, input.actor.id, input.row.id]
       );
     } else {
       const [maxRows] = await conn.query<RowDataPacket[]>(
@@ -169,7 +183,7 @@ export async function saveRow(input: {
           waiting_labour_at, repair_started_at, rd30_at, hm_awal, hm_akhir,
           breakdown_problem, done_action, continue_handover, so, updated_at, updated_by
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [input.row.id, sheetId, sortOrder, ...values, now, input.userId]
+        [input.row.id, sheetId, sortOrder, ...values, now, input.actor.id]
       );
     }
     await conn.commit();
@@ -186,32 +200,78 @@ export async function saveRow(input: {
   return { sheet, row };
 }
 
-export async function updateRow(
-  id: string,
-  input: RowInput,
-  userId: string
-): Promise<HandoverRow | null> {
-  const pool = getPool();
+export async function updateRow(id: string, input: RowInput, actor: BackupActor): Promise<HandoverRow | null> {
+  const conn = await getPool().getConnection();
   const now = new Date().toISOString();
   const values = ROW_FIELDS.map((key) => input[key]);
-  const [result] = await pool.query<ResultSetHeader>(
-    `UPDATE handover_rows SET
-      crew = ?, unit = ?, location = ?, technician = ?, status = ?,
-      waiting_labour_at = ?, repair_started_at = ?, rd30_at = ?, hm_awal = ?,
-      hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
-      updated_at = ?, updated_by = ?
-     WHERE id = ?`,
-    [...values, now, userId, id]
-  );
-  if (!result.affectedRows) return null;
+  try {
+    await conn.beginTransaction();
+    const previous = await readRow(id, conn, true);
+    if (!previous) {
+      await conn.rollback();
+      return null;
+    }
+    await recordBackup(
+      {
+        action: "ubah",
+        entity: "handover_row",
+        recordId: previous.id,
+        label: previous.unit,
+        snapshot: previous,
+        actor,
+      },
+      conn
+    );
+    await conn.query(
+      `UPDATE handover_rows SET
+        crew = ?, unit = ?, location = ?, technician = ?, status = ?,
+        waiting_labour_at = ?, repair_started_at = ?, rd30_at = ?, hm_awal = ?,
+        hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
+        updated_at = ?, updated_by = ?
+       WHERE id = ?`,
+      [...values, now, actor.id, id]
+    );
+    await conn.commit();
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
   return readRow(id);
 }
 
-export async function deleteRow(id: string): Promise<boolean> {
-  const pool = getPool();
-  const [result] = await pool.query<ResultSetHeader>(
-    "DELETE FROM handover_rows WHERE id = ?",
-    [id]
-  );
-  return result.affectedRows > 0;
+export async function deleteRow(id: string, actor: BackupActor): Promise<boolean> {
+  const conn = await getPool().getConnection();
+  try {
+    await conn.beginTransaction();
+    const previous = await readRow(id, conn, true);
+    if (!previous) {
+      await conn.rollback();
+      return false;
+    }
+    await recordBackup(
+      {
+        action: "hapus",
+        entity: "handover_row",
+        recordId: previous.id,
+        label: previous.unit,
+        snapshot: previous,
+        actor,
+      },
+      conn
+    );
+    const [result] = await conn.query<ResultSetHeader>("DELETE FROM handover_rows WHERE id = ?", [id]);
+    if (!result.affectedRows) {
+      await conn.rollback();
+      return false;
+    }
+    await conn.commit();
+    return true;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }

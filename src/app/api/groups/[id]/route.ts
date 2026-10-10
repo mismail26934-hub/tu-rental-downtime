@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { actorFromUser } from "@/db/backup";
 import { countUnitsInGroup, deleteGroup, isDuplicateGroupError, listGroups, updateGroup } from "@/db/groups";
 import { badRequest, requireUser, unauthorized } from "@/lib/http";
 import { isRowId } from "@/lib/row-input";
@@ -23,7 +24,7 @@ export async function PATCH(request: Request, context: Context) {
   if (group.length > 128) return badRequest("Group terlalu panjang");
   if (quota == null) return badRequest("Quota Hrs harus angka");
   try {
-    const saved = await updateGroup(id, { group, quota_hrs: quota });
+    const saved = await updateGroup(id, { group, quota_hrs: quota }, actorFromUser(user));
     if (!saved) return NextResponse.json({ error: "Group tidak ditemukan" }, { status: 404 });
     return NextResponse.json({ group: saved });
   } catch (error) {
@@ -42,7 +43,7 @@ export async function DELETE(_request: Request, context: Context) {
   if (!current) return NextResponse.json({ error: "Group tidak ditemukan" }, { status: 404 });
   const used = await countUnitsInGroup(current.group);
   if (used > 0) return badRequest("Group masih dipakai unit");
-  const removed = await deleteGroup(id);
+  const removed = await deleteGroup(id, actorFromUser(user));
   if (!removed) return NextResponse.json({ error: "Group tidak ditemukan" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

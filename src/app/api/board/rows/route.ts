@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { findUnitByCode } from "@/db/units";
+import { actorFromUser } from "@/db/backup";
 import { saveRow } from "@/db/handover";
 import { computeMetrics } from "@/lib/calc";
 import { badRequest, requireUser, unauthorized } from "@/lib/http";
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
   const saved = await saveRow({
     sheet: { id: sheetId, sheet_date: date, shift: shift as Shift },
     row: { ...input, id: rowId },
-    userId: user.id,
+    actor: actorFromUser(user),
   });
   return NextResponse.json({
     sheet: saved.sheet,

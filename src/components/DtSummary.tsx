@@ -277,6 +277,10 @@ function SummaryManage({ freezeCols, onFreeze }: { freezeCols: boolean; onFreeze
             <UnitIcon />
             Master unit
           </Link>
+          <Link className="kelola-item" role="menuitem" href="/backup" onClick={() => setOpen(false)}>
+            <BackupIcon />
+            Backup data
+          </Link>
           </div>
         </>
       ) : null}
@@ -325,6 +329,16 @@ function UnitIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
       <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    </svg>
+  );
+}
+
+function BackupIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
+      <path d="M12 8v5l3 2" />
     </svg>
   );
 }

@@ -1,4 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
+import type { PoolConnection } from "mysql2/promise";
+import { recordBackup, type BackupActor } from "@/db/backup";
 import { getPool } from "@/db/pool";
 import type { UnitInput, UnitMaster } from "@/lib/units";
 
@@ -55,18 +57,81 @@ export async function insertUnit(id: string, input: UnitInput): Promise<UnitMast
   return { id, ...input, group_quota_hrs: await quotaForGroup(input.group) };
 }
 
-export async function updateUnit(id: string, input: UnitInput): Promise<UnitMaster | null> {
-  const [result] = await getPool().query<ResultSetHeader>(
-    "UPDATE units SET model = ?, quota_hrs = ?, unit_code = ?, group_name = ?, updated_at = ? WHERE id = ?",
-    [input.model, input.quota_hrs, input.unit, input.group, new Date().toISOString(), id]
+async function readStoredUnit(id: string, conn: PoolConnection) {
+  const [rows] = await conn.query<RowDataPacket[]>(
+    "SELECT id, model, quota_hrs, unit_code, group_name, created_at, updated_at FROM units WHERE id = ? LIMIT 1 FOR UPDATE",
+    [id]
   );
-  if (!result.affectedRows) return null;
+  return rows[0] ?? null;
+}
+
+export async function updateUnit(id: string, input: UnitInput, actor: BackupActor): Promise<UnitMaster | null> {
+  const conn = await getPool().getConnection();
+  try {
+    await conn.beginTransaction();
+    const previous = await readStoredUnit(id, conn);
+    if (!previous) {
+      await conn.rollback();
+      return null;
+    }
+    await recordBackup(
+      {
+        action: "ubah",
+        entity: "unit",
+        recordId: id,
+        label: String(previous.unit_code || ""),
+        snapshot: previous,
+        actor,
+      },
+      conn
+    );
+    await conn.query(
+      "UPDATE units SET model = ?, quota_hrs = ?, unit_code = ?, group_name = ?, updated_at = ? WHERE id = ?",
+      [input.model, input.quota_hrs, input.unit, input.group, new Date().toISOString(), id]
+    );
+    await conn.commit();
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
   return { id, ...input, group_quota_hrs: await quotaForGroup(input.group) };
 }
 
-export async function deleteUnit(id: string): Promise<boolean> {
-  const [result] = await getPool().query<ResultSetHeader>("DELETE FROM units WHERE id = ?", [id]);
-  return result.affectedRows > 0;
+export async function deleteUnit(id: string, actor: BackupActor): Promise<boolean> {
+  const conn = await getPool().getConnection();
+  try {
+    await conn.beginTransaction();
+    const previous = await readStoredUnit(id, conn);
+    if (!previous) {
+      await conn.rollback();
+      return false;
+    }
+    await recordBackup(
+      {
+        action: "hapus",
+        entity: "unit",
+        recordId: id,
+        label: String(previous.unit_code || ""),
+        snapshot: previous,
+        actor,
+      },
+      conn
+    );
+    const [result] = await conn.query<ResultSetHeader>("DELETE FROM units WHERE id = ?", [id]);
+    if (!result.affectedRows) {
+      await conn.rollback();
+      return false;
+    }
+    await conn.commit();
+    return true;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }
 
 export function isDuplicateUnitError(error: unknown): boolean {

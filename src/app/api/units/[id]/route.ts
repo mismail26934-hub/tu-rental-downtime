@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { findGroupByName } from "@/db/groups";
+import { actorFromUser } from "@/db/backup";
 import { deleteUnit, isDuplicateUnitError, updateUnit } from "@/db/units";
 import { badRequest, requireUser, unauthorized } from "@/lib/http";
 import { isRowId } from "@/lib/row-input";
@@ -36,7 +37,7 @@ export async function PATCH(request: Request, context: Context) {
     group = known.group;
   }
   try {
-    const saved = await updateUnit(id, { model, quota_hrs: quota, unit, group });
+    const saved = await updateUnit(id, { model, quota_hrs: quota, unit, group }, actorFromUser(user));
     if (!saved) return NextResponse.json({ error: "Unit tidak ditemukan" }, { status: 404 });
     return NextResponse.json({ unit: saved });
   } catch (error) {
@@ -50,7 +51,7 @@ export async function DELETE(_request: Request, context: Context) {
   if (!user) return unauthorized();
   const { id } = await context.params;
   if (!isRowId(id)) return badRequest("Id tidak valid");
-  const removed = await deleteUnit(id);
+  const removed = await deleteUnit(id, actorFromUser(user));
   if (!removed) return NextResponse.json({ error: "Unit tidak ditemukan" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { actorFromUser } from "@/db/backup";
 import { deleteRow, updateRow } from "@/db/handover";
 import { findUnitByCode } from "@/db/units";
 import { computeMetrics } from "@/lib/calc";
@@ -21,7 +22,7 @@ export async function PATCH(request: Request, context: Context) {
   const known = await findUnitByCode(input.unit);
   if (!known) return badRequest("Unit harus dipilih dari master");
   input.unit = known.unit;
-  const row = await updateRow(id, input, user.id);
+  const row = await updateRow(id, input, actorFromUser(user));
   if (!row) return NextResponse.json({ error: "Baris tidak ditemukan" }, { status: 404 });
   return NextResponse.json({ row: { ...row, metrics: computeMetrics(row) } });
 }
@@ -31,7 +32,7 @@ export async function DELETE(_request: Request, context: Context) {
   if (!user) return unauthorized();
   const { id } = await context.params;
   if (!isRowId(id)) return badRequest("Id tidak valid");
-  const removed = await deleteRow(id);
+  const removed = await deleteRow(id, actorFromUser(user));
   if (!removed) return NextResponse.json({ error: "Baris tidak ditemukan" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }
