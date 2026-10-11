@@ -61,6 +61,10 @@ async function readItems(): Promise<OutboxItem[]> {
   return Array.isArray(value) ? value : [];
 }
 
+export function listOutbox(): Promise<OutboxItem[]> {
+  return readItems();
+}
+
 async function writeItems(items: OutboxItem[]) {
   await set(KEY, items);
   replace({ ...snapshot, pending: items.length });

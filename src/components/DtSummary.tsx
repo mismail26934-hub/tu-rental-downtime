@@ -21,7 +21,7 @@ import {
 import { groupByModel, sisaRemainder } from "@/lib/unit-sisa";
 
 async function fetchSummary(year: string): Promise<SummaryReport> {
-  const response = await fetch(`/api/summary?year=${year}`);
+  const response = await fetch(`/api/summary?year=${year}`, { cache: "no-store" });
   if (!response.ok) throw new Error("Gagal memuat summary");
   return (await response.json()) as SummaryReport;
 }

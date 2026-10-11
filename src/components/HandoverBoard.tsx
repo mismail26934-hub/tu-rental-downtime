@@ -476,8 +476,12 @@ export function HandoverBoard() {
   return (
     <>
       <Topbar
-        busy={boardQuery.isFetching}
-        onRefresh={() => void boardQuery.refetch()}
+        busy={boardQuery.isFetching || summaryQuery.isFetching}
+        onRefresh={() => {
+          setNow(new Date());
+          void boardQuery.refetch();
+          void summaryQuery.refetch();
+        }}
         stats={
           statsAway
             ? { rows: rows.length, ready: readyCount, rd30: rd30Count, rt: rtCount }
