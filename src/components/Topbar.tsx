@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { OfflineChip } from "@/components/OfflineChip";
+import { isSuperuser } from "@/lib/access";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 
 type Copy = {
@@ -170,6 +171,7 @@ export function Topbar({ busy = false, onRefresh, stats }: Props) {
   const topbarRef = useRef<HTMLElement>(null);
   const name = data?.user?.name || data?.user?.email || "Pengguna";
   const level = levelLabel(data?.user?.level || "");
+  const superuser = isSuperuser(data?.user?.level);
 
   useEffect(() => {
     setLight(document.documentElement.getAttribute("data-theme") === "light");
@@ -367,6 +369,11 @@ export function Topbar({ busy = false, onRefresh, stats }: Props) {
               >
                 {text.password}
               </button>
+              {superuser ? (
+                <Link className="nav-manage-item" role="menuitem" href="/pengguna" onClick={() => setSessionOpen(false)}>
+                  Pengguna
+                </Link>
+              ) : null}
               <button
                 type="button"
                 role="menuitem"

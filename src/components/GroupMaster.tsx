@@ -2,10 +2,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
 import { useGroups } from "@/components/GroupSelect";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { Topbar } from "@/components/Topbar";
+import { canManage } from "@/lib/access";
 import { validateGroupInput, type UnitGroup } from "@/lib/groups";
 import { formatQuota, parseQuota } from "@/lib/units";
 
@@ -24,6 +26,8 @@ const emptyDraft = (): Draft => ({
 });
 
 export function GroupMaster() {
+  const { data: session } = useSession();
+  const canWrite = canManage(session?.user?.level);
   const queryClient = useQueryClient();
   const groupsQuery = useGroups();
   const [searchDraft, setSearchDraft] = useState("");
@@ -158,10 +162,12 @@ export function GroupMaster() {
                   <UnitIcon />
                   <span className="btn-label">Master unit</span>
                 </Link>
-                <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
-                  <PlusIcon />
-                  <span className="btn-label">Tambah</span>
-                </button>
+                {canWrite ? (
+                  <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
+                    <PlusIcon />
+                    <span className="btn-label">Tambah</span>
+                  </button>
+                ) : null}
               </div>
               <div className="search-pair">
               <input
@@ -200,13 +206,13 @@ export function GroupMaster() {
                 <tr>
                   <SortColumn label="Group" column="group" sort={sort} onSort={toggleSort} />
                   <SortColumn className="col-num" label="Quota Hrs" column="quota" sort={sort} onSort={toggleSort} />
-                  <th>Aksi</th>
+                  {canWrite ? <th>Aksi</th> : null}
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td className="handover-empty" colSpan={3}>
+                    <td className="handover-empty" colSpan={canWrite ? 3 : 2}>
                       {search.trim() ? "Tidak ada data yang cocok." : "Belum ada master group."}
                     </td>
                   </tr>
@@ -215,21 +221,23 @@ export function GroupMaster() {
                     <tr key={group.id}>
                       <td>{group.group}</td>
                       <td className="col-num">{formatQuota(group.quota_hrs)}</td>
-                      <td className="col-act">
-                        <button className="btn btn-sm" type="button" onClick={() => openEdit(group)}>
-                          Ubah
-                        </button>
-                        <button
-                          className="btn btn-sm btn-danger"
-                          type="button"
-                          onClick={() => {
-                            if (!window.confirm(`Hapus group ${group.group}?`)) return;
-                            deleteMutation.mutate(group);
-                          }}
-                        >
-                          Hapus
-                        </button>
-                      </td>
+                      {canWrite ? (
+                        <td className="col-act">
+                          <button className="btn btn-sm" type="button" onClick={() => openEdit(group)}>
+                            Ubah
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            type="button"
+                            onClick={() => {
+                              if (!window.confirm(`Hapus group ${group.group}?`)) return;
+                              deleteMutation.mutate(group);
+                            }}
+                          >
+                            Hapus
+                          </button>
+                        </td>
+                      ) : null}
                     </tr>
                   ))
                 )}

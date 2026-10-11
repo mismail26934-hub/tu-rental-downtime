@@ -1005,6 +1005,63 @@ html[data-theme="light"] .summary-table.is-frozen tr.is-detail td.summary-pin { 
   font-weight: 700;
 }
 .backup-fields dd { margin: 0; white-space: pre-wrap; }
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 12px 0 4px;
+  flex-wrap: nowrap;
+}
+.pager-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.pager-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.pager-page {
+  min-width: 26px;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+.pager-page.is-active {
+  background: linear-gradient(180deg, var(--amber-bright), var(--amber-dim));
+  color: var(--amber-ink);
+  border-color: var(--amber-border);
+  font-weight: 700;
+}
+.pager-ellipsis {
+  color: var(--muted);
+  font-size: 0.75rem;
+  padding: 0 1px;
+  user-select: none;
+  line-height: 28px;
+}
+html[data-theme="light"] .pager .btn {
+  border-width: 1px;
+}
+html[data-theme="light"] .pager-page.is-active,
+html[data-theme="light"] .pager-page.is-active:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--amber-bright), var(--amber-dim));
+  color: var(--amber-ink);
+  border-color: var(--amber-border);
+}
+html[data-theme="light"] .pager-ellipsis { color: #000; font-weight: 700; }
 .kelola-item svg { flex: none; }
 .kelola-item:hover { background: color-mix(in srgb, var(--amber) 28%, transparent); }
 .kelola-item:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -1351,6 +1408,7 @@ html[data-theme="light"] .offline-sync-chip--error {
   font-weight: 600;
   cursor: pointer;
 }
+a.nav-manage-item { display: block; text-decoration: none; }
 .nav-manage-item:hover { background: #f4f4f4; }
 .btn.is-muted { opacity: 0.55; }
 .form-modal-backdrop {
@@ -1917,5 +1975,11 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
   html[data-theme="light"] .top-actions-panel--bar .nav-end {
     border-left: 0;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .pager-nav,
+  .pager-page {
+    min-height: 40px;
+    min-width: 40px;
+    height: 40px;
   }
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { findGroupByName } from "@/db/groups";
 import { insertUnit, isDuplicateUnitError, listUnits } from "@/db/units";
-import { badRequest, requireUser, unauthorized } from "@/lib/http";
+import { badRequest, requireUser, requireWriter, unauthorized } from "@/lib/http";
 import { isRowId } from "@/lib/row-input";
 import { parseQuota } from "@/lib/units";
 
@@ -15,8 +15,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   const body = (await request.json().catch(() => null)) as {
     id?: string;
     model?: string;

@@ -8,6 +8,7 @@ import { HandoverForm } from "@/components/HandoverForm";
 import { HandoverTable } from "@/components/HandoverTable";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { Topbar } from "@/components/Topbar";
+import { canManage } from "@/lib/access";
 import { sendMutation, type MutationResult } from "@/lib/api";
 import { computeMetrics, deriveStatus } from "@/lib/calc";
 import { defaultShift, todayISO } from "@/lib/format";
@@ -80,6 +81,7 @@ function targetSheet(year: string): { date: string; shift: Shift } {
 
 export function HandoverBoard() {
   const { data: session, status } = useSession();
+  const canWrite = canManage(session?.user?.level);
   const offlineReady = useOfflineReady();
   const queryClient = useQueryClient();
   const year = useSheetYear((state) => state.year);
@@ -689,20 +691,24 @@ export function HandoverBoard() {
                 }}
                 onExport={openExport}
               />
-              <button className="btn btn-primary" type="button" aria-label="Tambah unit" onClick={openCreate}>
-                <PlusIcon />
-                <span className="btn-label">Tambah unit</span>
-              </button>
-              <button
-                className={editMode ? "btn is-on" : "btn"}
-                type="button"
-                aria-label="Mode Edit"
-                aria-pressed={editMode}
-                onClick={() => setEditMode(!editMode)}
-              >
-                <EditIcon />
-                <span className="btn-label">Mode Edit</span>
-              </button>
+              {canWrite ? (
+                <button className="btn btn-primary" type="button" aria-label="Tambah unit" onClick={openCreate}>
+                  <PlusIcon />
+                  <span className="btn-label">Tambah unit</span>
+                </button>
+              ) : null}
+              {canWrite ? (
+                <button
+                  className={editMode ? "btn is-on" : "btn"}
+                  type="button"
+                  aria-label="Mode Edit"
+                  aria-pressed={editMode}
+                  onClick={() => setEditMode(!editMode)}
+                >
+                  <EditIcon />
+                  <span className="btn-label">Mode Edit</span>
+                </button>
+              ) : null}
             </div>
           </div>
           {!formOpen && notice ? <div className="notice">{notice}</div> : null}
@@ -712,7 +718,7 @@ export function HandoverBoard() {
             query={search}
             selectedId={editingId}
             frozen={freezeCols}
-            editable={editMode}
+            editable={canWrite && editMode}
             sisa={sisa}
             emptyText="Belum ada unit pada tahun ini."
             onEdit={openEdit}

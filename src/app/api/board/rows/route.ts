@@ -3,15 +3,15 @@ import { findUnitByCode } from "@/db/units";
 import { actorFromUser } from "@/db/backup";
 import { saveRow } from "@/db/handover";
 import { computeMetrics } from "@/lib/calc";
-import { badRequest, requireUser, unauthorized } from "@/lib/http";
+import { badRequest, requireWriter } from "@/lib/http";
 import { isRowId, isSheetDate, normalizeRowInput, validateRowInput } from "@/lib/row-input";
 import type { Shift } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   const body = (await request.json().catch(() => null)) as {
     sheet?: { id?: string; sheet_date?: string; shift?: string };
     row?: { id?: string };

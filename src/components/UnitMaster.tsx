@@ -2,11 +2,13 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
 import { GroupSelect } from "@/components/GroupSelect";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
+import { canManage } from "@/lib/access";
 import { formatQuota, parseQuota, validateUnitInput, type UnitMaster } from "@/lib/units";
 
 type Draft = {
@@ -28,6 +30,8 @@ const emptyDraft = (): Draft => ({
 });
 
 export function UnitMaster() {
+  const { data: session } = useSession();
+  const canWrite = canManage(session?.user?.level);
   const queryClient = useQueryClient();
   const unitsQuery = useUnits();
   const [searchDraft, setSearchDraft] = useState("");
@@ -168,10 +172,12 @@ export function UnitMaster() {
                   <GroupIcon />
                   <span className="btn-label">Master group</span>
                 </Link>
-                <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
-                  <PlusIcon />
-                  <span className="btn-label">Tambah</span>
-                </button>
+                {canWrite ? (
+                  <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
+                    <PlusIcon />
+                    <span className="btn-label">Tambah</span>
+                  </button>
+                ) : null}
               </div>
               <div className="search-pair">
               <input
@@ -213,13 +219,13 @@ export function UnitMaster() {
                   <SortColumn label="Unit" column="unit" sort={sort} onSort={toggleSort} />
                   <SortColumn label="Group" column="group" sort={sort} onSort={toggleSort} />
                   <SortColumn className="col-num" label="Quota Hrs (GROUP)" column="groupQuota" sort={sort} onSort={toggleSort} />
-                  <th>Aksi</th>
+                  {canWrite ? <th>Aksi</th> : null}
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td className="handover-empty" colSpan={6}>
+                    <td className="handover-empty" colSpan={canWrite ? 6 : 5}>
                       {search.trim() ? "Tidak ada data yang cocok." : "Belum ada master unit."}
                     </td>
                   </tr>
@@ -231,21 +237,23 @@ export function UnitMaster() {
                       <td>{unit.unit}</td>
                       <td>{unit.group || "—"}</td>
                       <td className="col-num">{unit.group_quota_hrs == null ? "—" : formatQuota(unit.group_quota_hrs)}</td>
-                      <td className="col-act">
-                        <button className="btn btn-sm" type="button" onClick={() => openEdit(unit)}>
-                          Ubah
-                        </button>
-                        <button
-                          className="btn btn-sm btn-danger"
-                          type="button"
-                          onClick={() => {
-                            if (!window.confirm(`Hapus unit ${unit.unit}?`)) return;
-                            deleteMutation.mutate(unit);
-                          }}
-                        >
-                          Hapus
-                        </button>
-                      </td>
+                      {canWrite ? (
+                        <td className="col-act">
+                          <button className="btn btn-sm" type="button" onClick={() => openEdit(unit)}>
+                            Ubah
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            type="button"
+                            onClick={() => {
+                              if (!window.confirm(`Hapus unit ${unit.unit}?`)) return;
+                              deleteMutation.mutate(unit);
+                            }}
+                          >
+                            Hapus
+                          </button>
+                        </td>
+                      ) : null}
                     </tr>
                   ))
                 )}

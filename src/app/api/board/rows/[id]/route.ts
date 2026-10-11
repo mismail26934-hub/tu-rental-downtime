@@ -3,7 +3,7 @@ import { actorFromUser } from "@/db/backup";
 import { deleteRow, updateRow } from "@/db/handover";
 import { findUnitByCode } from "@/db/units";
 import { computeMetrics } from "@/lib/calc";
-import { badRequest, requireUser, unauthorized } from "@/lib/http";
+import { badRequest, requireWriter } from "@/lib/http";
 import { isRowId, normalizeRowInput, validateRowInput } from "@/lib/row-input";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: Context) {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   const { id } = await context.params;
   if (!isRowId(id)) return badRequest("Id tidak valid");
   const input = normalizeRowInput(await request.json().catch(() => null));
@@ -28,8 +28,8 @@ export async function PATCH(request: Request, context: Context) {
 }
 
 export async function DELETE(_request: Request, context: Context) {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   const { id } = await context.params;
   if (!isRowId(id)) return badRequest("Id tidak valid");
   const removed = await deleteRow(id, actorFromUser(user));

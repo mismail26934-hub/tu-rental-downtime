@@ -1,11 +1,4 @@
-export const USER_LEVELS = [
-  "superuser",
-  "inputer",
-  "teknisi",
-  "foreman",
-  "hrd",
-  "spv",
-] as const;
+export const USER_LEVELS = ["superuser", "admin", "user"] as const;
 
 export type UserLevel = (typeof USER_LEVELS)[number];
 

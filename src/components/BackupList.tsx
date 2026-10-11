@@ -53,6 +53,7 @@ const FIELD_LABELS: Record<string, string> = {
 const FIELD_ORDER = Object.keys(FIELD_LABELS);
 const HIDDEN_FIELDS = new Set(["id", "sheet_id", "sort_order"]);
 const TIME_FIELDS = new Set(["waiting_labour_at", "repair_started_at", "rd30_at", "created_at", "updated_at"]);
+const PAGE_SIZE = 10;
 
 async function fetchBackups(): Promise<BackupView[]> {
   const response = await fetch("/api/backups");
@@ -78,6 +79,7 @@ export function BackupList() {
   });
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<string | null>(null);
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -97,6 +99,20 @@ export function BackupList() {
         .includes(needle)
     );
   }, [backupsQuery.data, search]);
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+  const currentPage = Math.min(page, Math.max(totalPages, 1));
+  const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  function showPage(next: number) {
+    setPage(next);
+    setOpenId(null);
+  }
+
+  function applySearch(next: string) {
+    setSearch(next);
+    setPage(1);
+    setOpenId(null);
+  }
 
   return (
     <>
@@ -119,16 +135,16 @@ export function BackupList() {
                 onChange={(event) => {
                   const next = event.target.value;
                   setSearchDraft(next);
-                  if (!next.trim()) setSearch("");
+                  if (!next.trim()) applySearch("");
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
-                    setSearch(searchDraft.trim());
+                    applySearch(searchDraft.trim());
                   }
                 }}
               />
-              <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
+              <button className="btn" type="button" aria-label="Cari" onClick={() => applySearch(searchDraft.trim())}>
                 <SearchIcon />
                 <span className="btn-label">Cari</span>
               </button>
@@ -153,14 +169,14 @@ export function BackupList() {
                 </tr>
               </thead>
               <tbody>
-                {rows.length === 0 ? (
+                {pageRows.length === 0 ? (
                   <tr>
                     <td colSpan={6}>
                       {backupsQuery.isSuccess ? (search ? "Tidak ada data yang cocok." : "Belum ada backup.") : "Memuat…"}
                     </td>
                   </tr>
                 ) : (
-                  rows.map((item) => {
+                  pageRows.map((item) => {
                     const open = openId === item.id;
                     const fields = Object.entries(item.snapshot)
                       .filter(([key]) => !HIDDEN_FIELDS.has(key))
@@ -218,9 +234,85 @@ export function BackupList() {
               </tbody>
             </table>
           </div>
+          <Pager page={currentPage} totalPages={totalPages} onChange={showPage} />
         </section>
       </main>
     </>
+  );
+}
+
+function getPagerItems(current: number, total: number): Array<number | "…"> {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
+  const items: Array<number | "…"> = [];
+  const pushUnique = (item: number | "…") => {
+    if (items[items.length - 1] !== item) items.push(item);
+  };
+  pushUnique(1);
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) pushUnique("…");
+  for (let index = start; index <= end; index += 1) pushUnique(index);
+  if (end < total - 1) pushUnique("…");
+  pushUnique(total);
+  return items;
+}
+
+function Pager({
+  page,
+  totalPages,
+  onChange,
+}: {
+  page: number;
+  totalPages: number;
+  onChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+  const items = getPagerItems(page, totalPages);
+  return (
+    <nav className="pager" aria-label="Halaman backup">
+      <button
+        className="btn pager-nav"
+        type="button"
+        disabled={page <= 1}
+        aria-label="Halaman sebelumnya"
+        onClick={() => onChange(page - 1)}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+      <div className="pager-pages">
+        {items.map((item, index) =>
+          item === "…" ? (
+            <span key={`ellipsis-${index}`} className="pager-ellipsis" aria-hidden="true">
+              …
+            </span>
+          ) : (
+            <button
+              key={item}
+              className={item === page ? "btn pager-page is-active" : "btn pager-page"}
+              type="button"
+              aria-label={`Halaman ${item}`}
+              aria-current={item === page ? "page" : undefined}
+              onClick={() => onChange(item)}
+            >
+              {item}
+            </button>
+          )
+        )}
+      </div>
+      <button
+        className="btn pager-nav"
+        type="button"
+        disabled={page >= totalPages}
+        aria-label="Halaman berikutnya"
+        onClick={() => onChange(page + 1)}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </button>
+    </nav>
   );
 }
 

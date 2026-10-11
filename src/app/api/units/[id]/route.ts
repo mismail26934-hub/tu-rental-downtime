@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { findGroupByName } from "@/db/groups";
 import { actorFromUser } from "@/db/backup";
 import { deleteUnit, isDuplicateUnitError, updateUnit } from "@/db/units";
-import { badRequest, requireUser, unauthorized } from "@/lib/http";
+import { badRequest, requireWriter } from "@/lib/http";
 import { isRowId } from "@/lib/row-input";
 import { parseQuota } from "@/lib/units";
 
@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: Context) {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   const { id } = await context.params;
   if (!isRowId(id)) return badRequest("Id tidak valid");
   const body = (await request.json().catch(() => null)) as {
@@ -47,8 +47,8 @@ export async function PATCH(request: Request, context: Context) {
 }
 
 export async function DELETE(_request: Request, context: Context) {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   const { id } = await context.params;
   if (!isRowId(id)) return badRequest("Id tidak valid");
   const removed = await deleteUnit(id, actorFromUser(user));

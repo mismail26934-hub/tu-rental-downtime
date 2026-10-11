@@ -20,11 +20,12 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Equipment Type dan User MSD/MOD dihapus dari form, tabel, dan database.
 - Form tambah dan ubah unit dibuka sebagai modal.
 - Merek di navbar adalah ARMOR, memakai Bebas Neue. Klik tulisan ARMOR membuka halaman utama (summary). Di layar lebar, tagline "Asset Readiness & Monitoring of Operational Repair" memakai Source Sans 3 di bawahnya. Di layar sempit, navbar hanya menampilkan ARMOR. Kedua font disimpan di proyek supaya tetap tampil tanpa unduhan Google. Di mode gelap wordmark berwarna emas; di mode terang wordmark dan tagline hitam.
-- Navbar memakai gaya terang: muat ulang, tema, dan akun (edit profil, ubah password, logout). Tombol akun berbentuk seperti PRIMA: nama dan level di kiri, avatar di kanan. Mode terang berlatar putih dengan garis hitam; mode gelap berlatar gelap dengan garis tipis. Tahun tampil di navbar pada layar lebar, tanpa label "Tahun".
+- Navbar memakai gaya terang: muat ulang, tema, dan akun (edit profil, ubah password, logout). Superuser juga melihat Pengguna di menu akun. Tombol akun berbentuk seperti PRIMA: nama dan level di kiri, avatar di kanan. Mode terang berlatar putih dengan garis hitam; mode gelap berlatar gelap dengan garis tipis. Tahun tampil di navbar pada layar lebar, tanpa label "Tahun".
 - Halaman pertama adalah summary. Judul bagian memakai huruf besar: SUMMARY UNIT, SUMMARY GROUP, dan DAFTAR UNIT.
 - Di layar lebar, Daftar unit adalah tombol pertama di toolbar summary, dan Summary adalah tombol pertama di toolbar daftar unit. Di layar sempit keduanya tetap di dalam menu Kelola.
 - Di summary, menu Kelola berisi Freeze kolom, Daftar unit, Master group, Master unit, dan Backup data. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Master group, Master unit, dan Backup data. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
-- Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil berwarna oranye dan Hapus memakai ikon tong sampah berwarna merah. Di layar sempit hanya ikon yang tampil.
+- Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil berwarna oranye dan Hapus memakai ikon tong sampah berwarna merah. Di layar sempit hanya ikon yang tampil. Tambah unit dan Mode Edit hanya tampil untuk superuser dan admin.
+- Pada form ubah daftar unit, Simpan nonaktif sampai ada isian yang berbeda dari data saat form dibuka. Mengembalikan isian semula menonaktifkan Simpan lagi. Form tambah tetap bisa disimpan.
 - Di layar sempit, tombol toolbar (Jam, Hari, Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting) menampilkan ikon saja, berukuran 34 px, lebih kecil dari tombol desktop. Nama tombol muncul saat ikon di-hover atau diketuk. Di daftar unit, baris tombol itu ada di atas kolom pencarian. Filter tahun ada di samping judul DAFTAR UNIT dan SUMMARY UNIT, sejajar dengan tulisan judul, dengan huruf lebih kecil dari judul.
 - Kotak pencarian dan tombol Cari menempel jadi satu kontrol: tanpa jarak, tinggi sama, dan sudut yang berhadapan rata. Di layar sempit tinggi keduanya 34 px. Penyaringan daftar unit, backup, master unit, dan master group baru jalan setelah tombol Cari diklik, atau setelah Enter. Mengosongkan kotak menampilkan semua baris lagi.
 - Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya diredupkan satu lapisan, sama seperti modal form. Mengetuk area di luar panel menutupnya.
@@ -56,14 +57,16 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 
 ### Tanggal
 
-- Waktu di modal memakai teks `dd/mm/yyyy hh:mm`, plus pemilih tanggal dan pemilih jam.
-- Nilai disimpan sebagai `YYYY-MM-DDTHH:mm`.
+- Waktu di modal memakai teks `dd/mm/yyyy hh:mm` (24 jam). Nilai disimpan sebagai `YYYY-MM-DDTHH:mm`.
+- Ikon jam membuka daftar jam 00–23 dan menit 00–59, tanpa AM/PM. Jika waktu masih kosong, klik ikon jam mengisi tanggal hari ini dan jam sekarang. Waktu yang sudah tersimpan tidak berubah.
 - Tanggal sheet tidak lagi menjadi filter papan. Filter yang tampil hanya tahun.
-- Waiting Labour, Repair Time, dan RD30 tidak diisi otomatis dengan hari ini.
+- Waiting Labour, Repair Time, dan RD30 tidak terisi sendiri saat form dibuka.
 
 ### Master unit dan master group
 
-- Master unit: Model, Quota Hrs, Unit, Group, dan Quota Hrs (GROUP). Bisa tambah, ubah, dan hapus lewat tombol Master unit. Group boleh kosong.
+- Master unit: Model, Quota Hrs, Unit, Group, dan Quota Hrs (GROUP). Bisa tambah, ubah, dan hapus lewat tombol Master unit. Group boleh kosong. Tambah, ubah, dan hapus hanya untuk superuser dan admin.
+- Klik judul kolom di master unit dan master group mengubah urutan. Klik lagi membalik arahnya. Panah di judul menunjukkan kolom yang aktif. Kolom Aksi tidak diurutkan, dan nilai kosong berada di akhir.
+- Pada form ubah master unit dan master group, Simpan nonaktif sampai ada isian yang berubah.
 - Halaman master unit, master group, dan backup punya tombol Kembali berikon panah. Pencarian (Cari group, Cari model atau unit, Cari data atau pengguna) menempel dengan tombol Cari dan baru menyaring setelah tombol itu diklik. Tombol Tambah ada sebelum pencarian.
 - Di layar sempit pada ketiga halaman itu, Kembali hanya ikon dan berada di kanan judul. Tombol Master unit atau Master group hanya ikon. Tombol Tambah hanya ikon + dan tetap sebelum pencarian. Di layar lebar ketiga tombol itu menampilkan ikon beserta tulisannya.
 - Group di form unit adalah pencarian dari master group. Nama yang tidak ada di master tidak disimpan. Memilih group tidak mengubah Quota Hrs unit itu sendiri.
@@ -102,10 +105,14 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Ubah dan hapus pada baris daftar unit, master unit, dan master group menyimpan cadangan di tabel `data_backups` sebelum data berubah. Data yang baru ditambah tidak dicadangkan.
 - Setiap cadangan menyimpan isi data sebelumnya, pengguna (id, nama, dan username), serta tanggal dan waktu aksi.
 - Menu Kelola → Backup data membuka halaman `/backup`. Daftar menampilkan waktu, aksi (Ubah atau Hapus), jenis, nama data, dan pengguna. Tombol Lihat membuka isi cadangan. Pencarian data atau pengguna menempel dengan tombol Cari. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok." Di layar sempit tombol Kembali hanya ikon dan berada di kanan judul.
+- Daftar backup menampilkan 10 baris per halaman. Di bawah tabel ada tombol halaman sebelumnya, nomor halaman, dan halaman berikutnya. Halaman yang sedang dibuka berwarna amber. Nomor yang jauh diringkas dengan tanda elipsis. Pencarian kembali ke halaman pertama. Jika hasilnya hanya satu halaman, navigasi disembunyikan.
 
-### Login dan offline
+### Login, peran, dan offline
 
-- Login memakai tabel `users` lokal lewat NextAuth.
+- Login memakai tabel `users` lokal lewat NextAuth. Level yang dipakai aplikasi adalah superuser, admin, dan user.
+- Superuser dan admin boleh menambah, mengubah, dan menghapus data daftar unit, master unit, dan master group. Role user hanya melihat data. Tombol Tambah, Mode Edit, Ubah, dan Hapus disembunyikan, dan server menolak simpan atau hapus dari role itu.
+- Menu akun superuser punya Pengguna, di halaman `/pengguna`. Role lain tidak melihat menu itu. Membuka alamatnya langsung dikembalikan ke beranda, dan server menolak permintaan datanya.
+- Superuser menambah, mengubah, dan menghapus pengguna: username, nama, level, status aktif, dan password. Password saat ubah boleh dikosongkan jika tidak diganti. Akun yang sedang dipakai tidak bisa dihapus dan harus tetap superuser aktif. Simpan pada form ubah nonaktif sampai ada perubahan.
 - Draft ketikan disimpan di perangkat, per tahun dan baris yang sedang diubah. Pesan "Draft dipulihkan dari perangkat" berarti form diisi lagi dari ketikan yang belum disimpan, bukan dari database.
 - Buang draft mengembalikan data terakhir yang sudah disimpan. Simpan menulis ke database.
 - Perubahan yang gagal terkirim saat offline masuk antrean dan dikirim saat online.

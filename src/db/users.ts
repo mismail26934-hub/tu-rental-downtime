@@ -1,4 +1,4 @@
-import type { RowDataPacket } from "mysql2";
+import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getPool } from "@/db/pool";
 import { hashPassword, needsPasswordHash, verifyPassword } from "@/lib/password";
 import type { PublicUser } from "@/lib/types";
@@ -53,4 +53,85 @@ export async function authenticateUser(
     ]);
   }
   return toPublic(user);
+}
+
+export async function listUsers(): Promise<PublicUser[]> {
+  const [rows] = await getPool().query<UserRow[]>(
+    `SELECT id, username, '' AS password_hash, name, email, phone, photo_name, level, active, created_at
+     FROM users
+     ORDER BY username`
+  );
+  return rows.map(toPublic);
+}
+
+export async function countOtherActiveSuperusers(exceptId: string): Promise<number> {
+  const [rows] = await getPool().query<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM users WHERE level = 'superuser' AND active = 1 AND id <> ?",
+    [exceptId]
+  );
+  return Number(rows[0]?.total || 0);
+}
+
+export async function findUserById(id: string): Promise<PublicUser | null> {
+  const [rows] = await getPool().query<UserRow[]>(
+    `SELECT id, username, '' AS password_hash, name, email, phone, photo_name, level, active, created_at
+     FROM users WHERE id = ? LIMIT 1`,
+    [id]
+  );
+  return rows[0] ? toPublic(rows[0]) : null;
+}
+
+export async function insertUser(input: {
+  id: string;
+  username: string;
+  passwordHash: string;
+  name: string;
+  level: string;
+  active: "1" | "0";
+}): Promise<PublicUser> {
+  await getPool().query(
+    `INSERT INTO users (
+      id, username, password_hash, name, email, phone, level, active, created_at, photo_name
+    ) VALUES (?, ?, ?, ?, '', '', ?, ?, ?, '')`,
+    [input.id, input.username, input.passwordHash, input.name, input.level, input.active === "1" ? 1 : 0, new Date().toISOString()]
+  );
+  const saved = await findUserById(input.id);
+  if (!saved) throw new Error("Pengguna tidak ditemukan");
+  return saved;
+}
+
+export async function updateUser(
+  id: string,
+  input: {
+    username: string;
+    name: string;
+    level: string;
+    active: "1" | "0";
+    passwordHash?: string;
+  }
+): Promise<PublicUser | null> {
+  const pool = getPool();
+  const [result] = input.passwordHash
+    ? await pool.query<ResultSetHeader>(
+        "UPDATE users SET username = ?, name = ?, level = ?, active = ?, password_hash = ? WHERE id = ?",
+        [input.username, input.name, input.level, input.active === "1" ? 1 : 0, input.passwordHash, id]
+      )
+    : await pool.query<ResultSetHeader>(
+        "UPDATE users SET username = ?, name = ?, level = ?, active = ? WHERE id = ?",
+        [input.username, input.name, input.level, input.active === "1" ? 1 : 0, id]
+      );
+  if (!result.affectedRows) {
+    const current = await findUserById(id);
+    if (!current) return null;
+  }
+  return findUserById(id);
+}
+
+export async function deleteUser(id: string): Promise<boolean> {
+  const [result] = await getPool().query<ResultSetHeader>("DELETE FROM users WHERE id = ?", [id]);
+  return result.affectedRows > 0;
+}
+
+export function isDuplicateUserError(error: unknown): boolean {
+  return typeof error === "object" && error != null && "errno" in error && (error as { errno?: number }).errno === 1062;
 }
