@@ -73,15 +73,15 @@ const report = buildSummary({
   events: [
     {
       unit: "RT410",
-      sheetDate: "2026-10-10",
-      waiting_labour_at: "2026-10-07T08:00",
-      repair_started_at: "2026-10-07T10:00",
-      rd30_at: "2026-10-07T12:00",
+      sheetDate: "2026-01-15",
+      waiting_labour_at: "2026-10-10T08:00",
+      repair_started_at: "2026-10-10T10:00",
+      rd30_at: "2026-10-10T12:00",
     },
     {
       unit: "rs501",
-      sheetDate: "2026-01-15",
-      waiting_labour_at: "",
+      sheetDate: "2026-10-10",
+      waiting_labour_at: "2026-01-15T00:00",
       repair_started_at: "2026-01-15T00:00",
       rd30_at: "2026-01-15T01:00",
     },
@@ -96,9 +96,11 @@ const report = buildSummary({
 close(report.units[0].daily, 4, "RT410 daily");
 close(report.units[0].wtd, 4, "RT410 wtd");
 close(report.units[0].mtd, 4, "RT410 mtd");
+close(report.units[0].hytd1, 0, "RT410 hytd1 mengabaikan tanggal sheet");
 close(report.units[0].hytd2, 4, "RT410 hytd2");
 close(report.units[0].ytd, 4, "RT410 ytd");
 if (!report.units[0].overDaily) throw new Error("Daily RT410 harus melebihi quota 1");
+close(report.units[1].daily, 0, "RS501 daily mengabaikan tanggal sheet");
 close(report.units[1].hytd1, 1, "RS501 hytd1");
 close(report.units[1].ytd, 1, "RS501 ytd");
 close(report.units[1].hytd2, 0, "RS501 hytd2");

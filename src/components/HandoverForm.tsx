@@ -69,7 +69,9 @@ export function HandoverForm({
       </div>
       <div className="form-grid">
         <label>
-          Crew
+          <span>
+            Crew <abbr className="req" title="Wajib diisi">*</abbr>
+          </span>
           <input
             value={value.crew}
             disabled={!ready || busy}
@@ -107,7 +109,9 @@ export function HandoverForm({
           <input value={deriveStatus(value)} readOnly tabIndex={-1} />
         </label>
         <label>
-          Waiting Labour
+          <span>
+            Waiting Labour <abbr className="req" title="Wajib diisi">*</abbr>
+          </span>
           <DateTimeField
             value={value.waiting_labour_at}
             disabled={!ready || busy}
@@ -211,7 +215,7 @@ export function HandoverForm({
       {notice ? <div className="notice">{notice}</div> : null}
       {error && !hmMessage ? <div className="error">{error}</div> : null}
       <div className="form-actions">
-        <button className="btn btn-primary" type="submit" disabled={!ready || busy || !value.unit.trim() || unchanged}>
+        <button className="btn btn-primary" type="submit" disabled={!ready || busy || !value.crew.trim() || !value.unit.trim() || !value.waiting_labour_at.trim() || unchanged}>
           {busy ? "Menyimpan…" : "Simpan"}
         </button>
         <button className="btn" type="button" onClick={onCancel} disabled={busy}>

@@ -73,7 +73,9 @@ export function isHmValidationMessage(message: string): boolean {
 }
 
 export function validateRowInput(input: RowInput): string | null {
+  if (!input.crew.trim()) return "Crew wajib diisi";
   if (!input.unit.trim()) return "Unit wajib diisi";
+  if (!input.waiting_labour_at.trim()) return "Waiting Labour wajib diisi";
   const stamps = ["waiting_labour_at", "repair_started_at", "rd30_at"] as const;
   for (const key of stamps) {
     if (input[key] && parseLocal(input[key]) == null) return "Format waktu harus dd/mm/yyyy hh:mm";

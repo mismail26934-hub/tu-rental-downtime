@@ -196,7 +196,7 @@ export function buildSummary(input: {
   }
 
   for (const event of input.events) {
-    const day = event.sheetDate.slice(0, 10);
+    const day = event.waiting_labour_at.trim().slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
     if (!PERIODS.some((period) => inWindow(day, windows[period]))) continue;
     const key = bucket(event.unit);

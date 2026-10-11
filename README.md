@@ -60,6 +60,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Waktu di modal memakai teks `dd/mm/yyyy hh:mm` (24 jam). Nilai disimpan sebagai `YYYY-MM-DDTHH:mm`.
 - Ikon jam membuka daftar jam 00–23 dan menit 00–59, tanpa AM/PM. Jika waktu masih kosong, klik ikon jam mengisi tanggal hari ini dan jam sekarang. Waktu yang sudah tersimpan tidak berubah.
 - Tanggal sheet tidak lagi menjadi filter papan. Filter yang tampil hanya tahun.
+- Crew, Unit, dan Waiting Labour wajib diisi, ditandai bintang merah. Tombol Simpan nonaktif selama salah satunya masih kosong.
 - Waiting Labour, Repair Time, dan RD30 tidak terisi sendiri saat form dibuka.
 
 ### Master unit dan master group
@@ -72,10 +73,9 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Group di form unit adalah pencarian dari master group. Nama yang tidak ada di master tidak disimpan. Memilih group tidak mengubah Quota Hrs unit itu sendiri.
 - Quota Hrs (GROUP) di tabel unit diambil dari master group. Group kosong menampilkan —.
 - Master group: Group dan Quota Hrs, di halaman `/master/group`. Group wajib dan unik. Mengganti nama group ikut memperbarui unit yang memakainya. Group yang masih dipakai unit tidak bisa dihapus.
-- Field Unit di form handover wajib, ditandai bintang merah, dan merupakan pilihan yang bisa dicari dari master (kode unit atau model). Tombol Simpan nonaktif selama unit masih kosong.
+- Field Unit di form handover wajib dan merupakan pilihan yang bisa dicari dari master (kode unit atau model). Unit yang tidak ada di master tidak bisa disimpan.
 - Jika data valid, Simpan menampilkan modal "Simpan data?" beserta nama unit. Data baru tertulis setelah Simpan di modal itu diklik. Batal menutup modal dan form tetap terbuka.
 - Model dan quota jam unit yang dipilih tampil di bawah field.
-- Unit yang tidak ada di master tidak bisa disimpan.
 
 ### Summary DT
 
@@ -84,9 +84,9 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Tombol Info menampilkan catatan tanggal, jumlah unit N/Y Ready, dan rumus jam, quota, serta sisa. Tombol Setting memilih kolom Quota Hrs, Jam, dan Sisa. Pilihan disimpan di perangkat, dan minimal satu kolom tetap tampil.
 - Tombol Jam dan Hari ada di toolbar summary dan daftar unit, dengan ikon jam dan kalender, serta jarak yang sama seperti tombol lain. Pilihan yang sama dipakai kedua halaman dan disimpan di perangkat. Hari membagi quota, jam, sisa, Waiting Labour, Repair time, dan DT Total dengan 24 (1 hari = 24 jam). Judul kolom summary menjadi Quota Hari dan Hari; judul sisa di daftar unit menjadi Sisa Quota Hari. N/Y Ready tetap teks. Waktu, HM, dan ERDM tidak dikonversi. Jam mengembalikan angka semula. Export Excel tetap dalam jam.
 - Dua tabel terpisah supaya jam unit tidak terhitung dua kali: summary unit (per model) dan summary group.
-- Dropdown tahun di summary memakai pilihan yang sama dengan daftar unit. Tahun berjalan dihitung sampai hari ini. Tahun lain dihitung sampai 31 Desember tahun itu, dan hanya baris pada jendela tahun itu yang masuk.
+- Dropdown tahun di summary memakai pilihan yang sama dengan daftar unit. Tahun berjalan dihitung sampai hari ini. Tahun lain dihitung sampai 31 Desember tahun itu, dan hanya baris yang tanggal Waiting Labour-nya jatuh pada jendela tahun itu yang masuk.
 - Yang tampil hanya unit yang pernah ada di daftar handover. Group tanpa anggota di daftar disembunyikan.
-- Jam = Waiting Labour + Repair time. Baris tanpa Repair Time tidak dijumlah. Waiting Labour kosong dihitung 0. Seluruh jam baris melekat pada tanggal sheet-nya, tidak dipecah per hari. DS dan NS pada tanggal yang sama digabung. Setiap jam dibulatkan dua desimal sebelum dijumlah.
+- Jam = Waiting Labour + Repair time. Baris tanpa Repair Time tidak dijumlah. Daily, WTD, MTD, HYTD 1, HYTD 2, dan YTD mengikuti tanggal Waiting Labour. Tanggal sheet tidak dipakai untuk periode itu maupun sebagai cadangan. Waiting Labour kosong tidak masuk keenam periode. Seluruh jam baris melekat pada tanggal Waiting Labour, tidak dipecah per hari. DS dan NS pada tanggal yang sama digabung. Setiap jam dibulatkan dua desimal sebelum dijumlah.
 - Jika RD30 terisi, repair memakai jam tersimpan. Jika masih N/Y Ready, repair = jam sekarang − Repair Time dan terus bertambah (dimuat ulang setiap 30 detik). Kode unit N/Y Ready berwarna merah dan diberi `*` di kolom Unit saja.
 - Kolom mengikuti `Summary.xlsx`: tiap periode punya Quota Hrs, Jam, dan Sisa. Warna periode dibedakan: Daily kuning, WTD biru, MTD hijau, HYTD 1 abu-abu, HYTD 2 ungu, YTD oranye. Kode unit disusun ke bawah.
 - Sisa = quota periode − jam. Sisa kosong jika jam 0, dan merah jika negatif. Daily yang melebihi Quota Hrs unit juga merah. Lingkaran di kiri angka sisa berwarna merah jika minus, oranye jika tersisa 50% atau kurang, dan hijau jika tersisa lebih dari 50%. Lingkaran rata kiri di dalam kolom. Baris unit di dalam model memakai sisa modelnya, bukan sisa unit itu sendiri.
