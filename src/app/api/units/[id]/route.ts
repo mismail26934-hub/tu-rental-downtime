@@ -3,6 +3,7 @@ import { findGroupByName } from "@/db/groups";
 import { actorFromUser } from "@/db/backup";
 import { deleteUnit, isDuplicateUnitError, updateUnit } from "@/db/units";
 import { badRequest, requireWriter } from "@/lib/http";
+import { publishLive } from "@/lib/live";
 import { isRowId } from "@/lib/row-input";
 import { parseQuota } from "@/lib/units";
 
@@ -39,6 +40,7 @@ export async function PATCH(request: Request, context: Context) {
   try {
     const saved = await updateUnit(id, { model, quota_hrs: quota, unit, group }, actorFromUser(user));
     if (!saved) return NextResponse.json({ error: "Unit tidak ditemukan" }, { status: 404 });
+    publishLive("units");
     return NextResponse.json({ unit: saved });
   } catch (error) {
     if (isDuplicateUnitError(error)) return badRequest("Unit sudah ada");
@@ -53,5 +55,6 @@ export async function DELETE(_request: Request, context: Context) {
   if (!isRowId(id)) return badRequest("Id tidak valid");
   const removed = await deleteUnit(id, actorFromUser(user));
   if (!removed) return NextResponse.json({ error: "Unit tidak ditemukan" }, { status: 404 });
+  publishLive("units");
   return NextResponse.json({ ok: true });
 }

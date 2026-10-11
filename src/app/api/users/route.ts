@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { insertUser, isDuplicateUserError, listUsers } from "@/db/users";
 import { badRequest, requireSuperuser } from "@/lib/http";
+import { publishLive } from "@/lib/live";
 import { hashPassword } from "@/lib/password";
 import { isRowId } from "@/lib/row-input";
 import { validateUserInput } from "@/lib/user-input";
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
       level: input.level,
       active: input.active === "1" ? "1" : "0",
     });
+    publishLive("users");
     return NextResponse.json({ user: saved });
   } catch (error) {
     if (isDuplicateUserError(error)) return badRequest("Username sudah ada");

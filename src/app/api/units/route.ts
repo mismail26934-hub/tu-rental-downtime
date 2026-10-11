@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { findGroupByName } from "@/db/groups";
 import { insertUnit, isDuplicateUnitError, listUnits } from "@/db/units";
 import { badRequest, requireUser, requireWriter, unauthorized } from "@/lib/http";
+import { publishLive } from "@/lib/live";
 import { isRowId } from "@/lib/row-input";
 import { parseQuota } from "@/lib/units";
 
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
   }
   try {
     const saved = await insertUnit(id, { model, quota_hrs: quota, unit, group });
+    publishLive("units");
     return NextResponse.json({ unit: saved });
   } catch (error) {
     if (isDuplicateUnitError(error)) return badRequest("Unit sudah ada");

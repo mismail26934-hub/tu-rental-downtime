@@ -4,6 +4,7 @@ import { actorFromUser } from "@/db/backup";
 import { saveRow } from "@/db/handover";
 import { computeMetrics } from "@/lib/calc";
 import { badRequest, requireWriter } from "@/lib/http";
+import { publishLive } from "@/lib/live";
 import { isRowId, isSheetDate, normalizeRowInput, validateRowInput } from "@/lib/row-input";
 import type { Shift } from "@/lib/types";
 
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
     row: { ...input, id: rowId },
     actor: actorFromUser(user),
   });
+  publishLive("board");
   return NextResponse.json({
     sheet: saved.sheet,
     row: { ...saved.row, metrics: computeMetrics(saved.row) },

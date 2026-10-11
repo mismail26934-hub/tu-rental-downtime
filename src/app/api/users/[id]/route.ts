@@ -7,6 +7,7 @@ import {
   updateUser,
 } from "@/db/users";
 import { badRequest, requireSuperuser } from "@/lib/http";
+import { publishLive } from "@/lib/live";
 import { hashPassword } from "@/lib/password";
 import { validateUserInput } from "@/lib/user-input";
 
@@ -60,6 +61,7 @@ export async function PATCH(request: Request, context: Context) {
       passwordHash: input.password ? await hashPassword(input.password) : undefined,
     });
     if (!saved) return NextResponse.json({ error: "Pengguna tidak ditemukan" }, { status: 404 });
+    publishLive("users");
     return NextResponse.json({ user: saved });
   } catch (error) {
     if (isDuplicateUserError(error)) return badRequest("Username sudah ada");
@@ -80,5 +82,6 @@ export async function DELETE(_request: Request, context: Context) {
   }
   const removed = await deleteUser(id);
   if (!removed) return NextResponse.json({ error: "Pengguna tidak ditemukan" }, { status: 404 });
+  publishLive("users");
   return NextResponse.json({ ok: true });
 }

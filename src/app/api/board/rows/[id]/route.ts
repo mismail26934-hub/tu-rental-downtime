@@ -4,6 +4,7 @@ import { deleteRow, updateRow } from "@/db/handover";
 import { findUnitByCode } from "@/db/units";
 import { computeMetrics } from "@/lib/calc";
 import { badRequest, requireWriter } from "@/lib/http";
+import { publishLive } from "@/lib/live";
 import { isRowId, normalizeRowInput, validateRowInput } from "@/lib/row-input";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ export async function PATCH(request: Request, context: Context) {
   input.unit = known.unit;
   const row = await updateRow(id, input, actorFromUser(user));
   if (!row) return NextResponse.json({ error: "Baris tidak ditemukan" }, { status: 404 });
+  publishLive("board");
   return NextResponse.json({ row: { ...row, metrics: computeMetrics(row) } });
 }
 
@@ -34,5 +36,6 @@ export async function DELETE(_request: Request, context: Context) {
   if (!isRowId(id)) return badRequest("Id tidak valid");
   const removed = await deleteRow(id, actorFromUser(user));
   if (!removed) return NextResponse.json({ error: "Baris tidak ditemukan" }, { status: 404 });
+  publishLive("board");
   return NextResponse.json({ ok: true });
 }

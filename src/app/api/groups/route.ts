@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { insertGroup, isDuplicateGroupError, listGroups } from "@/db/groups";
 import { badRequest, requireUser, requireWriter, unauthorized } from "@/lib/http";
+import { publishLive } from "@/lib/live";
 import { isRowId } from "@/lib/row-input";
 import { parseQuota } from "@/lib/units";
 
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
   if (quota == null) return badRequest("Quota Hrs harus angka");
   try {
     const saved = await insertGroup(id, { group, quota_hrs: quota });
+    publishLive("groups");
     return NextResponse.json({ group: saved });
   } catch (error) {
     if (isDuplicateGroupError(error)) return badRequest("Group sudah ada");
