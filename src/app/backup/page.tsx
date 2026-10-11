@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BackupList } from "@/components/BackupList";
 
 export const metadata: Metadata = {
-  title: "Backup data — ARMOR",
+  title: "Backup data",
 };
 
 export default function BackupPage() {

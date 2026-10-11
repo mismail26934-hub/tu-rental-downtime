@@ -31,6 +31,9 @@ export function DtSummary() {
   const setYear = useSheetYear((state) => state.setYear);
   const [ready, setReady] = useState(false);
   const [freezeCols, setFreezeCols] = useState(true);
+  const [searchDraft, setSearchDraft] = useState("");
+  const [search, setSearch] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
   const summaryQuery = useQuery({
     queryKey: ["dt-summary", year],
     queryFn: () => fetchSummary(year),
@@ -51,6 +54,31 @@ export function DtSummary() {
       cancel = true;
     };
   }, []);
+
+  useEffect(() => {
+    const input = searchRef.current;
+    if (!input) return;
+    const onSearch = () => {
+      setSearchDraft(input.value);
+      if (!input.value.trim()) setSearch("");
+    };
+    input.addEventListener("search", onSearch);
+    return () => input.removeEventListener("search", onSearch);
+  }, []);
+
+  const needle = search.trim().toLowerCase();
+  const unitRows = (report?.units || []).filter((row) => matchesSummary(row, needle));
+  const groupRows = (report?.groups || []).filter((row) => matchesSummary(row, needle));
+  const unitEmpty = summaryQuery.isSuccess
+    ? needle
+      ? "Tidak ada yang cocok."
+      : "Belum ada unit di daftar."
+    : "Memuat…";
+  const groupEmpty = summaryQuery.isSuccess
+    ? needle
+      ? "Tidak ada yang cocok."
+      : "Belum ada group di daftar."
+    : "Memuat…";
 
   return (
     <>
@@ -79,6 +107,31 @@ export function DtSummary() {
                 <ListIcon />
                 <span className="btn-label">Daftar unit</span>
               </Link>
+              <div className="search-pair">
+                <input
+                  ref={searchRef}
+                  className="unit-search"
+                  type="search"
+                  aria-label="Cari summary"
+                  placeholder="Model, unit, atau group"
+                  value={searchDraft}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    setSearchDraft(next);
+                    if (!next.trim()) setSearch("");
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      setSearch(searchDraft.trim());
+                    }
+                  }}
+                />
+                <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
+                  <SearchIcon />
+                  <span className="btn-label">Cari</span>
+                </button>
+              </div>
               <SummaryInfo report={report} />
               <SummarySettings />
               <SummaryManage
@@ -96,12 +149,12 @@ export function DtSummary() {
             </div>
           ) : null}
           <SummaryTable
-            rows={report?.units || []}
+            rows={unitRows}
             labelHeader="Model"
             grouped
             asOf={report?.asOf}
             frozen={freezeCols}
-            empty={summaryQuery.isSuccess ? "Belum ada unit di daftar." : "Memuat…"}
+            empty={unitEmpty}
           />
         </section>
         <section className="panel">
@@ -109,11 +162,11 @@ export function DtSummary() {
             <h2>SUMMARY GROUP</h2>
           </div>
           <SummaryTable
-            rows={report?.groups || []}
+            rows={groupRows}
             labelHeader="Group"
             asOf={report?.asOf}
             frozen={freezeCols}
-            empty={summaryQuery.isSuccess ? "Belum ada group di daftar." : "Memuat…"}
+            empty={groupEmpty}
           />
         </section>
       </main>
@@ -301,6 +354,21 @@ function ManageIcon() {
   );
 }
 
+function matchesSummary(row: SummaryRow, needle: string): boolean {
+  if (!needle) return true;
+  const unit = row.unit.replace(/\*/g, "");
+  return row.label.toLowerCase().includes(needle) || unit.toLowerCase().includes(needle);
+}
+
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" />
+    </svg>
+  );
+}
+
 function ListIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -479,7 +547,7 @@ function SummaryTable({
   );
 }
 
-const SCALED_PERIODS: PeriodKey[] = ["wtd", "mtd", "hytd1", "hytd2", "ytd"];
+const SCALED_PERIODS = ["wtd", "mtd", "hytd1", "hytd2", "ytd"] as const;
 
 const PERIOD_LABEL: Record<(typeof SCALED_PERIODS)[number], string> = {
   wtd: "WTD",
@@ -503,7 +571,8 @@ function sameSort(current: ActiveSummarySort, next: ActiveSummarySort): boolean 
 }
 
 function isCell(sort: SummarySort, period: PeriodKey, metric: SortMetric): boolean {
-  return sort?.kind === "cell" && sort.period === period && sort.metric === metric;
+  if (!sort || sort.kind !== "cell") return false;
+  return sort.period === period && sort.metric === metric;
 }
 
 function cellDir(sort: SummarySort, period: PeriodKey, metric: SortMetric): SortDir {
@@ -550,6 +619,7 @@ function sortValue(row: SummaryRow, sort: ActiveSummarySort, now: Date): string 
   if (sort.kind === "label") return row.label;
   if (sort.kind === "quota") return row.quota_hrs;
   if (sort.kind === "unit") return row.unit;
+  if (sort.kind !== "cell") return null;
   if (sort.metric === "jam") return row[sort.period];
   const quota = sort.period === "daily" ? row.quota_hrs : periodQuota(row.quota_hrs, sort.period, now);
   if (sort.metric === "quota") return quota;

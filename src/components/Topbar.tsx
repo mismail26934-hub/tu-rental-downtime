@@ -68,7 +68,7 @@ function YearFilter() {
   });
 
   useEffect(() => {
-    void useSheetYear.persist.rehydrate().then(() => setReady(true));
+    void Promise.resolve(useSheetYear.persist.rehydrate()).then(() => setReady(true));
   }, []);
 
   return (

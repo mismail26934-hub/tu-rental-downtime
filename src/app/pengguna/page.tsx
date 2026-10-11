@@ -5,7 +5,7 @@ import { UserMaster } from "@/components/UserMaster";
 import { isSuperuser } from "@/lib/access";
 
 export const metadata: Metadata = {
-  title: "Pengguna — ARMOR",
+  title: "Pengguna",
 };
 
 export default async function UsersPage() {

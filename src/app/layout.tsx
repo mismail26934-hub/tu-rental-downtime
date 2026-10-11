@@ -24,7 +24,10 @@ const body = localFont({
 const themeScript = `try{var t=localStorage.getItem("tu-rental-theme");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){}`;
 
 export const metadata: Metadata = {
-  title: "ARMOR — Input downtime shift",
+  title: {
+    default: "ARMOR",
+    template: "ARMOR - %s",
+  },
   description: "Input data handover unit, jam downtime, dan HM",
 };
 
