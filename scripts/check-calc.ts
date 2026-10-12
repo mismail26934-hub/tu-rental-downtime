@@ -60,7 +60,7 @@ if (periodQuotaDays("hytd1", asOf) !== 181 || periodQuotaDays("hytd2", asOf) !==
     `hari quota HYTD/YTD: ${periodQuotaDays("hytd1", asOf)} ${periodQuotaDays("hytd2", asOf)} ${periodQuotaDays("ytd", asOf)}`
   );
 }
-if (periodQuotaDays("wtd", asOf) !== 6 || periodQuota(24, "wtd", asOf) !== 144 || periodQuota(24, "mtd", asOf) !== 240 || periodQuota(24, "ytd", asOf) !== 6792) {
+if (periodQuotaDays("wtd", asOf) !== 7 || periodQuota(24, "wtd", asOf) !== 168 || periodQuota(24, "mtd", asOf) !== 240 || periodQuota(24, "ytd", asOf) !== 6792) {
   throw new Error("quota periode tidak mengikuti Quota Hrs × hari");
 }
 const past = summaryAsOf(2025, asOf);

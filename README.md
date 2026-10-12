@@ -95,7 +95,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Sisa = quota periode − jam. Sisa kosong jika jam 0, dan merah jika negatif. Daily yang melebihi Quota Hrs unit juga merah. Lingkaran di kiri angka sisa berwarna merah jika minus, oranye jika tersisa 50% atau kurang, dan hijau jika tersisa lebih dari 50%. Lingkaran rata kiri di dalam kolom. Baris unit di dalam model memakai sisa modelnya, bukan sisa unit itu sendiri.
 - Quota periode adalah Quota Hrs × jumlah hari, bukan penjumlahan quota unit:
   - Daily memakai Quota Hrs unit (satu hari).
-  - WTD = Quota Hrs × hari berjalan sejak Senin. Sabtu adalah hari ke-6, Minggu hari ke-7.
+  - WTD = Quota Hrs × 7.
   - MTD = Quota Hrs × tanggal hari ini.
   - HYTD 1 = Quota Hrs × hari dari 1 Jan sampai 30 Jun. Jika hari ini masih di semester pertama, hari dihitung sampai hari ini.
   - HYTD 2 = Quota Hrs × hari dari 1 Jul sampai hari ini. Sebelum 1 Jul, quota-nya 0.

@@ -117,15 +117,12 @@ function daysInclusive(start: Date, end: Date): number {
   return Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
 }
 
-/** Hari pengali quota. WTD = hari berjalan sejak Senin (Sabtu = 6), MTD = tanggal hari ini, HYTD dan YTD = hari dalam jendela sampai hari ini. */
+/** Hari pengali quota. WTD selalu 7 hari, MTD = tanggal hari ini, HYTD dan YTD = hari dalam jendela sampai hari ini. */
 export function periodQuotaDays(period: PeriodKey, now = new Date()): number {
   const today = startOfDay(now);
   const year = today.getFullYear();
   if (period === "daily") return 1;
-  if (period === "wtd") {
-    const weekday = today.getDay();
-    return weekday === 0 ? 7 : weekday;
-  }
+  if (period === "wtd") return 7;
   if (period === "mtd") return today.getDate();
   if (period === "hytd1") {
     const start = new Date(year, 0, 1);
