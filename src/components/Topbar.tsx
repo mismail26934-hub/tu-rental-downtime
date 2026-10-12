@@ -50,7 +50,6 @@ const text: Copy = {
 type Props = {
   busy?: boolean;
   onRefresh: () => void;
-  stats?: { rows: number; ready: number; rd30: number; rt: number };
 };
 
 function YearFilter() {
@@ -87,67 +86,6 @@ function YearFilter() {
   );
 }
 
-function NavStats({ stats }: { stats: NonNullable<Props["stats"]> }) {
-  return (
-    <div className="nav-stats" aria-label="Ringkasan daftar">
-      <span className="nav-stat" tabIndex={0} aria-label={`Baris ${stats.rows}`}>
-        <RowsIcon />
-        <span className="nav-stat-name">Baris</span>
-        <strong>{stats.rows}</strong>
-      </span>
-      <span className="nav-stat nav-stat--ready" tabIndex={0} aria-label={`N/Y Ready ${stats.ready}`}>
-        <ReadyIcon />
-        <span className="nav-stat-name">N/Y Ready</span>
-        <strong>{stats.ready}</strong>
-      </span>
-      <span className="nav-stat" tabIndex={0} aria-label={`RD30 ${stats.rd30}`}>
-        <DoneIcon />
-        <span className="nav-stat-name">RD30</span>
-        <strong>{stats.rd30}</strong>
-      </span>
-      <span className="nav-stat" tabIndex={0} aria-label={`Status RT ${stats.rt}`}>
-        <RepairIcon />
-        <span className="nav-stat-name">Status RT</span>
-        <strong>{stats.rt}</strong>
-      </span>
-    </div>
-  );
-}
-
-function RowsIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-    </svg>
-  );
-}
-
-function ReadyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 8v5l3 2" />
-    </svg>
-  );
-}
-
-function DoneIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M8.5 12.5l2.5 2.5 4.5-5" />
-    </svg>
-  );
-}
-
-function RepairIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L3 18v3h3l6.1-6.1a4 4 0 0 0 5.6-5.6l-2.2 2.2-2.8-2.8z" />
-    </svg>
-  );
-}
-
 function shortName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length <= 1) return name;
@@ -159,7 +97,7 @@ function levelLabel(level: string) {
   return level.charAt(0).toUpperCase() + level.slice(1);
 }
 
-export function Topbar({ busy = false, onRefresh, stats }: Props) {
+export function Topbar({ busy = false, onRefresh }: Props) {
   const { data, update } = useSession();
   const [light, setLight] = useState(false);
   const [sessionOpen, setSessionOpen] = useState(false);
@@ -252,7 +190,7 @@ export function Topbar({ busy = false, onRefresh, stats }: Props) {
   return (
     <>
       <div className="topbar-glass" />
-      <header className={`topbar${stats ? " has-stats" : ""}`} ref={topbarRef}>
+      <header className="topbar" ref={topbarRef}>
         <div className="brand-row">
           <Link className="brand" href="/" aria-label="Halaman utama">
             ARMOR
@@ -260,7 +198,6 @@ export function Topbar({ busy = false, onRefresh, stats }: Props) {
           </Link>
           <OfflineChip />
         </div>
-        {stats ? <NavStats stats={stats} /> : null}
         <div className={`top-actions${navOpen ? " is-open" : ""}`} ref={navRef}>
           <button
             className={`btn btn-icon nav-burger${navOpen ? " is-on" : ""}`}

@@ -5,12 +5,15 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { GroupSelect } from "@/components/GroupSelect";
+import { CollapseBoard, ModelSummary } from "@/components/ModelSummary";
 import { SisaValue } from "@/components/SisaValue";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
 import { canManage } from "@/lib/access";
 import { formatHourClock, formatHours, formatQuotaDisplay } from "@/lib/format";
+import { rehydrateMasterView, useMasterView } from "@/lib/master-view";
+import { rehydrateModelCardFields } from "@/lib/model-card-fields";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 import { PERIODS, periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import { toSummaryAmount, useSummaryView, type SummaryColumns, type SummaryMetric, type SummaryUnit } from "@/lib/summary-view";
@@ -88,12 +91,18 @@ export function UnitMaster() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const asOf = summaryQuery.data?.asOf || "";
+  const tableHidden = useMasterView((state) => state.tableHidden);
+  const setTableHidden = useMasterView((state) => state.setTableHidden);
+  const cardsHidden = useMasterView((state) => state.cardsHidden);
+  const setCardsHidden = useMasterView((state) => state.setCardsHidden);
 
   useEffect(() => {
     let cancel = false;
     void (async () => {
       await useSheetYear.persist.rehydrate();
       await useSummaryView.persist.rehydrate();
+      await rehydrateMasterView();
+      await rehydrateModelCardFields();
       if (cancel) return;
       if (localStorage.getItem("tu-rental-freeze") === "0") setFreezeCols(false);
       setReady(true);
@@ -325,6 +334,21 @@ export function UnitMaster() {
               {unitsQuery.error instanceof Error ? unitsQuery.error.message : "Gagal memuat data"}
             </div>
           ) : null}
+          <ModelSummary
+            units={unitsQuery.data || []}
+            report={summaryQuery.data}
+            ready={summaryQuery.isSuccess}
+            asOf={asOf}
+            mode={mode}
+            hidden={cardsHidden}
+            onToggle={() => setCardsHidden(!cardsHidden)}
+          />
+          <CollapseBoard
+            hidden={tableHidden}
+            label="Tabel"
+            hiddenLabel="Tabel disembunyikan"
+            onToggle={() => setTableHidden(!tableHidden)}
+          >
           <div className="handover-table-wrap">
             <table className={`handover-table master-table${freezeCols ? " is-frozen" : ""}`}>
               <thead>
@@ -383,6 +407,7 @@ export function UnitMaster() {
               </tbody>
             </table>
           </div>
+          </CollapseBoard>
         </section>
         {draft ? (
           <div className="form-modal-backdrop" onMouseDown={closeDraft}>
@@ -641,29 +666,23 @@ async function fetchSummary(year: string): Promise<SummaryReport> {
   return (await response.json()) as SummaryReport;
 }
 
+function pickHours(row: SummaryRow | undefined): Hours | null {
+  if (!row) return null;
+  return { daily: row.daily, wtd: row.wtd, mtd: row.mtd, hytd1: row.hytd1, hytd2: row.hytd2, ytd: row.ytd };
+}
+
 function emptyHours(): Hours {
   return { daily: 0, wtd: 0, mtd: 0, hytd1: 0, hytd2: 0, ytd: 0 };
 }
 
-function pickHours(row: SummaryRow): Hours {
-  return {
-    daily: row.daily,
-    wtd: row.wtd,
-    mtd: row.mtd,
-    hytd1: row.hytd1,
-    hytd2: row.hytd2,
-    ytd: row.ytd,
-  };
-}
-
 function hoursForUnit(report: SummaryReport | undefined, code: string): Hours {
   const row = report?.units.find((item) => item.unit.trim().toLowerCase() === code.trim().toLowerCase());
-  return row ? pickHours(row) : emptyHours();
+  return pickHours(row) ?? emptyHours();
 }
 
 function hoursForGroup(report: SummaryReport | undefined, group: string): Hours {
   const row = report?.groups.find((item) => item.label.trim().toLowerCase() === group.trim().toLowerCase());
-  return row ? pickHours(row) : emptyHours();
+  return pickHours(row) ?? emptyHours();
 }
 
 function asOfDate(asOf: string): Date {

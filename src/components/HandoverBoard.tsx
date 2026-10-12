@@ -6,21 +6,25 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { HandoverForm } from "@/components/HandoverForm";
 import { HandoverTable } from "@/components/HandoverTable";
+import { CollapseBoard, ModelSummary, type ModelSummaryUnit } from "@/components/ModelSummary";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
+import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
 import { canManage } from "@/lib/access";
 import { sendMutation, type MutationResult } from "@/lib/api";
-import { computeMetrics, deriveStatus } from "@/lib/calc";
+import { deriveStatus } from "@/lib/calc";
 import { defaultShift, todayISO } from "@/lib/format";
 import { deleteDraft, loadDraft, saveDraft } from "@/lib/offline/draft";
 import { flushOutbox } from "@/lib/offline/outbox";
 import { isHmValidationMessage, sameRowInput, validateRowInput } from "@/lib/row-input";
 import { useOfflineReady } from "@/app/providers";
 import { useBoardView } from "@/lib/board-view";
+import { rehydrateModelCardFields } from "@/lib/model-card-fields";
 import { useSummaryView } from "@/lib/summary-view";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 import type { SummaryReport } from "@/lib/summary";
 import { sisaByUnit } from "@/lib/unit-sisa";
+import type { UnitMaster } from "@/lib/units";
 import {
   emptyRowInput,
   toRowInput,
@@ -100,6 +104,12 @@ export function HandoverBoard() {
   const [freezeCols, setFreezeCols] = useState(true);
   const editMode = useBoardView((state) => state.editMode);
   const setEditMode = useBoardView((state) => state.setEditMode);
+  const summaryHidden = useBoardView((state) => state.summaryHidden);
+  const setSummaryHidden = useBoardView((state) => state.setSummaryHidden);
+  const tableHidden = useBoardView((state) => state.tableHidden);
+  const setTableHidden = useBoardView((state) => state.setTableHidden);
+  const hourMode = useSummaryView((state) => state.unit);
+  const unitsQuery = useUnits();
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
@@ -117,10 +127,11 @@ export function HandoverBoard() {
     void (async () => {
       await useSheetYear.persist.rehydrate();
       await useSummaryView.persist.rehydrate();
+      await useBoardView.persist.rehydrate();
+      await rehydrateModelCardFields();
       if (cancel) return;
       if (localStorage.getItem("tu-rental-freeze") === "0") setFreezeCols(false);
       setFiltersReady(true);
-      void useBoardView.persist.rehydrate();
     })();
     return () => {
       cancel = true;
@@ -445,29 +456,11 @@ export function HandoverBoard() {
     setExportOpen(true);
   }
 
-  const [statsNode, setStatsNode] = useState<HTMLDivElement | null>(null);
-  const [statsAway, setStatsAway] = useState(false);
-
-  useEffect(() => {
-    if (!statsNode) return;
-    const sync = () => {
-      const raw = getComputedStyle(document.documentElement).getPropertyValue("--topbar-height");
-      const height = Number.parseFloat(raw) || 72;
-      const bottom = statsNode.getBoundingClientRect().bottom;
-      setStatsAway((away) => (away ? bottom <= height + 48 : bottom <= height + 8));
-    };
-    sync();
-    window.addEventListener("scroll", sync, { passive: true });
-    window.addEventListener("resize", sync);
-    return () => {
-      window.removeEventListener("scroll", sync);
-      window.removeEventListener("resize", sync);
-    };
-  }, [statsNode]);
   const rows = boardQuery.data?.rows || [];
-  const readyCount = rows.filter((row) => computeMetrics(row, now).dtLabel === "N/Y Ready").length;
-  const rd30Count = rows.filter((row) => row.rd30_at.trim()).length;
-  const rtCount = rows.filter((row) => row.status.trim().toUpperCase() === "RT").length;
+  const summaryUnits = useMemo(
+    () => (unitsQuery.isFetched ? boardSummaryUnits(rows, unitsQuery.data || []) : []),
+    [rows, unitsQuery.data, unitsQuery.isFetched]
+  );
 
   if (status === "loading" || !filtersReady) {
     return <div className="page-loading">Memuat…</div>;
@@ -482,11 +475,6 @@ export function HandoverBoard() {
           void boardQuery.refetch();
           void summaryQuery.refetch();
         }}
-        stats={
-          statsAway
-            ? { rows: rows.length, ready: readyCount, rd30: rd30Count, rt: rtCount }
-            : undefined
-        }
       />
       <main className="app">
         {boardQuery.isError ? (
@@ -496,44 +484,15 @@ export function HandoverBoard() {
               : "Gagal memuat data"}
           </div>
         ) : null}
-        <div className="summary" ref={setStatsNode}>
-          <div className="stat stat--queue">
-            <span className="stat-icon" aria-hidden="true">
-              <RowsIcon />
-            </span>
-            <div className="stat-body">
-              <div className="label">Baris</div>
-              <div className="value">{rows.length}</div>
-            </div>
-          </div>
-          <div className="stat stat--busy">
-            <span className="stat-icon" aria-hidden="true">
-              <ReadyIcon />
-            </span>
-            <div className="stat-body">
-              <div className="label">N/Y Ready</div>
-              <div className="value">{readyCount}</div>
-            </div>
-          </div>
-          <div className="stat stat--available">
-            <span className="stat-icon" aria-hidden="true">
-              <DoneIcon />
-            </span>
-            <div className="stat-body">
-              <div className="label">RD30</div>
-              <div className="value">{rd30Count}</div>
-            </div>
-          </div>
-          <div className="stat stat--offline">
-            <span className="stat-icon" aria-hidden="true">
-              <RepairIcon />
-            </span>
-            <div className="stat-body">
-              <div className="label">Status RT</div>
-              <div className="value">{rtCount}</div>
-            </div>
-          </div>
-        </div>
+        <ModelSummary
+          units={summaryUnits}
+          report={summaryQuery.data}
+          ready={summaryQuery.isSuccess}
+          asOf={summaryQuery.data?.asOf || ""}
+          mode={hourMode}
+          hidden={summaryHidden}
+          onToggle={() => setSummaryHidden(!summaryHidden)}
+        />
 
         {formOpen ? (
           <div className="form-modal-backdrop" onMouseDown={closeForm}>
@@ -716,6 +675,12 @@ export function HandoverBoard() {
             </div>
           </div>
           {!formOpen && notice ? <div className="notice">{notice}</div> : null}
+          <CollapseBoard
+            hidden={tableHidden}
+            label="Tabel"
+            hiddenLabel="Tabel disembunyikan"
+            onToggle={() => setTableHidden(!tableHidden)}
+          >
           <HandoverTable
             rows={rows}
             now={now}
@@ -731,6 +696,7 @@ export function HandoverBoard() {
               deleteMutation.mutate(row.id);
             }}
           />
+          </CollapseBoard>
         </section>
       </main>
     </>
@@ -808,38 +774,23 @@ function ManageMenu({
   );
 }
 
-function RowsIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-    </svg>
-  );
-}
-
-function ReadyIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 8v5l3 2" />
-    </svg>
-  );
-}
-
-function DoneIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M8.5 12.5l2.5 2.5 4.5-5" />
-    </svg>
-  );
-}
-
-function RepairIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L3 18v3h3l6.1-6.1a4 4 0 0 0 5.6-5.6l-2.2 2.2-2.8-2.8z" />
-    </svg>
-  );
+function boardSummaryUnits(rows: HandoverRow[], master: UnitMaster[]): ModelSummaryUnit[] {
+  const byCode = new Map(master.map((unit) => [unit.unit.trim().toLowerCase(), unit]));
+  const seen = new Set<string>();
+  const units: ModelSummaryUnit[] = [];
+  for (const row of rows) {
+    const code = row.unit.trim();
+    const key = code.toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const match = byCode.get(key);
+    units.push({
+      unit: match?.unit || code,
+      model: match?.model.trim() || "—",
+      quota_hrs: match ? match.quota_hrs : null,
+    });
+  }
+  return units;
 }
 
 function ManageIcon() {

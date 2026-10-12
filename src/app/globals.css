@@ -418,6 +418,7 @@ html.topbar-scrolled .topbar-glass {
 
 .stat .label,
 .metric .label,
+.model-card .label,
 .board-filters label,
 .form label {
   color: var(--muted);
@@ -425,7 +426,8 @@ html.topbar-scrolled .topbar-glass {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.stat .label {
+.stat .label,
+.model-card .label {
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1.25;
@@ -437,7 +439,8 @@ html.topbar-scrolled .topbar-glass {
   line-height: 1;
   margin-top: 4px;
 }
-.stat .value {
+.stat .value,
+.model-card .value {
   font-size: 1.75rem;
   letter-spacing: 0.02em;
   margin-top: 0;
@@ -809,6 +812,134 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; }
 html[data-theme="light"] .unit-select-menu {
   background: #fff;
   border: 1px solid var(--line);
+}
+.collapse-board {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: linear-gradient(160deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.collapse-board.is-hidden {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.collapse-board-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+}
+.collapse-board.is-hidden .collapse-board-bar {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.collapse-board-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.collapse-board-bar > span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.collapse-board-bar .btn-icon {
+  width: 36px;
+  height: 36px;
+  border-color: var(--amber-border);
+  color: var(--amber);
+  border-radius: 10px;
+}
+.model-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.model-card {
+  --stat-accent: var(--steel);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: linear-gradient(160deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--stat-accent);
+  border-radius: 12px;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--line) 12%, transparent);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.model-card.is-ok { --stat-accent: var(--green); }
+.model-card.is-half { --stat-accent: #f09030; }
+.model-card.is-minus { --stat-accent: var(--red); }
+html[data-theme="light"] .model-card.is-half { --stat-accent: #e06a00; }
+.model-card .value { color: var(--stat-accent); }
+.model-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.model-card-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--stat-accent) 16%, transparent);
+  color: var(--stat-accent);
+  border: 1px solid color-mix(in srgb, var(--stat-accent) 35%, transparent);
+  font-weight: 700;
+}
+.model-card-title { min-width: 0; }
+.model-card-count,
+.model-card-meta {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.model-card-units {
+  color: var(--text);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.model-card .is-ny { color: var(--red); font-weight: 700; }
+.model-card .is-backup { color: var(--green); font-weight: 700; }
+.model-card-hero { display: grid; gap: 4px; }
+.model-card-periods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+.model-card-periods li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.model-card-periods strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.model-card-periods .is-minus { color: var(--red); }
+@media (hover: hover) and (pointer: fine) {
+  .model-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--line) 18%, transparent);
+  }
 }
 .master-table {
   --pin-1: 128px;
@@ -1835,6 +1966,7 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
+  .model-cards { grid-template-columns: 1fr; }
   .stat {
     flex-direction: column;
     align-items: flex-start;
