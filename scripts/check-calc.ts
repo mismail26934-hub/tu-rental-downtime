@@ -1,6 +1,6 @@
 import { computeMetrics } from "../src/lib/calc";
 import { parseUserInserts } from "../src/lib/import-users-sql";
-import { buildSummary, periodQuota, periodQuotaDays, periodWindows, summaryAsOf, summaryHours } from "../src/lib/summary";
+import { buildSummary, dailyHours, periodQuota, periodQuotaDays, periodWindows, summaryAsOf, summaryHours } from "../src/lib/summary";
 import { todayISO } from "../src/lib/format";
 
 function close(actual: number | null, expected: number, label: string) {
@@ -109,6 +109,28 @@ if (report.groups[0].unit !== "RT410") throw new Error("anggota group");
 if (report.units.some((row) => row.unit === "RT401")) throw new Error("unit tanpa daftar tidak boleh tampil");
 if (report.units[0].open) throw new Error("RT410 contoh sudah RD30");
 if (report.openUnits !== 0) throw new Error("kedua contoh sudah RD30");
+
+const stillOpen = {
+  unit: "RT410",
+  sheetDate: "2026-10-01",
+  waiting_labour_at: "2026-10-01T02:44",
+  repair_started_at: "2026-10-01T03:32",
+  rd30_at: "",
+};
+const nextMorning = new Date(2026, 9, 2, 8, 0, 0);
+close(dailyHours(stillOpen, new Date(2026, 9, 1, 10, 0, 0)), 7.266666, "RT410 daily hari pertama");
+close(dailyHours(stillOpen, nextMorning), 8, "RT410 daily reset tengah malam");
+close(dailyHours({ ...stillOpen, rd30_at: "2026-10-01T18:00" }, nextMorning), 0, "RT410 selesai sebelum tengah malam");
+const reset = buildSummary({
+  now: nextMorning,
+  events: [stillOpen],
+  units: [{ id: "u1", model: "FKR/KDP", quota_hrs: 1, unit: "RT410", group: "777" }],
+  groups: [{ id: "g1", group: "777", quota_hrs: 18 }],
+});
+close(reset.units[0].daily, 8, "summary daily mulai dari 00:00");
+close(reset.units[0].mtd, 29.27, "summary mtd tetap seluruh jam");
+close(reset.units[0].ytd, 29.27, "summary ytd tetap seluruh jam");
+if (!reset.units[0].open) throw new Error("RT410 masih N/Y Ready");
 
 const sql = `
 INSERT INTO \`users\` (\`id\`, \`username\`, \`password_hash\`, \`name\`, \`level\`, \`active\`) VALUES

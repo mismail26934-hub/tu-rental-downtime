@@ -421,7 +421,7 @@ function note(report: SummaryReport, unit: SummaryUnit): string {
     unit === "hari"
       ? "Semua angka dalam hari (1 hari = 24 jam)."
       : "Jam = Waiting Labour + Repair time.";
-  return `Per ${date}. ${open} ${scale} Jam Daily sampai YTD mengikuti tanggal Waiting Labour. Quota periode = Quota Hrs × hari (WTD = Quota Hrs × 7, MTD tanggal hari ini, HYTD 1 sampai 30 Jun, HYTD 2 dari 1 Jul, YTD dari 1 Jan). Sisa = quota − jam, kosong jika jam 0, merah jika negatif.`;
+  return `Per ${date}. ${open} ${scale} Jam Daily hanya menghitung hari ini: mulai dari jam Waiting Labour, lalu kembali ke nol setelah 00:00 dan dihitung dari awal hari. WTD sampai YTD mengikuti tanggal Waiting Labour. Quota periode = Quota Hrs × hari (WTD = Quota Hrs × 7, MTD tanggal hari ini, HYTD 1 sampai 30 Jun, HYTD 2 dari 1 Jul, YTD dari 1 Jan). Sisa = quota − jam, kosong jika jam 0, merah jika negatif.`;
 }
 
 function SummaryTable({

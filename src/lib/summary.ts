@@ -1,4 +1,4 @@
-import { hoursBetween } from "@/lib/calc";
+import { hoursBetween, parseLocal } from "@/lib/calc";
 import { todayISO } from "@/lib/format";
 
 export type PeriodKey = "daily" | "wtd" | "mtd" | "hytd1" | "hytd2" | "ytd";
@@ -75,6 +75,23 @@ export function summaryHours(
     : hoursBetween(input.repair_started_at, now);
   if (waiting == null && repair == null) return null;
   return (waiting ?? 0) + (repair ?? 0);
+}
+
+/** Bagian jam yang jatuh pada hari `now`. Setelah tengah malam, hitungan Daily mulai lagi dari 00:00. */
+export function dailyHours(
+  input: Pick<SummaryEvent, "waiting_labour_at" | "repair_started_at" | "rd30_at">,
+  now: Date
+): number | null {
+  if (!input.repair_started_at.trim()) return null;
+  const start = parseLocal(input.waiting_labour_at);
+  if (start == null) return null;
+  const finished = input.rd30_at.trim() ? parseLocal(input.rd30_at) : now.getTime();
+  if (finished == null) return null;
+  const dayStart = startOfDay(now).getTime();
+  const from = Math.max(start, dayStart);
+  const to = Math.min(finished, dayStart + 86_400_000);
+  if (to <= from) return 0;
+  return (to - from) / 3_600_000;
 }
 
 export function isOpenDowntime(
@@ -195,19 +212,24 @@ export function buildSummary(input: {
   for (const event of input.events) {
     const day = event.waiting_labour_at.trim().slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
-    if (!PERIODS.some((period) => inWindow(day, windows[period]))) continue;
+    const hours = summaryHours(event, now);
+    const today = dailyHours(event, now);
+    const counted = PERIODS.some((period) => period !== "daily" && inWindow(day, windows[period]));
+    if (!counted && !(today != null && today > 0)) continue;
     const key = bucket(event.unit);
     const known = master.get(key);
     ensure(key, known?.unit || event.unit.trim() || "—");
     if (isOpenDowntime(event)) open.add(key);
-    const hours = summaryHours(event, now);
-    if (hours == null) continue;
-    const rounded = round2(hours);
     const row = totals.get(key);
     if (!row) continue;
-    for (const period of PERIODS) {
-      if (inWindow(day, windows[period])) row[period] = round2(row[period] + rounded);
+    if (hours != null) {
+      const rounded = round2(hours);
+      for (const period of PERIODS) {
+        if (period === "daily") continue;
+        if (inWindow(day, windows[period])) row[period] = round2(row[period] + rounded);
+      }
     }
+    if (today != null && today > 0) row.daily = round2(row.daily + today);
   }
 
   const listed = new Set(totals.keys());
