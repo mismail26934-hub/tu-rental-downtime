@@ -124,15 +124,18 @@ export function CollapseBoard({
   hiddenLabel,
   onToggle,
   fields = false,
+  ariaLabel,
   children,
 }: {
   hidden: boolean;
-  label: string;
-  hiddenLabel: string;
+  label: ReactNode;
+  hiddenLabel: ReactNode;
   onToggle: () => void;
   fields?: boolean;
+  ariaLabel?: string;
   children: ReactNode;
 }) {
+  const spoken = ariaLabel || (typeof label === "string" ? label : "");
   return (
     <section className={`collapse-board${hidden ? " is-hidden" : ""}`}>
       <div className="collapse-board-bar">
@@ -144,7 +147,7 @@ export function CollapseBoard({
             type="button"
             onClick={onToggle}
             aria-expanded={!hidden}
-            aria-label={hidden ? `Tampilkan ${label.toLowerCase()}` : `Sembunyikan ${label.toLowerCase()}`}
+            aria-label={hidden ? `Tampilkan ${spoken}` : `Sembunyikan ${spoken}`}
             title={hidden ? "Tampilkan" : "Sembunyikan"}
           >
             <ChevronIcon up={!hidden} />

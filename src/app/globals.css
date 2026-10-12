@@ -849,6 +849,11 @@ html[data-theme="light"] .unit-select-menu {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.collapse-board-bar .is-ny-title {
+  color: var(--red);
+  font-weight: 700;
+  text-transform: uppercase;
+}
 .collapse-board-bar .btn-icon {
   width: 36px;
   height: 36px;

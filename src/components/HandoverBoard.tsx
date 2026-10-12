@@ -12,7 +12,7 @@ import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
 import { canManage } from "@/lib/access";
 import { sendMutation, type MutationResult } from "@/lib/api";
-import { deriveStatus } from "@/lib/calc";
+import { computeMetrics, deriveStatus } from "@/lib/calc";
 import { defaultShift, todayISO } from "@/lib/format";
 import { deleteDraft, loadDraft, saveDraft } from "@/lib/offline/draft";
 import { flushOutbox } from "@/lib/offline/outbox";
@@ -457,6 +457,7 @@ export function HandoverBoard() {
   }
 
   const rows = boardQuery.data?.rows || [];
+  const notReadyCount = useMemo(() => countNotReadyUnits(rows, now), [rows, now]);
   const summaryUnits = useMemo(
     () => (unitsQuery.isFetched ? boardSummaryUnits(rows, unitsQuery.data || []) : []),
     [rows, unitsQuery.data, unitsQuery.isFetched]
@@ -677,8 +678,9 @@ export function HandoverBoard() {
           {!formOpen && notice ? <div className="notice">{notice}</div> : null}
           <CollapseBoard
             hidden={tableHidden}
-            label="Tabel"
-            hiddenLabel="Tabel disembunyikan"
+            label={<NotReadyTitle count={notReadyCount} />}
+            hiddenLabel={<NotReadyTitle count={notReadyCount} hidden />}
+            ariaLabel={`Jumlah Unit yang N/Y Ready ${notReadyCount}`}
             onToggle={() => setTableHidden(!tableHidden)}
           >
           <HandoverTable
@@ -772,6 +774,25 @@ function ManageMenu({
       ) : null}
     </div>
   );
+}
+
+function NotReadyTitle({ count, hidden = false }: { count: number; hidden?: boolean }) {
+  return (
+    <span className="is-ny-title">
+      Jumlah Unit yang N/Y Ready {count}
+      {hidden ? " disembunyikan" : null}
+    </span>
+  );
+}
+
+function countNotReadyUnits(rows: HandoverRow[], now: Date): number {
+  const units = new Set<string>();
+  for (const row of rows) {
+    const code = row.unit.trim().toLowerCase();
+    if (!code || row.unit_backup.trim()) continue;
+    if (computeMetrics(row, now).dtLabel === "N/Y Ready") units.add(code);
+  }
+  return units.size;
 }
 
 function boardSummaryUnits(rows: HandoverRow[], master: UnitMaster[]): ModelSummaryUnit[] {
