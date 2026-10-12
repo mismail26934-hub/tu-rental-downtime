@@ -13,6 +13,7 @@ export type SummaryEvent = {
   waiting_labour_at: string;
   repair_started_at: string;
   rd30_at: string;
+  unit_backup?: string;
 };
 
 export type SummarySourceUnit = {
@@ -42,7 +43,37 @@ export type SummaryRow = {
   ytd: number;
   overDaily: boolean;
   open: boolean;
+  backedUp: boolean;
 };
+
+export type SummaryUnitMark = { name: string; open: boolean; backedUp: boolean };
+
+/** Nama unit di summary. `*` = N/Y Ready, `~` = Unit Back up terisi. */
+export function summaryUnitMarks(
+  row: Pick<SummaryRow, "unit" | "open" | "backedUp">,
+  members?: Pick<SummaryRow, "unit" | "open" | "backedUp">[]
+): SummaryUnitMark[] {
+  const source = members
+    ? members.map((item) => ({
+        name: item.unit.trim(),
+        open: item.open,
+        backedUp: item.backedUp && !item.open,
+      }))
+    : row.unit.split(",").map((part) => {
+        const trimmed = part.trim();
+        if (trimmed.endsWith("*")) return { name: trimmed.slice(0, -1).trim(), open: true, backedUp: false };
+        if (trimmed.endsWith("~")) return { name: trimmed.slice(0, -1).trim(), open: false, backedUp: true };
+        const solo = !row.unit.includes(",");
+        return { name: trimmed, open: solo && row.open, backedUp: solo && row.backedUp && !row.open };
+      });
+  return source.filter((item) => item.name);
+}
+
+function summaryUnitToken(name: string, open: boolean, backedUp: boolean): string {
+  if (open) return `${name}*`;
+  if (backedUp) return `${name}~`;
+  return name;
+}
 
 export type SummaryReport = {
   asOf: string;
@@ -167,7 +198,8 @@ function toRow(
   quota: number | null,
   unit: string,
   totals: Record<PeriodKey, number>,
-  open: boolean
+  open: boolean,
+  backedUp: boolean
 ): SummaryRow {
   return {
     id,
@@ -182,6 +214,7 @@ function toRow(
     ytd: totals.ytd,
     overDaily: quota != null && totals.daily > quota,
     open,
+    backedUp,
   };
 }
 
@@ -198,6 +231,7 @@ export function buildSummary(input: {
   const totals = new Map<string, Record<PeriodKey, number>>();
   const labels = new Map<string, string>();
   const open = new Set<string>();
+  const covered = new Set<string>();
 
   function bucket(code: string): string {
     const known = master.get(unitKey(code));
@@ -219,7 +253,12 @@ export function buildSummary(input: {
     const key = bucket(event.unit);
     const known = master.get(key);
     ensure(key, known?.unit || event.unit.trim() || "—");
-    if (isOpenDowntime(event)) open.add(key);
+    const hasBackup = Boolean(event.unit_backup?.trim());
+    if (isOpenDowntime(event)) {
+      if (hasBackup) covered.add(key);
+      else open.add(key);
+    }
+    if (hasBackup) continue;
     const row = totals.get(key);
     if (!row) continue;
     if (hours != null) {
@@ -242,14 +281,25 @@ export function buildSummary(input: {
         unit.quota_hrs,
         unit.unit,
         totals.get(unitKey(unit.unit)) || emptyTotals(),
-        open.has(unitKey(unit.unit))
+        open.has(unitKey(unit.unit)),
+        covered.has(unitKey(unit.unit)) && !open.has(unitKey(unit.unit))
       )
     );
 
   const orphans = [...listed]
     .filter((key) => !master.has(key))
     .sort((a, b) => (labels.get(a) || "").localeCompare(labels.get(b) || ""))
-    .map((key) => toRow(`orphan:${key}`, "—", null, labels.get(key) || "—", totals.get(key) || emptyTotals(), open.has(key)));
+    .map((key) =>
+      toRow(
+        `orphan:${key}`,
+        "—",
+        null,
+        labels.get(key) || "—",
+        totals.get(key) || emptyTotals(),
+        open.has(key),
+        covered.has(key) && !open.has(key)
+      )
+    );
 
   const groupRows = input.groups.flatMap((group) => {
     const members = input.units
@@ -263,14 +313,20 @@ export function buildSummary(input: {
       if (!row) continue;
       for (const period of PERIODS) sum[period] = round2(sum[period] + row[period]);
     }
+    const anyOpen = members.some((member) => open.has(unitKey(member)));
     return [
       toRow(
         group.id,
         group.group,
         group.quota_hrs,
-        members.map((member) => (open.has(unitKey(member)) ? `${member}*` : member)).join(", "),
+        members
+          .map((member) =>
+            summaryUnitToken(member, open.has(unitKey(member)), covered.has(unitKey(member)) && !open.has(unitKey(member)))
+          )
+          .join(", "),
         sum,
-        members.some((member) => open.has(unitKey(member)))
+        anyOpen,
+        !anyOpen && members.some((member) => covered.has(unitKey(member)))
       ),
     ];
   });

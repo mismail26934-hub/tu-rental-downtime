@@ -33,6 +33,11 @@ export async function POST(request: Request) {
   const known = await findUnitByCode(input.unit);
   if (!known) return badRequest("Unit harus dipilih dari master");
   input.unit = known.unit;
+  if (input.unit_backup.trim()) {
+    const backup = await findUnitByCode(input.unit_backup);
+    if (!backup) return badRequest("Unit Back up harus dipilih dari master");
+    input.unit_backup = backup.unit;
+  }
 
   const saved = await saveRow({
     sheet: { id: sheetId, sheet_date: date, shift: shift as Shift },

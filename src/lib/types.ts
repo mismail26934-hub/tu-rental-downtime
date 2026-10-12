@@ -27,6 +27,8 @@ export type RowInput = {
   rd30_at: string;
   hm_awal: string;
   hm_akhir: string;
+  unit_backup: string;
+  backup_time: string;
   breakdown_problem: string;
   done_action: string;
   continue_handover: string;
@@ -73,6 +75,8 @@ export const EMPTY_ROW: RowInput = {
   rd30_at: "",
   hm_awal: "",
   hm_akhir: "",
+  unit_backup: "",
+  backup_time: "",
   breakdown_problem: "",
   done_action: "",
   continue_handover: "",
@@ -95,6 +99,8 @@ export function toRowInput(row: RowInput): RowInput {
     rd30_at: row.rd30_at,
     hm_awal: row.hm_awal,
     hm_akhir: row.hm_akhir,
+    unit_backup: row.unit_backup || "",
+    backup_time: row.backup_time || "",
     breakdown_problem: row.breakdown_problem,
     done_action: row.done_action,
     continue_handover: row.continue_handover,

@@ -23,6 +23,11 @@ export async function PATCH(request: Request, context: Context) {
   const known = await findUnitByCode(input.unit);
   if (!known) return badRequest("Unit harus dipilih dari master");
   input.unit = known.unit;
+  if (input.unit_backup.trim()) {
+    const backup = await findUnitByCode(input.unit_backup);
+    if (!backup) return badRequest("Unit Back up harus dipilih dari master");
+    input.unit_backup = backup.unit;
+  }
   const row = await updateRow(id, input, actorFromUser(user));
   if (!row) return NextResponse.json({ error: "Baris tidak ditemukan" }, { status: 404 });
   publishLive("board");

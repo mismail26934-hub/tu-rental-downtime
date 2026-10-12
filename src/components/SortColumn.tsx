@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type SortDir = "asc" | "desc";
 
 export function SortColumn<K extends string>({
@@ -5,18 +7,20 @@ export function SortColumn<K extends string>({
   column,
   sort,
   className,
+  rowSpan,
   onSort,
 }: {
-  label: string;
+  label: ReactNode;
   column: K;
   sort: { key: K; dir: SortDir } | null;
   className?: string;
+  rowSpan?: number;
   onSort: (column: K) => void;
 }) {
   const active = sort?.key === column;
   const dir = active ? sort.dir : "asc";
   return (
-    <th className={className} aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}>
+    <th className={className} rowSpan={rowSpan} aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}>
       <button className={active ? `sort-btn is-${dir}` : "sort-btn"} type="button" onClick={() => onSort(column)}>
         {label}
         <span className="sort-mark" aria-hidden="true">

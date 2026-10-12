@@ -3,8 +3,9 @@ import JSZip from "jszip";
 import { parseHm, parseLocal } from "@/lib/calc";
 import { sheetTitle } from "@/lib/format";
 import { visibleHandoverRows } from "@/lib/board-rows";
-import { periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
+import { PERIODS, periodQuota, summaryUnitMarks, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import { groupByModel, sisaRemainder, SISA_LABELS, type SisaCell } from "@/lib/unit-sisa";
+import type { UnitMaster } from "@/lib/units";
 import type { HandoverRow } from "@/lib/types";
 
 const HEADERS = [
@@ -20,6 +21,8 @@ const HEADERS = [
   "HM awal",
   "HM akhir",
   "ERDM",
+  "Unit Back up",
+  "Back up time",
   "Breakdown problem",
   "Done / Action",
   "Continue / Handover",
@@ -64,6 +67,8 @@ function dataRow(
     parseHm(row.hm_awal) ?? "",
     parseHm(row.hm_akhir) ?? "",
     round2(metrics.erdm),
+    row.unit_backup,
+    stamp(row.backup_time),
     row.breakdown_problem,
     row.done_action,
     row.continue_handover,
@@ -141,19 +146,9 @@ function summaryAsOfDate(asOf: string): Date {
 }
 
 function unitNames(row: SummaryRow, members?: SummaryRow[]): string {
-  const items = members
-    ? members.map((item) => ({ name: item.unit.trim(), open: item.open }))
-    : row.unit.split(",").map((part) => {
-        const trimmed = part.trim();
-        const marked = trimmed.endsWith("*");
-        return {
-          name: marked ? trimmed.slice(0, -1).trim() : trimmed,
-          open: marked || (row.open && !row.unit.includes(",")),
-        };
-      });
-  const names = items.filter((item) => item.name);
-  if (names.length === 0) return "";
-  return names.map((item) => (item.open ? `${item.name}*` : item.name)).join(", ");
+  return summaryUnitMarks(row, members)
+    .map((item) => (item.open ? `${item.name}*` : item.name))
+    .join(", ");
 }
 
 function summaryDataRow(row: SummaryRow, now: Date, sisaSource: SummaryRow, members?: SummaryRow[]): (string | number)[] {
@@ -252,13 +247,13 @@ export function buildSummarySheet(report: SummaryReport): XLSX.WorkSheet {
   return sheet;
 }
 
-export function exportFileName(now = new Date()): string {
+export function exportFileName(now = new Date(), label = "Export Data Armor"): string {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   const hour = String(now.getHours()).padStart(2, "0");
   const minute = String(now.getMinutes()).padStart(2, "0");
-  return `Export Data Armor ${year}${month}${day} ${hour}${minute}.xlsx`;
+  return `${label} ${year}${month}${day} ${hour}${minute}.xlsx`;
 }
 
 export function buildHandoverWorkbook(input: {
@@ -284,6 +279,8 @@ export function buildHandoverWorkbook(input: {
     "",
     "Hours Meter (HM)",
     "",
+    "",
+    "BACK UP",
     "",
     "Remark",
     "",
@@ -315,10 +312,11 @@ export function buildHandoverWorkbook(input: {
     { s: { r: 1, c: 5 }, e: { r: 2, c: 5 } },
     { s: { r: 1, c: 6 }, e: { r: 1, c: 8 } },
     { s: { r: 1, c: 9 }, e: { r: 1, c: 11 } },
-    { s: { r: 1, c: 12 }, e: { r: 1, c: 14 } },
-    { s: { r: 1, c: 15 }, e: { r: 2, c: 15 } },
-    { s: { r: 1, c: 16 }, e: { r: 1, c: 18 } },
-    { s: { r: 1, c: 19 }, e: { r: 1, c: 24 } },
+    { s: { r: 1, c: 12 }, e: { r: 1, c: 13 } },
+    { s: { r: 1, c: 14 }, e: { r: 1, c: 16 } },
+    { s: { r: 1, c: 17 }, e: { r: 2, c: 17 } },
+    { s: { r: 1, c: 18 }, e: { r: 1, c: 20 } },
+    { s: { r: 1, c: 21 }, e: { r: 1, c: 26 } },
   ];
   sheet["!cols"] = [
     { wch: 5 },
@@ -333,6 +331,8 @@ export function buildHandoverWorkbook(input: {
     { wch: 12 },
     { wch: 12 },
     { wch: 10 },
+    { wch: 14 },
+    { wch: 18 },
     { wch: 36 },
     { wch: 36 },
     { wch: 36 },
@@ -349,19 +349,19 @@ export function buildHandoverWorkbook(input: {
   ];
   const range = XLSX.utils.decode_range(sheet["!ref"] || "A1");
   for (let row = 3; row <= range.e.r; row += 1) {
-    for (const column of [6, 7, 8]) {
+    for (const column of [6, 7, 8, 13]) {
       const cell = sheet[XLSX.utils.encode_cell({ r: row, c: column })];
       if (cell && (cell.t === "d" || cell.t === "n") && typeof cell.v !== "string") {
         cell.z = "dd/mm/yyyy hh:mm";
       }
     }
-    for (const column of [9, 10, 11, 16, 17]) {
+    for (const column of [9, 10, 11, 18, 19]) {
       const cell = sheet[XLSX.utils.encode_cell({ r: row, c: column })];
       if (cell && cell.t === "n") cell.z = "0.00";
     }
-    const dt = sheet[XLSX.utils.encode_cell({ r: row, c: 18 })];
+    const dt = sheet[XLSX.utils.encode_cell({ r: row, c: 20 })];
     if (dt && dt.t === "n") dt.z = "0.00";
-    for (const column of [19, 20, 21, 22, 23, 24]) {
+    for (const column of [21, 22, 23, 24, 25, 26]) {
       const cell = sheet[XLSX.utils.encode_cell({ r: row, c: column })];
       if (cell && cell.t === "n") cell.z = "0.00";
     }
@@ -372,6 +372,111 @@ export function buildHandoverWorkbook(input: {
   XLSX.utils.book_append_sheet(book, sheet, "Handover");
   if (input.summary) XLSX.utils.book_append_sheet(book, buildSummarySheet(input.summary), "Summary");
   return book;
+}
+
+const MASTER_PERIOD_LABEL: Record<PeriodKey, string> = {
+  daily: "Daily",
+  wtd: "WTD",
+  mtd: "MTD",
+  hytd1: "HYTD 1",
+  hytd2: "HYTD 2",
+  ytd: "YTD",
+};
+
+function blankPeriodCells(): (number | "")[] {
+  return PERIODS.flatMap(() => ["", "", ""]);
+}
+
+function periodValueCells(quota: number | null, hours: Record<PeriodKey, number> | null, now: Date): (number | "")[] {
+  if (quota == null) return blankPeriodCells();
+  return PERIODS.flatMap((period) => {
+    const quotaValue = periodQuota(quota, period, now);
+    if (hours == null || quotaValue == null) return [summaryNumber(quotaValue), "", ""] as (number | "")[];
+    return [summaryNumber(quotaValue), summaryNumber(hours[period]), summaryNumber(sisaRemainder(quotaValue, hours[period]))];
+  });
+}
+
+function summaryHours(row: SummaryRow | undefined): Record<PeriodKey, number> | null {
+  if (!row) return { daily: 0, wtd: 0, mtd: 0, hytd1: 0, hytd2: 0, ytd: 0 };
+  return { daily: row.daily, wtd: row.wtd, mtd: row.mtd, hytd1: row.hytd1, hytd2: row.hytd2, ytd: row.ytd };
+}
+
+export function buildMasterUnitSheet(units: UnitMaster[], summary?: SummaryReport): XLSX.WorkSheet {
+  const now = summary ? summaryAsOfDate(summary.asOf) : new Date();
+  const unitHours = new Map((summary?.units || []).map((row) => [row.unit.trim().toLowerCase(), summaryHours(row)]));
+  const groupHours = new Map((summary?.groups || []).map((row) => [row.label.trim().toLowerCase(), summaryHours(row)]));
+  const groups = ["Model", "Quota Hrs", "Unit"];
+  const details = ["", "", ""];
+  for (const period of PERIODS) {
+    groups.push(MASTER_PERIOD_LABEL[period], "", "");
+    details.push("Quota Hrs", "Jam", "Sisa");
+  }
+  groups.push("Group", "Quota Hrs (GROUP)");
+  details.push("", "");
+  for (const period of PERIODS) {
+    groups.push(MASTER_PERIOD_LABEL[period], "", "");
+    details.push("Quota Hrs", "Jam", "Sisa");
+  }
+  const body = units.map((unit) => {
+    const grouped = unit.group.trim();
+    return [
+      unit.model,
+      summaryNumber(unit.quota_hrs),
+      unit.unit,
+      ...periodValueCells(unit.quota_hrs, summary ? unitHours.get(unit.unit.trim().toLowerCase()) ?? summaryHours(undefined) : null, now),
+      grouped,
+      grouped ? summaryNumber(unit.group_quota_hrs) : "",
+      ...periodValueCells(grouped ? unit.group_quota_hrs : null, grouped && summary ? groupHours.get(grouped.toLowerCase()) ?? summaryHours(undefined) : null, now),
+    ];
+  });
+  const sheet = XLSX.utils.aoa_to_sheet([groups, details, ...body]);
+  const unitPeriodStart = 3;
+  const groupColumn = unitPeriodStart + PERIODS.length * 3;
+  const groupPeriodStart = groupColumn + 2;
+  const merges: XLSX.Range[] = [
+    { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
+    { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } },
+    { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } },
+    { s: { r: 0, c: groupColumn }, e: { r: 1, c: groupColumn } },
+    { s: { r: 0, c: groupColumn + 1 }, e: { r: 1, c: groupColumn + 1 } },
+  ];
+  PERIODS.forEach((_, index) => {
+    merges.push({ s: { r: 0, c: unitPeriodStart + index * 3 }, e: { r: 0, c: unitPeriodStart + index * 3 + 2 } });
+    merges.push({ s: { r: 0, c: groupPeriodStart + index * 3 }, e: { r: 0, c: groupPeriodStart + index * 3 + 2 } });
+  });
+  sheet["!merges"] = merges;
+  sheet["!cols"] = [
+    { wch: 16 },
+    { wch: 12 },
+    { wch: 14 },
+    ...Array.from({ length: PERIODS.length * 3 }, () => ({ wch: 12 })),
+    { wch: 14 },
+    { wch: 18 },
+    ...Array.from({ length: PERIODS.length * 3 }, () => ({ wch: 12 })),
+  ];
+  const width = groups.length - 1;
+  const range = XLSX.utils.decode_range(sheet["!ref"] || "A1");
+  for (let row = 2; row <= range.e.r; row += 1) {
+    for (let column = 0; column <= width; column += 1) {
+      if (column === 0 || column === 2 || column === groupColumn) continue;
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c: column })];
+      if (cell && cell.t === "n") cell.z = "0.00";
+    }
+  }
+  fillGrid(sheet, 0, Math.max(range.e.r, 1), 0, width);
+  return sheet;
+}
+
+export async function downloadMasterUnitExcel(input: { units: UnitMaster[]; summary?: SummaryReport }) {
+  const book = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(book, buildMasterUnitSheet(input.units, input.summary), "Master unit");
+  const blob = await workbookBlob(book);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = exportFileName(new Date(), "Export Master Unit Armor");
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 export async function downloadHandoverExcel(input: {

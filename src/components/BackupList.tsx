@@ -38,6 +38,8 @@ const FIELD_LABELS: Record<string, string> = {
   rd30_at: "RD30",
   hm_awal: "HM awal",
   hm_akhir: "HM akhir",
+  unit_backup: "Unit Back up",
+  backup_time: "Back up time",
   breakdown_problem: "Breakdown problem",
   done_action: "Done / Action",
   continue_handover: "Continue / Handover",
@@ -52,7 +54,7 @@ const FIELD_LABELS: Record<string, string> = {
 
 const FIELD_ORDER = Object.keys(FIELD_LABELS);
 const HIDDEN_FIELDS = new Set(["id", "sheet_id", "sort_order"]);
-const TIME_FIELDS = new Set(["waiting_labour_at", "repair_started_at", "rd30_at", "created_at", "updated_at"]);
+const TIME_FIELDS = new Set(["waiting_labour_at", "repair_started_at", "rd30_at", "backup_time", "created_at", "updated_at"]);
 const PAGE_SIZE = 10;
 
 async function fetchBackups(): Promise<BackupView[]> {

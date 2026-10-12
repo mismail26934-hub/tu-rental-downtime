@@ -18,6 +18,8 @@ const ROW_FIELDS: (keyof RowInput)[] = [
   "rd30_at",
   "hm_awal",
   "hm_akhir",
+  "unit_backup",
+  "backup_time",
   "breakdown_problem",
   "done_action",
   "continue_handover",
@@ -54,6 +56,8 @@ function mapRow(row: RowPacket): HandoverRow {
     rd30_at: text(row.rd30_at),
     hm_awal: text(row.hm_awal),
     hm_akhir: text(row.hm_akhir),
+    unit_backup: text(row.unit_backup),
+    backup_time: text(row.backup_time),
     breakdown_problem: text(row.breakdown_problem),
     done_action: text(row.done_action),
     continue_handover: text(row.continue_handover),
@@ -166,7 +170,7 @@ export async function saveRow(input: {
         `UPDATE handover_rows SET
           sheet_id = ?, crew = ?, unit = ?, location = ?, technician = ?, status = ?,
           waiting_labour_at = ?, repair_started_at = ?, rd30_at = ?, hm_awal = ?,
-          hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
+          hm_akhir = ?, unit_backup = ?, backup_time = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
           updated_at = ?, updated_by = ?
          WHERE id = ?`,
         [sheetId, ...values, now, input.actor.id, input.row.id]
@@ -181,8 +185,8 @@ export async function saveRow(input: {
         `INSERT INTO handover_rows (
           id, sheet_id, sort_order, crew, unit, location, technician, status,
           waiting_labour_at, repair_started_at, rd30_at, hm_awal, hm_akhir,
-          breakdown_problem, done_action, continue_handover, so, updated_at, updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          unit_backup, backup_time, breakdown_problem, done_action, continue_handover, so, updated_at, updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [input.row.id, sheetId, sortOrder, ...values, now, input.actor.id]
       );
     }
@@ -226,7 +230,7 @@ export async function updateRow(id: string, input: RowInput, actor: BackupActor)
       `UPDATE handover_rows SET
         crew = ?, unit = ?, location = ?, technician = ?, status = ?,
         waiting_labour_at = ?, repair_started_at = ?, rd30_at = ?, hm_awal = ?,
-        hm_akhir = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
+        hm_akhir = ?, unit_backup = ?, backup_time = ?, breakdown_problem = ?, done_action = ?, continue_handover = ?, so = ?,
         updated_at = ?, updated_by = ?
        WHERE id = ?`,
       [...values, now, actor.id, id]

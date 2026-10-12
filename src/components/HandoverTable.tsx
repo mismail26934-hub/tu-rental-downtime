@@ -22,6 +22,8 @@ type SortKey =
   | "hmAwal"
   | "hmAkhir"
   | "erdm"
+  | "unitBackup"
+  | "backupTime"
   | "problem"
   | "done"
   | "handover"
@@ -65,7 +67,7 @@ export function HandoverTable({
   const unit = useSummaryView((state) => state.unit);
   const show = (value: number | null) => toSummaryAmount(value, unit);
   const listed = sortRows(visibleHandoverRows(rows, now, query), sort, sisa);
-  const columnCount = editable ? 26 : 25;
+  const columnCount = editable ? 28 : 27;
 
   function toggleSort(key: SortKey, sisaIndex?: number) {
     setSort((current) => {
@@ -89,6 +91,7 @@ export function HandoverTable({
             <SortTh rowSpan={2} label="Status" sortKey="status" sort={sort} onSort={toggleSort} />
             <th className="col-group" colSpan={3}>Time</th>
             <th className="col-group" colSpan={3}>Hours Meter (HM)</th>
+            <th className="col-group" colSpan={2}>BACK UP</th>
             <th className="col-group" colSpan={3}>Remark</th>
             <SortTh rowSpan={2} label="SO" sortKey="so" sort={sort} onSort={toggleSort} />
             <th className="col-group" colSpan={3}>Output Time</th>
@@ -102,6 +105,8 @@ export function HandoverTable({
             <SortTh className="col-num" label="HM awal" sortKey="hmAwal" sort={sort} onSort={toggleSort} />
             <SortTh className="col-num" label="HM akhir" sortKey="hmAkhir" sort={sort} onSort={toggleSort} />
             <SortTh className="col-num" label="ERDM" sortKey="erdm" sort={sort} onSort={toggleSort} />
+            <SortTh label="Unit Back up" sortKey="unitBackup" sort={sort} onSort={toggleSort} />
+            <SortTh label="Back up time" sortKey="backupTime" sort={sort} onSort={toggleSort} />
             <SortTh className="col-text" label="Breakdown problem" sortKey="problem" sort={sort} onSort={toggleSort} />
             <SortTh className="col-text" label="Done / Action" sortKey="done" sort={sort} onSort={toggleSort} />
             <SortTh className="col-text" label="Continue / Handover" sortKey="handover" sort={sort} onSort={toggleSort} />
@@ -136,7 +141,13 @@ export function HandoverTable({
                   <td className="col-no col-pin col-pin-1">{number}</td>
                   <td className="col-pin col-pin-2">{row.crew || "—"}</td>
                   <td className="col-pin col-pin-3">
-                    {metrics.dtLabel === "N/Y Ready" ? <span className="is-ny">{row.unit}*</span> : row.unit || "—"}
+                    {row.unit_backup.trim() ? (
+                      <span className="is-backup">{row.unit}</span>
+                    ) : metrics.dtLabel === "N/Y Ready" ? (
+                      <span className="is-ny">{row.unit}*</span>
+                    ) : (
+                      row.unit || "—"
+                    )}
                   </td>
                   <td>{row.location || "—"}</td>
                   <td>{row.technician || "—"}</td>
@@ -147,6 +158,8 @@ export function HandoverTable({
                   <td className="col-num">{formatHmDisplay(row.hm_awal)}</td>
                   <td className="col-num">{formatHmDisplay(row.hm_akhir)}</td>
                   <td className="col-num">{formatHours(metrics.erdm)}</td>
+                  <td>{row.unit_backup || "—"}</td>
+                  <td>{formatStamp(row.backup_time)}</td>
                   <td className="col-text">{row.breakdown_problem || "—"}</td>
                   <td className="col-text">{row.done_action || "—"}</td>
                   <td className="col-text">{row.continue_handover || "—"}</td>
@@ -227,7 +240,7 @@ function defaultDir(key: SortKey): SortDir {
   if (key === "no" || key === "crew" || key === "unit" || key === "location" || key === "technician" || key === "status") {
     return "asc";
   }
-  if (key === "problem" || key === "done" || key === "handover" || key === "so") return "asc";
+  if (key === "problem" || key === "done" || key === "handover" || key === "so" || key === "unitBackup") return "asc";
   return "desc";
 }
 
@@ -263,6 +276,8 @@ function valueOf(item: ListedRow, key: SortKey): string | number | null {
   if (key === "hmAwal") return parseHm(row.hm_awal);
   if (key === "hmAkhir") return parseHm(row.hm_akhir);
   if (key === "erdm") return metrics.erdm;
+  if (key === "unitBackup") return row.unit_backup;
+  if (key === "backupTime") return parseLocal(row.backup_time);
   if (key === "problem") return row.breakdown_problem;
   if (key === "done") return row.done_action;
   if (key === "handover") return row.continue_handover;

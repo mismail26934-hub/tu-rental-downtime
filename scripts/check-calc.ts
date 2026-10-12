@@ -130,7 +130,20 @@ const reset = buildSummary({
 close(reset.units[0].daily, 8, "summary daily mulai dari 00:00");
 close(reset.units[0].mtd, 29.27, "summary mtd tetap seluruh jam");
 close(reset.units[0].ytd, 29.27, "summary ytd tetap seluruh jam");
-if (!reset.units[0].open) throw new Error("RT410 masih N/Y Ready");
+if (!reset.units[0].open || reset.units[0].backedUp) throw new Error("RT410 masih N/Y Ready");
+
+const covered = buildSummary({
+  now: nextMorning,
+  events: [{ ...stillOpen, unit_backup: "RT999" }],
+  units: [{ id: "u1", model: "FKR/KDP", quota_hrs: 1, unit: "RT410", group: "777" }],
+  groups: [{ id: "g1", group: "777", quota_hrs: 18 }],
+});
+for (const period of ["daily", "wtd", "mtd", "hytd1", "hytd2", "ytd"] as const) {
+  close(covered.units[0][period], 0, `backup ${period} 0`);
+}
+if (covered.units[0].open || !covered.units[0].backedUp) throw new Error("unit backup harus hijau tanpa N/Y Ready");
+if (covered.openUnits !== 0) throw new Error("unit backup tidak dihitung N/Y Ready");
+if (covered.groups[0].unit !== "RT410~") throw new Error(`group backup: ${covered.groups[0].unit}`);
 
 const sql = `
 INSERT INTO \`users\` (\`id\`, \`username\`, \`password_hash\`, \`name\`, \`level\`, \`active\`) VALUES

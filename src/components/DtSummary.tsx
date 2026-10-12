@@ -6,9 +6,9 @@ import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { SisaValue } from "@/components/SisaValue";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { Topbar } from "@/components/Topbar";
-import { formatHours, formatQuotaDisplay, sheetTitle } from "@/lib/format";
+import { formatHourClock, formatHours, formatQuotaDisplay, sheetTitle } from "@/lib/format";
+import { periodQuota, summaryUnitMarks, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
-import { periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import {
   dailyColumnCount,
   periodColumnCount,
@@ -356,7 +356,9 @@ function ManageIcon() {
 
 function matchesSummary(row: SummaryRow, needle: string): boolean {
   if (!needle) return true;
-  const unit = row.unit.replace(/\*/g, "");
+  const unit = summaryUnitMarks(row)
+    .map((item) => item.name)
+    .join(" ");
   return row.label.toLowerCase().includes(needle) || unit.toLowerCase().includes(needle);
 }
 
@@ -421,7 +423,7 @@ function note(report: SummaryReport, unit: SummaryUnit): string {
     unit === "hari"
       ? "Semua angka dalam hari (1 hari = 24 jam)."
       : "Jam = Waiting Labour + Repair time.";
-  return `Per ${date}. ${open} ${scale} Jam Daily hanya menghitung hari ini: mulai dari jam Waiting Labour, lalu kembali ke nol setelah 00:00 dan dihitung dari awal hari. WTD sampai YTD mengikuti tanggal Waiting Labour. Quota periode = Quota Hrs × hari (WTD = Quota Hrs × 7, MTD tanggal hari ini, HYTD 1 sampai 30 Jun, HYTD 2 dari 1 Jul, YTD dari 1 Jan). Sisa = quota − jam, kosong jika jam 0, merah jika negatif.`;
+  return `Per ${date}. ${open} ${scale} Jam Daily hanya menghitung hari ini: mulai dari jam Waiting Labour, lalu kembali ke nol setelah 00:00 dan dihitung dari awal hari. WTD sampai YTD mengikuti tanggal Waiting Labour. Quota periode = Quota Hrs × hari (WTD = Quota Hrs × 7, MTD tanggal hari ini, HYTD 1 sampai 30 Jun, HYTD 2 dari 1 Jul, YTD dari 1 Jan). Sisa = quota − jam, kosong jika jam 0, merah jika negatif. Jika Unit Back up terisi, jam semua periode untuk baris itu 0, nama unit hijau, dan tanpa tanda *.`;
 }
 
 function SummaryTable({
@@ -707,11 +709,13 @@ function Cells({
         <UnitNames row={row} units={units} />
       </td>
       {columns.jam ? (
-        <td className={row.overDaily ? "col-num summary-daily is-over" : "col-num summary-daily"}>{formatHours(show(row.daily))}</td>
+        <td className={row.overDaily ? "col-num summary-daily is-over" : "col-num summary-daily"}>
+          {unit === "hari" ? formatHours(show(row.daily)) : formatHourClock(row.daily)}
+        </td>
       ) : null}
       {columns.sisa ? (
         <td className={dailyLeft != null && dailyLeft < 0 ? "col-num summary-daily is-over" : "col-num summary-daily"}>
-          <SisaValue cell={{ left: dailyLeft, quota: dailyQuota }} />
+          <SisaValue cell={{ left: dailyLeft, quota: dailyQuota }} clock={unit === "jam"} />
         </td>
       ) : null}
       {SCALED_PERIODS.map((period) => {
@@ -736,18 +740,13 @@ function Cells({
 }
 
 function UnitNames({ row, units }: { row: SummaryRow; units?: SummaryRow[] }) {
-  const items = units
-    ? units.map((item) => ({ name: item.unit, open: item.open }))
-    : row.unit.split(",").map((part) => {
-        const trimmed = part.trim();
-        const marked = trimmed.endsWith("*");
-        return { name: marked ? trimmed.slice(0, -1) : trimmed, open: marked || (row.open && !row.unit.includes(",")) };
-      });
-  const names = items.filter((item) => item.name);
+  const names = summaryUnitMarks(row, units);
   if (names.length === 0) return "—";
   return names.map((item, index) => (
     <span key={`${item.name}-${index}`} className="summary-unit-line">
-      <span className={item.open ? "is-ny" : undefined}>{item.open ? `${item.name}*` : item.name}</span>
+      <span className={item.open ? "is-ny" : item.backedUp ? "is-backup" : undefined}>
+        {item.open ? `${item.name}*` : item.name}
+      </span>
       {index < names.length - 1 ? "," : null}
     </span>
   ));

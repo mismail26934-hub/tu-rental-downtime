@@ -52,6 +52,7 @@ export function groupByModel(rows: SummaryRow[]): ModelGroup[] {
       ytd: sum("ytd"),
       overDaily: sharedQuota != null && daily > sharedQuota,
       open: members.some((row) => row.open),
+      backedUp: members.some((row) => row.backedUp),
       members,
     };
   });

@@ -157,6 +157,22 @@ export function HandoverForm({
           />
         </label>
         {hmMessage ? <div className="error form-span">{hmMessage}</div> : null}
+        <label>
+          Unit Back up
+          <UnitSelect
+            value={value.unit_backup}
+            disabled={!ready || busy}
+            onChange={(unit) => setField("unit_backup", unit)}
+          />
+        </label>
+        <label>
+          Back up time
+          <DateTimeField
+            value={value.backup_time}
+            disabled={!ready || busy}
+            onChange={(next) => setField("backup_time", next)}
+          />
+        </label>
         <label className="form-span">
           Breakdown problem
           <textarea

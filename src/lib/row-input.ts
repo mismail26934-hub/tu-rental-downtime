@@ -12,6 +12,8 @@ const LIMITS: Record<keyof RowInput, number> = {
   rd30_at: 64,
   hm_awal: 64,
   hm_akhir: 64,
+  unit_backup: 128,
+  backup_time: 64,
   breakdown_problem: 8000,
   done_action: 8000,
   continue_handover: 8000,
@@ -76,7 +78,7 @@ export function validateRowInput(input: RowInput): string | null {
   if (!input.crew.trim()) return "Crew wajib diisi";
   if (!input.unit.trim()) return "Unit wajib diisi";
   if (!input.waiting_labour_at.trim()) return "Waiting Labour wajib diisi";
-  const stamps = ["waiting_labour_at", "repair_started_at", "rd30_at"] as const;
+  const stamps = ["waiting_labour_at", "repair_started_at", "rd30_at", "backup_time"] as const;
   for (const key of stamps) {
     if (input[key] && parseLocal(input[key]) == null) return "Format waktu harus dd/mm/yyyy hh:mm";
   }

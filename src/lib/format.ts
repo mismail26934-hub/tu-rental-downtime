@@ -63,6 +63,17 @@ export function formatHours(value: number | null): string {
   return groupThousands(value, 2);
 }
 
+export function formatHourClock(value: number | null): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  const negative = value < 0;
+  const totalMinutes = Math.round(Math.abs(value) * 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const grouped = String(hours).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const text = `${grouped}:${String(minutes).padStart(2, "0")}`;
+  return negative ? `-${text}` : text;
+}
+
 export function formatQuotaDisplay(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return groupThousands(value, 2, true);

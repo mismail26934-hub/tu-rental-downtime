@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS handover_rows (
   rd30_at            VARCHAR(64)  NOT NULL DEFAULT '',
   hm_awal            VARCHAR(64)  NOT NULL DEFAULT '',
   hm_akhir           VARCHAR(64)  NOT NULL DEFAULT '',
+  unit_backup        VARCHAR(128) NOT NULL DEFAULT '',
+  backup_time        VARCHAR(64)  NOT NULL DEFAULT '',
   breakdown_problem  TEXT,
   done_action        TEXT,
   continue_handover  TEXT,
@@ -47,6 +49,8 @@ CREATE TABLE IF NOT EXISTS handover_rows (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE handover_rows ADD COLUMN IF NOT EXISTS so TEXT NULL;
+ALTER TABLE handover_rows ADD COLUMN IF NOT EXISTS unit_backup VARCHAR(128) NOT NULL DEFAULT '';
+ALTER TABLE handover_rows ADD COLUMN IF NOT EXISTS backup_time VARCHAR(64) NOT NULL DEFAULT '';
 
 CREATE TABLE IF NOT EXISTS units (
   id         VARCHAR(64)   NOT NULL PRIMARY KEY,

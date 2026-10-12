@@ -810,7 +810,19 @@ html[data-theme="light"] .unit-select-menu {
   background: #fff;
   border: 1px solid var(--line);
 }
-.master-table { min-width: 760px; }
+.master-table {
+  --pin-1: 128px;
+  --pin-2: 108px;
+  --pin-3: 96px;
+  width: max-content;
+  min-width: 100%;
+}
+.master-table thead th.summary-daily,
+.master-table thead th.summary-wtd,
+.master-table thead th.summary-mtd,
+.master-table thead th.summary-hytd1,
+.master-table thead th.summary-hytd2,
+.master-table thead th.summary-ytd { text-align: center; }
 .summary-table {
   --sum-pin-1: 88px;
   --sum-pin-2: 52px;
@@ -863,18 +875,32 @@ html[data-theme="light"] .sisa-dot.is-ok { background: #148a32; }
 .handover-table td.is-over,
 .summary-table .is-ny,
 .handover-table .is-ny { color: var(--red); font-weight: 700; }
-.summary-table th.summary-daily { background: #6b5414; color: var(--text); }
-.summary-table td.summary-daily { background: #3d3214; }
-.summary-table th.summary-wtd { background: #1d4a7a; color: var(--text); }
-.summary-table td.summary-wtd { background: #16283d; }
-.summary-table th.summary-mtd { background: #1d5a34; color: var(--text); }
-.summary-table td.summary-mtd { background: #143224; }
-.summary-table th.summary-hytd1 { background: #4a525e; color: var(--text); }
-.summary-table td.summary-hytd1 { background: #2c323b; }
-.summary-table th.summary-hytd2 { background: #4c3470; color: var(--text); }
-.summary-table td.summary-hytd2 { background: #2c223c; }
-.summary-table th.summary-ytd { background: #8a4e12; color: var(--text); }
-.summary-table td.summary-ytd { background: #3d2914; }
+.summary-table .is-backup,
+.handover-table .is-backup { color: var(--green); font-weight: 700; }
+.summary-table th.summary-daily,
+.master-table th.summary-daily { background: #6b5414; color: var(--text); }
+.summary-table td.summary-daily,
+.master-table td.summary-daily { background: #3d3214; }
+.summary-table th.summary-wtd,
+.master-table th.summary-wtd { background: #1d4a7a; color: var(--text); }
+.summary-table td.summary-wtd,
+.master-table td.summary-wtd { background: #16283d; }
+.summary-table th.summary-mtd,
+.master-table th.summary-mtd { background: #1d5a34; color: var(--text); }
+.summary-table td.summary-mtd,
+.master-table td.summary-mtd { background: #143224; }
+.summary-table th.summary-hytd1,
+.master-table th.summary-hytd1 { background: #4a525e; color: var(--text); }
+.summary-table td.summary-hytd1,
+.master-table td.summary-hytd1 { background: #2c323b; }
+.summary-table th.summary-hytd2,
+.master-table th.summary-hytd2 { background: #4c3470; color: var(--text); }
+.summary-table td.summary-hytd2,
+.master-table td.summary-hytd2 { background: #2c223c; }
+.summary-table th.summary-ytd,
+.master-table th.summary-ytd { background: #8a4e12; color: var(--text); }
+.summary-table td.summary-ytd,
+.master-table td.summary-ytd { background: #3d2914; }
 .summary-info { position: relative; }
 .summary-info-menu {
   position: absolute;
@@ -1121,23 +1147,35 @@ html[data-theme="light"] .handover-table td { background: #fff; }
 html[data-theme="light"] .handover-table th { background: #f3f5f8; }
 html[data-theme="light"] .handover-table.is-frozen td.col-pin { background: #fff; }
 html[data-theme="light"] .handover-table.is-frozen th.col-pin { background: #f3f5f8; }
-html[data-theme="light"] .summary-table th.summary-daily { background: #ffe082; }
+html[data-theme="light"] .summary-table th.summary-daily,
+html[data-theme="light"] .master-table th.summary-daily { background: #ffe082; }
 html[data-theme="light"] .summary-table td.summary-daily,
+html[data-theme="light"] .master-table td.summary-daily,
 html[data-theme="light"] .summary-table tr.is-detail td.summary-daily { background: #fff8dc; }
-html[data-theme="light"] .summary-table th.summary-wtd { background: #b9d4f5; }
+html[data-theme="light"] .summary-table th.summary-wtd,
+html[data-theme="light"] .master-table th.summary-wtd { background: #b9d4f5; }
 html[data-theme="light"] .summary-table td.summary-wtd,
+html[data-theme="light"] .master-table td.summary-wtd,
 html[data-theme="light"] .summary-table tr.is-detail td.summary-wtd { background: #e8f2fc; }
-html[data-theme="light"] .summary-table th.summary-mtd { background: #b7e0b9; }
+html[data-theme="light"] .summary-table th.summary-mtd,
+html[data-theme="light"] .master-table th.summary-mtd { background: #b7e0b9; }
 html[data-theme="light"] .summary-table td.summary-mtd,
+html[data-theme="light"] .master-table td.summary-mtd,
 html[data-theme="light"] .summary-table tr.is-detail td.summary-mtd { background: #e7f6e8; }
-html[data-theme="light"] .summary-table th.summary-hytd1 { background: #d0d0d0; }
+html[data-theme="light"] .summary-table th.summary-hytd1,
+html[data-theme="light"] .master-table th.summary-hytd1 { background: #d0d0d0; }
 html[data-theme="light"] .summary-table td.summary-hytd1,
+html[data-theme="light"] .master-table td.summary-hytd1,
 html[data-theme="light"] .summary-table tr.is-detail td.summary-hytd1 { background: #f3f3f3; }
-html[data-theme="light"] .summary-table th.summary-hytd2 { background: #d9c6f0; }
+html[data-theme="light"] .summary-table th.summary-hytd2,
+html[data-theme="light"] .master-table th.summary-hytd2 { background: #d9c6f0; }
 html[data-theme="light"] .summary-table td.summary-hytd2,
+html[data-theme="light"] .master-table td.summary-hytd2,
 html[data-theme="light"] .summary-table tr.is-detail td.summary-hytd2 { background: #f4eefb; }
-html[data-theme="light"] .summary-table th.summary-ytd { background: #ffc98a; }
+html[data-theme="light"] .summary-table th.summary-ytd,
+html[data-theme="light"] .master-table th.summary-ytd { background: #ffc98a; }
 html[data-theme="light"] .summary-table td.summary-ytd,
+html[data-theme="light"] .master-table td.summary-ytd,
 html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background: #fff1e0; }
 
 .offline-sync-chip {
@@ -1630,7 +1668,8 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
   .panel-head:has(.action-row) {
     grid-template-rows: auto auto auto;
   }
-  .panel-head:has(.back-btn) > h2 {
+  .panel-head:has(.back-btn) > h2,
+  .panel-head:has(.back-btn) > .board-title {
     grid-column: 1;
     grid-row: 1;
     min-width: 0;

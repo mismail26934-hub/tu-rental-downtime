@@ -185,7 +185,7 @@ export function HandoverBoard() {
     void loadDraft(draftKey).then((draft) => {
       if (cancel) return;
       if (draft && JSON.stringify(draft.value) !== JSON.stringify(emptyRowInput())) {
-        setForm(draft.value);
+        setForm({ ...emptyRowInput(), ...draft.value });
         setNotice("Draft dipulihkan dari perangkat.");
       }
       setHydratedKey(draftKey);
