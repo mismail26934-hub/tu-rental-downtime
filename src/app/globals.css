@@ -1199,6 +1199,33 @@ html[data-theme="light"] .summary-table.is-frozen tr.is-detail td.summary-pin { 
   text-decoration: none;
   cursor: pointer;
 }
+.backup-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.handover-table.backup-table {
+  width: max-content;
+  min-width: max-content;
+}
+.backup-table th,
+.backup-table td {
+  text-align: left;
+}
+.backup-table th:nth-child(1),
+.backup-table td:nth-child(1) { min-width: 9.5rem; }
+.backup-table th:nth-child(2),
+.backup-table td:nth-child(2) { min-width: 4.5rem; }
+.backup-table th:nth-child(3),
+.backup-table td:nth-child(3) { min-width: 7rem; }
+.backup-table th:nth-child(4),
+.backup-table td:nth-child(4) { min-width: 10rem; }
+.backup-table th:nth-child(5),
+.backup-table td:nth-child(5) { min-width: 9rem; }
+.backup-detail td {
+  text-align: left;
+  white-space: normal;
+}
 .backup-user small {
   display: block;
   color: var(--muted);
@@ -1209,8 +1236,11 @@ html[data-theme="light"] .summary-table.is-frozen tr.is-detail td.summary-pin { 
 .backup-fields {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  justify-content: start;
+  justify-items: start;
   gap: 10px 16px;
   margin: 0;
+  text-align: left;
 }
 .backup-fields div { display: grid; gap: 2px; }
 .backup-fields dt {

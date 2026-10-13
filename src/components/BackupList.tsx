@@ -158,8 +158,8 @@ export function BackupList() {
               {backupsQuery.error instanceof Error ? backupsQuery.error.message : "Gagal memuat data"}
             </div>
           ) : null}
-          <div className="handover-table-wrap">
-            <table className="handover-table master-table">
+          <div className="handover-table-wrap backup-table-wrap">
+            <table className="handover-table backup-table">
               <thead>
                 <tr>
                   <th>Waktu</th>
