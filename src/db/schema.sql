@@ -74,6 +74,20 @@ CREATE TABLE IF NOT EXISTS unit_groups (
   UNIQUE KEY uk_unit_groups_name (group_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS wa_model_schedule (
+  id                VARCHAR(64)  NOT NULL PRIMARY KEY,
+  enabled           TINYINT(1)   NOT NULL DEFAULT 0,
+  interval_minutes  INT          NOT NULL DEFAULT 60,
+  active_from       CHAR(5)      NOT NULL DEFAULT '06:00',
+  active_until      CHAR(5)      NOT NULL DEFAULT '22:00',
+  mode              VARCHAR(8)   NOT NULL DEFAULT 'jam',
+  year              CHAR(4)      NOT NULL DEFAULT '',
+  fields_json       TEXT         NOT NULL,
+  next_run_at       VARCHAR(32)  NOT NULL DEFAULT '',
+  last_run_at       VARCHAR(32)  NOT NULL DEFAULT '',
+  last_error        VARCHAR(255) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS data_backups (
   id            VARCHAR(64)  NOT NULL PRIMARY KEY,
   action        VARCHAR(16)  NOT NULL,

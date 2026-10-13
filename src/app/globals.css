@@ -1057,12 +1057,64 @@ html[data-theme="light"] .sisa-dot.is-ok { background: #148a32; }
 }
 html[data-theme="light"] .summary-info-menu,
 html[data-theme="light"] .summary-settings-menu,
+html[data-theme="light"] .summary-send-note,
 html[data-theme="light"] .kelola-menu,
 html[data-theme="light"] .form-modal {
   background: #fff;
   border: 1px solid var(--line);
 }
 .summary-settings { position: relative; }
+.summary-send-note {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  width: max-content;
+  max-width: 240px;
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+.summary-send-note.is-error { color: var(--red); }
+.collapse-board-bar .btn-icon.is-on {
+  background: color-mix(in srgb, var(--amber) 24%, transparent);
+}
+.summary-schedule-menu { width: 280px; }
+.summary-schedule-menu p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.summary-schedule-menu p.is-error { color: var(--red); }
+.summary-schedule-field {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.summary-schedule-field select,
+.summary-schedule-field input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+}
+.summary-schedule-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.summary-schedule-menu .btn { justify-content: center; }
 .summary-settings-menu {
   position: absolute;
   z-index: 20;
@@ -2201,6 +2253,7 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
   html[data-theme="light"] .kelola-menu,
   html[data-theme="light"] .summary-info-menu,
   html[data-theme="light"] .summary-settings-menu,
+  html[data-theme="light"] .summary-send-note,
   html[data-theme="light"] .top-actions-panel--bar,
   html[data-theme="light"] .nav-session-portal-menu,
   html[data-theme="light"] .form-modal,

@@ -342,6 +342,8 @@ export function UnitMaster() {
             mode={mode}
             hidden={cardsHidden}
             onToggle={() => setCardsHidden(!cardsHidden)}
+            allowWhatsapp
+            year={year}
           />
           <CollapseBoard
             hidden={tableHidden}

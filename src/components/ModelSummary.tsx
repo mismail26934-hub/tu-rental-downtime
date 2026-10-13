@@ -1,36 +1,12 @@
 "use client";
 
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { formatHourClock, formatHours, formatQuotaDisplay } from "@/lib/format";
-import { CARD_FIELDS, CARD_FIELD_LABEL, useModelCardFields } from "@/lib/model-card-fields";
-import { PERIODS, periodQuota, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
-import { toSummaryAmount, type SummaryUnit } from "@/lib/summary-view";
+import { CARD_FIELDS, CARD_FIELD_LABEL, useModelCardFields, type CardFieldState } from "@/lib/model-card-fields";
+import { presentModelCards, type ModelSummaryUnit } from "@/lib/model-cards";
+import type { SummaryReport } from "@/lib/summary";
+import type { SummaryUnit } from "@/lib/summary-view";
 
-export type ModelSummaryUnit = {
-  unit: string;
-  model: string;
-  quota_hrs: number | null;
-};
-
-const OTHER_PERIODS = PERIODS.filter((period) => period !== "daily");
-const PERIOD_LABEL: Record<PeriodKey, string> = {
-  daily: "Daily",
-  wtd: "WTD",
-  mtd: "MTD",
-  hytd1: "HYTD 1",
-  hytd2: "HYTD 2",
-  ytd: "YTD",
-};
-
-type Hours = Record<PeriodKey, number>;
-
-type ModelCardModel = {
-  key: string;
-  label: string;
-  quota: number | null;
-  hours: Hours | null;
-  units: { code: string; open: boolean; backedUp: boolean }[];
-};
+export type { ModelSummaryUnit };
 
 export function ModelSummary({
   units,
@@ -40,6 +16,8 @@ export function ModelSummary({
   mode,
   hidden,
   onToggle,
+  allowWhatsapp = false,
+  year = "",
 }: {
   units: ModelSummaryUnit[];
   report?: SummaryReport;
@@ -48,74 +26,85 @@ export function ModelSummary({
   mode: SummaryUnit;
   hidden: boolean;
   onToggle: () => void;
+  allowWhatsapp?: boolean;
+  year?: string;
 }) {
-  const cards = useMemo(() => buildModelCards(units, report, ready), [units, report, ready]);
-  const fields = useModelCardFields();
+  const stored = useModelCardFields();
+  const fields = useMemo(() => cardFields(stored), [stored]);
+  const cards = useMemo(
+    () => presentModelCards({ units, report, ready, asOf, mode, fields }),
+    [units, report, ready, asOf, mode, fields]
+  );
   if (cards.length === 0) return null;
-  const now = asOfDate(asOf);
-  const periods = OTHER_PERIODS.filter((period) => fields[period]);
   return (
-    <CollapseBoard hidden={hidden} label="Summary by Model" hiddenLabel="Summary by Model disembunyikan" onToggle={onToggle} fields>
+    <CollapseBoard
+      hidden={hidden}
+      label="Summary by Model"
+      hiddenLabel="Summary by Model disembunyikan"
+      onToggle={onToggle}
+      fields
+      whatsapp={allowWhatsapp ? { year, mode, fields } : undefined}
+    >
       <div className="model-cards">
-        {cards.map((card) => {
-          const dailyQuota = card.quota == null ? null : periodQuota(card.quota, "daily", now);
-          const dailyJam = card.hours?.daily ?? null;
-          const dailyLeft = dailyQuota == null || dailyJam == null ? null : round2(dailyQuota - dailyJam);
-          const tone = sisaTone(dailyLeft, dailyQuota);
-          const meta = cardMeta(card.quota, dailyQuota, dailyJam, mode, fields.quota, fields.jam);
-          return (
-            <article key={card.key} className={`model-card is-${tone}`} aria-label={`Sisa ${card.label}`}>
-              <div className="model-card-head">
-                <span className="model-card-mark" aria-hidden="true">{card.label.slice(0, 1).toUpperCase()}</span>
-                <div className="model-card-title">
-                  <div className="label">{card.label}</div>
-                  <div className="model-card-count">{card.units.length} unit</div>
-                </div>
+        {cards.map((card) => (
+          <article key={card.key} className={`model-card is-${card.tone}`} aria-label={`Sisa ${card.label}`}>
+            <div className="model-card-head">
+              <span className="model-card-mark" aria-hidden="true">{card.mark}</span>
+              <div className="model-card-title">
+                <div className="label">{card.label}</div>
+                <div className="model-card-count">{card.countLabel}</div>
               </div>
-              {fields.units ? (
-                <div className="model-card-units">
-                  {card.units.map((unit, index) => (
-                    <span key={unit.code}>
-                      {index > 0 ? ", " : null}
-                      <span className={unit.open ? "is-ny" : unit.backedUp ? "is-backup" : undefined}>
-                        {unit.open ? `${unit.code}*` : unit.code}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {fields.daily || meta ? (
-                <div className="model-card-hero">
-                  {fields.daily ? (
-                    <>
-                      <div className="label">Sisa Daily</div>
-                      <div className="value">{formatCardAmount(dailyLeft, "daily", mode)}</div>
-                    </>
-                  ) : null}
-                  {meta ? <div className="model-card-meta">{meta}</div> : null}
-                </div>
-              ) : null}
-              {periods.length > 0 ? (
-                <ul className="model-card-periods">
-                  {periods.map((period) => {
-                    const quota = card.quota == null || card.hours == null ? null : periodQuota(card.quota, period, now);
-                    const jam = card.hours?.[period] ?? null;
-                    const left = quota == null || jam == null ? null : round2(quota - jam);
-                    return (
-                      <li key={period}>
-                        <span>{PERIOD_LABEL[period]}</span>
-                        <strong className={left != null && left < 0 ? "is-minus" : undefined}>{formatCardAmount(left, period, mode)}</strong>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : null}
-            </article>
-          );
-        })}
+            </div>
+            {card.units.length > 0 ? (
+              <div className="model-card-units">
+                {card.units.map((unit, index) => (
+                  <span key={`${unit.code}-${index}`}>
+                    {index > 0 ? ", " : null}
+                    <span className={unit.tone === "open" ? "is-ny" : unit.tone === "backup" ? "is-backup" : undefined}>{unit.code}</span>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            {card.dailyValue || card.meta ? (
+              <div className="model-card-hero">
+                {card.dailyValue ? (
+                  <>
+                    <div className="label">Sisa Daily</div>
+                    <div className="value">{card.dailyValue}</div>
+                  </>
+                ) : null}
+                {card.meta ? <div className="model-card-meta">{card.meta}</div> : null}
+              </div>
+            ) : null}
+            {card.periods.length > 0 ? (
+              <ul className="model-card-periods">
+                {card.periods.map((period) => (
+                  <li key={period.label}>
+                    <span>{period.label}</span>
+                    <strong className={period.minus ? "is-minus" : undefined}>{period.value}</strong>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </article>
+        ))}
       </div>
     </CollapseBoard>
   );
+}
+
+function cardFields(state: CardFieldState): CardFieldState {
+  return {
+    units: state.units,
+    daily: state.daily,
+    quota: state.quota,
+    jam: state.jam,
+    wtd: state.wtd,
+    mtd: state.mtd,
+    hytd1: state.hytd1,
+    hytd2: state.hytd2,
+    ytd: state.ytd,
+  };
 }
 
 export function CollapseBoard({
@@ -125,6 +114,7 @@ export function CollapseBoard({
   onToggle,
   fields = false,
   ariaLabel,
+  whatsapp,
   children,
 }: {
   hidden: boolean;
@@ -133,6 +123,7 @@ export function CollapseBoard({
   onToggle: () => void;
   fields?: boolean;
   ariaLabel?: string;
+  whatsapp?: { year: string; mode: SummaryUnit; fields: CardFieldState };
   children: ReactNode;
 }) {
   const spoken = ariaLabel || (typeof label === "string" ? label : "");
@@ -141,6 +132,8 @@ export function CollapseBoard({
       <div className="collapse-board-bar">
         <span>{hidden ? hiddenLabel : label}</span>
         <div className="collapse-board-actions">
+          {whatsapp ? <SendWhatsappButton year={whatsapp.year} mode={whatsapp.mode} fields={whatsapp.fields} /> : null}
+          {whatsapp ? <ScheduleWhatsappButton year={whatsapp.year} mode={whatsapp.mode} fields={whatsapp.fields} /> : null}
           {fields ? <CardFieldSettings /> : null}
           <button
             className="btn btn-icon"
@@ -201,94 +194,246 @@ function CardFieldSettings() {
   );
 }
 
-function cardMeta(
-  sharedQuota: number | null,
-  dailyQuota: number | null,
-  dailyJam: number | null,
-  mode: SummaryUnit,
-  showQuota: boolean,
-  showJam: boolean
-): string {
-  if (sharedQuota == null) return showQuota || showJam ? "Quota berbeda" : "";
-  const parts: string[] = [];
-  if (showQuota) parts.push(`Quota ${formatCardQuota(dailyQuota, mode)}`);
-  if (showJam) parts.push(`Jam ${formatCardAmount(dailyJam, "daily", mode)}`);
-  return parts.join(" · ");
-}
+function SendWhatsappButton({ year, mode, fields }: { year: string; mode: SummaryUnit; fields: CardFieldState }) {
+  const [confirm, setConfirm] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const [failed, setFailed] = useState(false);
+  const [modalError, setModalError] = useState("");
 
-function buildModelCards(units: ModelSummaryUnit[], report: SummaryReport | undefined, ready: boolean): ModelCardModel[] {
-  const order: string[] = [];
-  const buckets = new Map<string, ModelSummaryUnit[]>();
-  for (const unit of units) {
-    const key = unit.model.trim().toLowerCase();
-    if (!buckets.has(key)) {
-      order.push(key);
-      buckets.set(key, []);
+  useEffect(() => {
+    if (!confirm) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape" && !busy) setConfirm(false);
     }
-    buckets.get(key)?.push(unit);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [confirm, busy]);
+
+  function closeConfirm() {
+    if (busy) return;
+    setConfirm(false);
   }
-  const byCode = new Map((report?.units || []).map((row) => [row.unit.trim().toLowerCase(), row]));
-  return order.map((key) => {
-    const members = buckets.get(key) || [];
-    const firstQuota = members[0]?.quota_hrs ?? null;
-    const shared = members.every((member) => member.quota_hrs === firstQuota) ? firstQuota : null;
-    let hours: Hours | null = null;
-    if (ready) {
-      hours = emptyHours();
-      for (const member of members) {
-        const picked = pickHours(byCode.get(member.unit.trim().toLowerCase()));
-        for (const period of PERIODS) hours[period] = round2(hours[period] + (picked?.[period] ?? 0));
-      }
+
+  async function send() {
+    setBusy(true);
+    setNote("");
+    setFailed(false);
+    setModalError("");
+    try {
+      const response = await fetch("/api/whatsapp/model-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ year, mode, fields }),
+      });
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) throw new Error(body?.error || "Gagal mengirim");
+      setConfirm(false);
+      setNote("Terkirim ke WhatsApp.");
+    } catch (error) {
+      setFailed(true);
+      setModalError(error instanceof Error ? error.message : "Gagal mengirim");
+    } finally {
+      setBusy(false);
     }
-    return {
-      key,
-      label: members[0]?.model || "—",
-      quota: shared,
-      hours,
-      units: members.map((member) => {
-        const row = byCode.get(member.unit.trim().toLowerCase());
-        return { code: member.unit, open: Boolean(row?.open), backedUp: Boolean(row?.backedUp && !row?.open) };
-      }),
+  }
+
+  return (
+    <>
+      <div className="summary-settings">
+        <button className="btn btn-icon" type="button" aria-label="Kirim ke WhatsApp" title="Kirim ke WhatsApp" disabled={busy} onClick={() => { setModalError(""); setConfirm(true); }}>
+          <WhatsappIcon />
+        </button>
+        {note ? <div className={`summary-send-note${failed ? " is-error" : ""}`} role="status">{note}</div> : null}
+      </div>
+      {confirm ? (
+        <div className="form-modal-backdrop alert-backdrop" onMouseDown={closeConfirm}>
+          <div
+            className="form-modal alert-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="wa-send-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <h2 id="wa-send-title">Kirim ke WhatsApp?</h2>
+            <p>Summary by Model akan dikirim ke grup.</p>
+            {modalError ? <p className="error">{modalError}</p> : null}
+            <div className="form-actions">
+              <button className="btn btn-primary" type="button" onClick={() => void send()} disabled={busy}>
+                {busy ? "Mengirim…" : "Kirim"}
+              </button>
+              <button className="btn" type="button" onClick={closeConfirm} disabled={busy}>Batal</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+const INTERVALS: [number, string][] = [
+  [30, "30 menit"],
+  [60, "1 jam"],
+  [120, "2 jam"],
+  [180, "3 jam"],
+  [360, "6 jam"],
+  [720, "12 jam"],
+];
+
+type SchedulePayload = {
+  enabled: boolean;
+  intervalMinutes: number;
+  activeFrom: string;
+  activeUntil: string;
+  nextRunAt: string;
+  lastRunAt: string;
+  lastError: string;
+};
+
+function ScheduleWhatsappButton({ year, mode, fields }: { year: string; mode: SummaryUnit; fields: CardFieldState }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [intervalMinutes, setIntervalMinutes] = useState(60);
+  const [activeFrom, setActiveFrom] = useState("06:00");
+  const [activeUntil, setActiveUntil] = useState("22:00");
+  const [nextRunAt, setNextRunAt] = useState("");
+  const [lastError, setLastError] = useState("");
+  const [note, setNote] = useState("");
+  const [failed, setFailed] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  function apply(body: SchedulePayload) {
+    setEnabled(body.enabled);
+    setSaved(body.enabled);
+    setIntervalMinutes(body.intervalMinutes || 60);
+    setActiveFrom(body.activeFrom || "06:00");
+    setActiveUntil(body.activeUntil || "22:00");
+    setNextRunAt(body.nextRunAt || "");
+    setLastError(body.lastError || "");
+  }
+
+  useEffect(() => {
+    let cancel = false;
+    void fetch("/api/whatsapp/schedule", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const body = (await response.json()) as SchedulePayload;
+        if (!cancel) apply(body);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancel = true;
     };
-  });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointer(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointer);
+    return () => document.removeEventListener("pointerdown", onPointer);
+  }, [open]);
+
+  async function save() {
+    setBusy(true);
+    setNote("");
+    setFailed(false);
+    try {
+      const response = await fetch("/api/whatsapp/schedule", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled, intervalMinutes, activeFrom, activeUntil, year, mode, fields }),
+      });
+      const body = (await response.json().catch(() => null)) as (SchedulePayload & { error?: string }) | null;
+      if (!response.ok || !body || body.error) throw new Error(body?.error || "Gagal menyimpan jadwal");
+      apply(body);
+      setNote(body.enabled ? "Jadwal aktif." : "Jadwal dimatikan.");
+    } catch (error) {
+      setFailed(true);
+      setNote(error instanceof Error ? error.message : "Gagal menyimpan jadwal");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const choices = INTERVALS.some(([value]) => value === intervalMinutes) ? INTERVALS : [[intervalMinutes, `${intervalMinutes} menit`] as [number, string], ...INTERVALS];
+  const nextLabel = formatRun(nextRunAt);
+
+  return (
+    <div className="summary-settings" ref={rootRef}>
+      <button
+        className={`btn btn-icon${saved ? " is-on" : ""}`}
+        type="button"
+        aria-label="Jadwal WhatsApp"
+        aria-expanded={open}
+        title={saved ? "Kirim otomatis aktif" : "Kirim otomatis"}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <ClockIcon />
+      </button>
+      {open ? (
+        <>
+          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
+          <div className="summary-settings-menu summary-schedule-menu" role="group" aria-label="Jadwal WhatsApp">
+            <label>
+              <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />
+              Kirim otomatis
+            </label>
+            <div className="summary-schedule-field">
+              <span>Setiap</span>
+              <select value={intervalMinutes} onChange={(event) => setIntervalMinutes(Number(event.target.value))}>
+                {choices.map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="summary-schedule-row">
+              <div className="summary-schedule-field">
+                <span>Mulai</span>
+                <input type="time" value={activeFrom} onChange={(event) => setActiveFrom(event.target.value)} />
+              </div>
+              <div className="summary-schedule-field">
+                <span>Selesai</span>
+                <input type="time" value={activeUntil} onChange={(event) => setActiveUntil(event.target.value)} />
+              </div>
+            </div>
+            <p>Di luar jam ini pesan tidak dikirim. Memakai tahun, mode, dan data kartu yang sedang tampil.</p>
+            {saved && nextLabel ? <p>Berikutnya {nextLabel}.</p> : null}
+            {lastError ? <p className="is-error">{lastError}</p> : null}
+            <button className="btn" type="button" disabled={busy} onClick={() => void save()}>{busy ? "Menyimpan" : "Simpan"}</button>
+            {note ? <p className={failed ? "is-error" : ""} role="status">{note}</p> : null}
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
 }
 
-function pickHours(row: SummaryRow | undefined): Hours | null {
-  if (!row) return null;
-  return { daily: row.daily, wtd: row.wtd, mtd: row.mtd, hytd1: row.hytd1, hytd2: row.hytd2, ytd: row.ytd };
+function formatRun(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
+  if (!match) return "";
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${Number(match[3])} ${months[Number(match[2]) - 1] || ""} ${match[1]}, ${match[4]}:${match[5]}`;
 }
 
-function formatCardQuota(value: number | null, mode: SummaryUnit): string {
-  if (value == null) return "—";
-  if (mode === "hari") return formatHours(toSummaryAmount(value, mode));
-  return formatQuotaDisplay(value);
+function ClockIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v6l4 2" />
+    </svg>
+  );
 }
 
-function formatCardAmount(value: number | null, period: PeriodKey, mode: SummaryUnit): string {
-  if (value == null) return "—";
-  if (mode === "jam" && period === "daily") return formatHourClock(value);
-  return formatHours(toSummaryAmount(value, mode));
-}
-
-function sisaTone(left: number | null, quota: number | null): "ok" | "half" | "minus" | "idle" {
-  if (left == null || quota == null) return "idle";
-  if (left < 0) return "minus";
-  if (left <= quota * 0.5) return "half";
-  return "ok";
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-function emptyHours(): Hours {
-  return { daily: 0, wtd: 0, mtd: 0, hytd1: 0, hytd2: 0, ytd: 0 };
-}
-
-function asOfDate(asOf: string): Date {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(asOf);
-  if (!match) return new Date();
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+function WhatsappIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 11.5A8.5 8.5 0 0 1 7.3 18.9L4 20l1.2-3.2A8.5 8.5 0 1 1 20 11.5z" />
+    </svg>
+  );
 }
 
 function SettingsIcon() {
