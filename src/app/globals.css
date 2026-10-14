@@ -1043,18 +1043,62 @@ html[data-theme="light"] .sisa-dot.is-ok { background: #148a32; }
   z-index: 20;
   top: calc(100% + 6px);
   right: 0;
-  width: min(420px, 80vw);
+  width: min(400px, 86vw);
+  max-height: min(70vh, 560px);
+  overflow: auto;
   margin: 0;
-  padding: 12px 14px;
+  padding: 14px 16px 16px;
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-radius: 10px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.45;
   white-space: normal;
 }
+.summary-info-lead {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.summary-info-lead strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.summary-info-lead span { color: var(--muted); font-size: 0.86rem; }
+.summary-info-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+.summary-info-list > div { display: grid; gap: 2px; }
+.summary-info-list dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.summary-info-list dd { margin: 0; }
+.summary-info-list ul {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.summary-info-list li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+.summary-info-list li span { font-weight: 700; }
 html[data-theme="light"] .summary-info-menu,
 html[data-theme="light"] .summary-settings-menu,
 html[data-theme="light"] .summary-send-note,
@@ -2203,12 +2247,13 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
     font-size: 1rem;
   }
   .summary-settings-menu label { gap: 12px; }
-  .summary-info-menu .sheet-copy {
+  .summary-info-menu .summary-info-body {
     margin: 0;
     padding: 4px 14px 12px;
-    font-size: 1rem;
-    line-height: 1.5;
   }
+  .summary-info-menu .summary-info-lead strong,
+  .summary-info-menu .summary-info-list dd { font-size: 0.95rem; }
+  .summary-info-menu .summary-info-list { gap: 14px; }
   .form-modal-backdrop.alert-backdrop {
     align-items: center;
     place-items: center;

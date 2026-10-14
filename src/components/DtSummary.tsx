@@ -211,7 +211,7 @@ function SummaryInfo({ report }: { report?: SummaryReport }) {
           <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
           <div className="summary-info-menu" role="note">
             <p className="sheet-title">Info</p>
-            <p className="sheet-copy">{note(report, unit)}</p>
+            <SummaryNote report={report} unit={unit} />
           </div>
         </>
       ) : null}
@@ -413,17 +413,69 @@ function BackupIcon() {
   );
 }
 
-function note(report: SummaryReport, unit: SummaryUnit): string {
+const PERIOD_QUOTA = [
+  ["WTD", "Quota Hrs × 7"],
+  ["MTD", "hingga tanggal hari ini"],
+  ["HYTD 1", "hingga 30 Juni"],
+  ["HYTD 2", "sejak 1 Juli"],
+  ["YTD", "sejak 1 Januari"],
+] as const;
+
+function SummaryNote({ report, unit }: { report: SummaryReport; unit: SummaryUnit }) {
   const date = sheetTitle(report.asOf, "").trim();
   const open =
     report.openUnits === 0
       ? "Tidak ada unit N/Y Ready."
-      : `${report.openUnits} unit masih N/Y Ready, jam repair-nya terus bertambah.`;
+      : `${report.openUnits} unit masih N/Y Ready. Jam repair terus bertambah.`;
   const scale =
     unit === "hari"
-      ? "Semua angka dalam hari (1 hari = 24 jam)."
-      : "Jam = Waiting Labour + Repair time.";
-  return `Per ${date}. ${open} ${scale} Jam Daily hanya menghitung hari ini: mulai dari jam Waiting Labour, lalu kembali ke nol setelah 00:00 dan dihitung dari awal hari. WTD sampai YTD mengikuti tanggal Waiting Labour. Quota periode = Quota Hrs × hari (WTD = Quota Hrs × 7, MTD tanggal hari ini, HYTD 1 sampai 30 Jun, HYTD 2 dari 1 Jul, YTD dari 1 Jan). Sisa = quota − jam, kosong jika jam 0, merah jika negatif. Jika Unit Back up terisi, jam semua periode untuk baris itu 0, nama unit hijau, dan tanpa tanda *.`;
+      ? "Semua angka ditampilkan dalam hari. Satu hari setara 24 jam."
+      : "Jam dihitung dari Waiting Labour ditambah Repair time.";
+
+  return (
+    <div className="summary-info-body">
+      <p className="summary-info-lead">
+        <strong>Per {date}</strong>
+        <span>{open}</span>
+      </p>
+      <dl className="summary-info-list">
+        <div>
+          <dt>Satuan</dt>
+          <dd>{scale}</dd>
+        </div>
+        <div>
+          <dt>Daily</dt>
+          <dd>Hanya menghitung hari berjalan, dimulai dari jam Waiting Labour. Nilai kembali ke nol setelah pukul 00:00, lalu dihitung ulang dari awal hari.</dd>
+        </div>
+        <div>
+          <dt>WTD hingga YTD</dt>
+          <dd>Mengikuti tanggal Waiting Labour.</dd>
+        </div>
+        <div>
+          <dt>Quota periode</dt>
+          <dd>
+            Quota Hrs dikalikan jumlah hari pada periode.
+            <ul>
+              {PERIOD_QUOTA.map(([label, detail]) => (
+                <li key={label}>
+                  <span>{label}</span>
+                  {detail}
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+        <div>
+          <dt>Sisa</dt>
+          <dd>Quota dikurangi jam. Sel kosong jika jam bernilai 0, dan berwarna merah jika hasilnya negatif.</dd>
+        </div>
+        <div>
+          <dt>Unit Back up</dt>
+          <dd>Jika terisi, jam seluruh periode pada baris tersebut menjadi 0. Nama unit ditampilkan hijau dan tanpa tanda *.</dd>
+        </div>
+      </dl>
+    </div>
+  );
 }
 
 function SummaryTable({
