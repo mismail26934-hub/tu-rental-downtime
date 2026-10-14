@@ -192,9 +192,13 @@ export function Topbar({ busy = false, onRefresh }: Props) {
       <div className="topbar-glass" />
       <header className="topbar" ref={topbarRef}>
         <div className="brand-row">
-          <Link className="brand" href="/" aria-label="Halaman utama">
-            ARMOR
-            <span className="brand-tagline">Asset Readiness &amp; Monitoring of Operational Repair</span>
+          <Link className="brand-lockup" href="/" aria-label="Halaman utama">
+            <img className="brand-logo" src="/trakindo-cat.png" alt="" suppressHydrationWarning />
+            <span className="brand-divider" aria-hidden="true" />
+            <span className="brand-text">
+              <span className="brand">ARMOR</span>
+              <span className="brand-tagline">Asset Readiness &amp; Monitoring of Operational Repair</span>
+            </span>
           </Link>
           <OfflineChip />
         </div>
