@@ -36,6 +36,15 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Focus / expand: border `--ds-border-active` (`#3CB6C1`). Error (`aria-invalid`): border `--ds-border-critical`, teks `--ds-text-critical`. Disabled: latar `--ds-bg-disabled`, teks Disabled.
 - Menu daftar: panel radius 8, padding 12, bayangan `--ds-dropdown-shadow`; item hover/aktif memakai `--ds-bg-hover` (light). Required mark `.req` memakai merah critical.
 
+### Specs (Dropdown token sheet)
+
+- Lembar Specs Figma (`24:6035`) memetakan token Dropdown ke CSS di `ds-tokens.css`.
+- Spacing: `--ds-spacing-xs` 4px (jarak label/field/helper), `--ds-spacing-sm` 12px (padding field & menu).
+- Radius: `--ds-radius-md` 12px (field default), `--ds-radius-sm` 8px (menu terbuka / field lg).
+- Teks: `--ds-text-ink`, `--ds-text-subtle` (placeholder/disabled), `--ds-text-error`. Type: subtitle-xs 12/18, body-sm 14/22, body-xs 12/18.
+- Border: `--ds-border-default`, `--ds-border-active`, `--ds-border-error`. Container: `--ds-white`, `--ds-ui-disabled-bg`. Scroll indicator: `--ds-cloudy-30`.
+- Ikon: `--ds-icon-ink` / netral chevron default, `--ds-icon-brand` saat open/search aktif, `--ds-icon-disabled` saat disabled.
+
 ### Layout grid
 
 - Breakpoint: Small < 600px (4 kolom, gutter 16px, margin 16px), Medium 600–1023px (8 / 24 / 32), Large ≥ 1024px (12 / 24 / 64). Lebar konten maksimal 1440px.

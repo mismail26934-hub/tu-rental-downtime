@@ -1,5 +1,6 @@
-/* Design System TU — Color Guideline
-   Figma: 3YV8o4WPgdeWLEv86doPUs / Color Guideline (1:4913) */
+/* Design System TU — Color Guideline + Specs
+   Figma: 3YV8o4WPgdeWLEv86doPUs
+   Color Guideline (1:4913), Specs / Dropdown (24:6035) */
 
 :root {
   /* Brand (teal / Trakindo) */
@@ -119,4 +120,26 @@
   --ds-text-critical: #cd1924;
   --ds-shadow-raised: 0 16px 20px 4px #81868e29;
   --ds-dropdown-shadow: 0 8px 24px rgba(26, 32, 44, 0.12);
+
+  /* Specs (Figma 24:6035) — Dropdown token sheet aliases */
+  --ds-spacing-xs: 4px;
+  --ds-spacing-sm: 12px;
+  --ds-radius-sm: 8px;
+  --ds-radius-md: 12px;
+  --ds-text-ink: var(--ds-ink);
+  --ds-text-subtle: var(--ds-text-disabled);
+  --ds-text-error: var(--ds-text-critical);
+  --ds-border-default: var(--ds-border);
+  --ds-border-error: var(--ds-border-critical);
+  --ds-ui-disabled-bg: var(--ds-bg-disabled);
+  --ds-icon-ink: var(--ds-ink);
+  --ds-icon-brand: var(--ds-brand);
+  --ds-icon-disabled: var(--ds-text-disabled);
+  --ds-icon-neutral: var(--ds-cloudy-80);
+  --ds-subtitle-xs-size: 12px;
+  --ds-subtitle-xs-line: 18px;
+  --ds-body-sm-size: 14px;
+  --ds-body-sm-line: 22px;
+  --ds-body-xs-size: 12px;
+  --ds-body-xs-line: 18px;
 }

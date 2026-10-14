@@ -492,15 +492,15 @@ html.topbar-scrolled .topbar-glass {
 .form label,
 .board-filters label { display: grid; gap: 4px; }
 .form label .req {
-  color: var(--ds-text-critical);
+  color: var(--ds-text-error);
   font-weight: 700;
   text-decoration: none;
   letter-spacing: 0;
 }
 
-/* Design System TU Dropdown / Input Field (Figma 24:7282)
-   Default border Cloudy-50; focus/expand Border/Active teal; error Border/Critical;
-   sizes lg 56/radius 8, sm 44/radius 12. */
+/* Design System TU Dropdown (Figma 24:7282 + Specs 24:6035)
+   Tokens: spacing-xs/sm, radius-md/sm, text-ink/subtle/error,
+   border-default/active/error, ui-disabled-bg, icon-ink/brand/disabled. */
 .form input,
 .form textarea,
 .form select,
@@ -511,24 +511,24 @@ html.topbar-scrolled .topbar-glass {
   box-sizing: border-box;
   width: 100%;
   min-height: 44px;
-  padding: 10px 12px;
-  border: 1px solid var(--ds-border);
-  border-radius: 12px;
-  background: var(--bg-0);
+  padding: var(--ds-spacing-sm);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  background-color: var(--bg-0);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--ds-body-sm-size);
   font-weight: 400;
-  line-height: 22px;
+  line-height: var(--ds-body-sm-line);
   transition:
     border-color 0.15s ease,
-    background 0.15s ease,
+    background-color 0.15s ease,
     color 0.15s ease,
     box-shadow 0.15s ease;
 }
 .form textarea {
   min-height: 84px;
   resize: vertical;
-  border-radius: 8px;
+  border-radius: var(--ds-radius-sm);
 }
 .form select,
 .board-filters select,
@@ -537,7 +537,7 @@ html.topbar-scrolled .topbar-glass {
   padding-right: 40px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2379808f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right var(--ds-spacing-sm) center;
   background-size: 20px;
   cursor: pointer;
 }
@@ -546,7 +546,7 @@ html.topbar-scrolled .topbar-glass {
 .year-filter.ds-select-lg,
 .unit-select.ds-select-lg > input {
   min-height: 56px;
-  border-radius: 8px;
+  border-radius: var(--ds-radius-sm);
   font-size: 16px;
   line-height: 24px;
 }
@@ -554,7 +554,7 @@ html.topbar-scrolled .topbar-glass {
 .form textarea::placeholder,
 .board-filters input::placeholder,
 .unit-select > input::placeholder {
-  color: var(--ds-text-disabled);
+  color: var(--ds-text-subtle);
   opacity: 1;
 }
 .form input:focus,
@@ -575,31 +575,40 @@ html.topbar-scrolled .topbar-glass {
 .board-filters select:disabled,
 .year-filter:disabled,
 .unit-select > input:disabled {
-  background: var(--ds-bg-disabled);
-  color: var(--ds-text-disabled);
-  border-color: var(--ds-border);
+  background-color: var(--ds-ui-disabled-bg);
+  color: var(--ds-text-subtle);
+  border-color: var(--ds-border-default);
   cursor: not-allowed;
   opacity: 1;
 }
+.form select:disabled,
+.board-filters select:disabled,
+.year-filter:disabled,
+.unit-select > input:disabled {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23959dac' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--ds-spacing-sm) center;
+  background-size: 20px;
+}
 .form input:read-only {
-  background: var(--bg-2);
+  background-color: var(--bg-2);
   cursor: default;
 }
 .form input:read-only:focus {
   outline: none;
-  border-color: var(--ds-border);
+  border-color: var(--ds-border-default);
   box-shadow: none;
 }
 .form input[aria-invalid="true"],
 .form select[aria-invalid="true"],
 .board-filters select[aria-invalid="true"],
 .unit-select > input[aria-invalid="true"] {
-  border-color: var(--ds-border-critical);
-  color: var(--ds-text-critical);
+  border-color: var(--ds-border-error);
+  color: var(--ds-text-error);
 }
 .form input[aria-invalid="true"]:focus,
 .form select[aria-invalid="true"]:focus {
-  border-color: var(--ds-border-critical);
+  border-color: var(--ds-border-error);
 }
 .datetime-field {
   display: flex;
@@ -955,37 +964,38 @@ html.topbar-scrolled .topbar-glass {
 .btn-label { white-space: nowrap; }
 a.btn { text-decoration: none; display: inline-flex; align-items: center; }
 
-.unit-select { position: relative; display: grid; gap: 4px; }
+.unit-select { position: relative; display: grid; gap: var(--ds-spacing-xs); }
 .unit-select > input {
   padding-right: 40px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2379808f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right var(--ds-spacing-sm) center;
   background-size: 20px;
 }
+/* Specs: trailing icon open / search-active → icon-brand */
 .unit-select:has(> input[aria-expanded="true"]) > input {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2379808f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m15 12.5-5-5-5 5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2320a4b0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m15 12.5-5-5-5 5'/%3E%3C/svg%3E");
 }
 .unit-select-menu {
   position: absolute;
   z-index: 30;
-  top: calc(100% + 4px);
+  top: calc(100% + var(--ds-spacing-xs));
   left: 0;
   right: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   margin: 0;
-  padding: 12px;
+  padding: var(--ds-spacing-sm);
   list-style: none;
   max-height: 280px;
   overflow: auto;
   background: var(--bg-1);
-  border: 1px solid var(--ds-border);
-  border-radius: 8px;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-sm);
   box-shadow: var(--ds-dropdown-shadow);
   scrollbar-width: thin;
-  scrollbar-color: var(--ds-border) transparent;
+  scrollbar-color: var(--ds-cloudy-30) transparent;
 }
 .unit-select-menu button {
   width: 100%;
@@ -998,32 +1008,33 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; }
   background: transparent;
   color: var(--text);
   border-radius: 0;
-  padding: 8px 12px;
-  font-size: 14px;
+  padding: 8px var(--ds-spacing-sm);
+  font-size: var(--ds-body-sm-size);
   font-weight: 400;
-  line-height: 22px;
+  line-height: var(--ds-body-sm-line);
   cursor: pointer;
 }
 .unit-select-menu button small {
   color: var(--muted);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--ds-body-xs-size);
+  line-height: var(--ds-body-xs-line);
 }
 .unit-select-menu button.is-active,
 .unit-select-menu button:hover {
   background: color-mix(in srgb, var(--ds-border-active) 16%, transparent);
+  color: var(--text);
 }
 .unit-select-empty {
-  padding: 8px 12px;
-  color: var(--ds-text-disabled);
-  font-size: 14px;
-  line-height: 22px;
+  padding: 8px var(--ds-spacing-sm);
+  color: var(--muted);
+  font-size: var(--ds-body-sm-size);
+  line-height: var(--ds-body-sm-line);
 }
 .unit-select-meta {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--ds-body-xs-size);
+  line-height: var(--ds-body-xs-line);
 }
 html[data-theme="light"] .form input,
 html[data-theme="light"] .form textarea,
@@ -1032,29 +1043,30 @@ html[data-theme="light"] .board-filters input,
 html[data-theme="light"] .board-filters select,
 html[data-theme="light"] .year-filter,
 html[data-theme="light"] .unit-select > input {
-  background: var(--ds-white);
-  border-color: var(--ds-border);
-  color: var(--ds-ink);
+  background-color: var(--ds-white);
+  border-color: var(--ds-border-default);
+  color: var(--ds-text-ink);
 }
 html[data-theme="light"] .form input:disabled,
 html[data-theme="light"] .form select:disabled,
 html[data-theme="light"] .board-filters select:disabled,
 html[data-theme="light"] .year-filter:disabled,
 html[data-theme="light"] .unit-select > input:disabled {
-  background: var(--ds-bg-disabled);
-  color: var(--ds-text-disabled);
+  background-color: var(--ds-ui-disabled-bg);
+  color: var(--ds-text-subtle);
 }
 html[data-theme="light"] .unit-select-menu {
   background: var(--ds-white);
-  border-color: var(--ds-border);
+  border-color: var(--ds-border-default);
   box-shadow: var(--ds-dropdown-shadow);
 }
 html[data-theme="light"] .unit-select-menu button {
-  color: var(--ds-ink);
+  color: var(--ds-text-ink);
 }
 html[data-theme="light"] .unit-select-menu button.is-active,
 html[data-theme="light"] .unit-select-menu button:hover {
   background: var(--ds-bg-hover);
+  color: var(--ds-text-ink);
 }
 .collapse-board {
   margin-bottom: 16px;
