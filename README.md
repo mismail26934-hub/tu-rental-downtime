@@ -23,10 +23,10 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 
 ### Button
 
-- Mengikuti komponen Button Design System TU (Primary). Class: `.btn` (default/outline toolbar), `.btn-primary`, `.btn-secondary`, `.btn-danger`.
-- Ukuran: bawaan Medium (tinggi 44px, radius 8), `.btn-lg` (52 / 8), `.btn-sm` (36 / 6), `.btn-xs` (28 / 4). Font bold 16 / 14 / 14 / 12.
-- Primary Enable: latar Yellow-80 (`#FDBA12`), teks Cloudy-120. Hover, pressed, dan focus: latar Black-100 (`#181818`), teks putih; focus punya border 2px Cloudy-110. Disabled: latar Cloudy-50, teks Disabled.
-- Secondary: latar Black-100, teks putih. Ikon + label memakai `inline-flex` dengan jarak 8px (4px pada xs).
+- Semua tombol (dark & light) memakai gaya Primary / tombol Hari: Enable Yellow-80 + teks Cloudy-120; Hover / pressed / focus Black-100 + teks putih (focus border 2px Cloudy-110); Disabled Cloudy-50 + teks Disabled.
+- Class: `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-edit` sama. Ukuran: bawaan 44px, `.btn-lg` 52, `.btn-sm` 36, `.btn-xs` 28.
+- Delete (`.btn-danger`): Enable merah (`--ds-red-80`) + teks putih; Hover / pressed / focus kebalikan (latar putih, teks & border merah).
+- Toggle terpilih (`.is-on` / `aria-pressed="true"`) tetap kuning dengan ring inset; hover-nya tetap hitam.
 
 ### Dropdown
 

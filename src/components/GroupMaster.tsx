@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
+import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { useGroups } from "@/components/GroupSelect";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { Topbar } from "@/components/Topbar";
@@ -223,18 +224,21 @@ export function GroupMaster() {
                       <td className="col-num">{formatQuota(group.quota_hrs)}</td>
                       {canWrite ? (
                         <td className="col-act">
-                          <button className="btn btn-sm" type="button" onClick={() => openEdit(group)}>
-                            Ubah
+                          <button className="btn btn-sm btn-edit" type="button" aria-label="Ubah" onClick={() => openEdit(group)}>
+                            <EditIcon />
+                            <span className="btn-label">Ubah</span>
                           </button>
                           <button
                             className="btn btn-sm btn-danger"
                             type="button"
+                            aria-label="Hapus"
                             onClick={() => {
                               if (!window.confirm(`Hapus group ${group.group}?`)) return;
                               deleteMutation.mutate(group);
                             }}
                           >
-                            Hapus
+                            <TrashIcon />
+                            <span className="btn-label">Hapus</span>
                           </button>
                         </td>
                       ) : null}

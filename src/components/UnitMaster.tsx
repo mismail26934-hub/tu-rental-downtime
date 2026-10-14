@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { GroupSelect } from "@/components/GroupSelect";
 import { CollapseBoard, ModelSummary } from "@/components/ModelSummary";
 import { SisaValue } from "@/components/SisaValue";
@@ -388,18 +389,21 @@ export function UnitMaster() {
                       <PeriodCells quota={unit.group_quota_hrs} hours={unit.groupHours} asOf={asOf} mode={mode} columns={columns} />
                       {canWrite ? (
                         <td className="col-act">
-                          <button className="btn btn-sm" type="button" onClick={() => openEdit(unit)}>
-                            Ubah
+                          <button className="btn btn-sm btn-edit" type="button" aria-label="Ubah" onClick={() => openEdit(unit)}>
+                            <EditIcon />
+                            <span className="btn-label">Ubah</span>
                           </button>
                           <button
                             className="btn btn-sm btn-danger"
                             type="button"
+                            aria-label="Hapus"
                             onClick={() => {
                               if (!window.confirm(`Hapus unit ${unit.unit}?`)) return;
                               deleteMutation.mutate(unit);
                             }}
                           >
-                            Hapus
+                            <TrashIcon />
+                            <span className="btn-label">Hapus</span>
                           </button>
                         </td>
                       ) : null}

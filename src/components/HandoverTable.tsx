@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { SisaValue } from "@/components/SisaValue";
 import { parseHm, parseLocal } from "@/lib/calc";
 import { formatDt, formatHmDisplay, formatHours, formatStamp } from "@/lib/format";
@@ -313,21 +314,3 @@ function compareText(a: string, b: string, dir: SortDir): number {
   return dir === "asc" ? order : -order;
 }
 
-function EditIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 7h16" />
-      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-      <path d="M7 7l1 13h8l1-13" />
-    </svg>
-  );
-}

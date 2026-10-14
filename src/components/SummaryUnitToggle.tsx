@@ -7,11 +7,11 @@ export function SummaryUnitToggle() {
   const setUnit = useSummaryView((state) => state.setUnit);
   return (
     <div className="summary-unit" role="group" aria-label="Satuan waktu">
-      <button className={unit === "jam" ? "btn btn-primary" : "btn"} type="button" aria-pressed={unit === "jam"} onClick={() => setUnit("jam")}>
+      <button className="btn btn-primary" type="button" aria-pressed={unit === "jam"} onClick={() => setUnit("jam")}>
         <ClockIcon />
         <span className="btn-label">Jam</span>
       </button>
-      <button className={unit === "hari" ? "btn btn-primary" : "btn"} type="button" aria-pressed={unit === "hari"} onClick={() => setUnit("hari")}>
+      <button className="btn btn-primary" type="button" aria-pressed={unit === "hari"} onClick={() => setUnit("hari")}>
         <CalendarIcon />
         <span className="btn-label">Hari</span>
       </button>

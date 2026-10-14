@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
+import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { Topbar } from "@/components/Topbar";
 import { USER_LEVELS, type PublicUser } from "@/lib/types";
@@ -255,19 +256,22 @@ export function UserMaster() {
                       <td>{LEVEL_LABEL[user.level] || user.level}</td>
                       <td>{user.active === "1" ? "Aktif" : "Nonaktif"}</td>
                       <td className="col-act">
-                        <button className="btn btn-sm" type="button" onClick={() => openEdit(user)}>
-                          Ubah
+                        <button className="btn btn-sm btn-edit" type="button" aria-label="Ubah" onClick={() => openEdit(user)}>
+                          <EditIcon />
+                          <span className="btn-label">Ubah</span>
                         </button>
                         {user.id === selfId ? null : (
                           <button
                             className="btn btn-sm btn-danger"
                             type="button"
+                            aria-label="Hapus"
                             onClick={() => {
                               if (!window.confirm(`Hapus pengguna ${user.username}?`)) return;
                               deleteMutation.mutate(user);
                             }}
                           >
-                            Hapus
+                            <TrashIcon />
+                            <span className="btn-label">Hapus</span>
                           </button>
                         )}
                       </td>
