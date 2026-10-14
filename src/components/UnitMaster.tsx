@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { GroupSelect } from "@/components/GroupSelect";
+import { MasterUnitUpload } from "@/components/MasterUnitUpload";
+import { ModelSelect } from "@/components/ModelSelect";
 import { CollapseBoard, ModelSummary } from "@/components/ModelSummary";
 import { SisaValue } from "@/components/SisaValue";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
@@ -89,6 +91,7 @@ export function UnitMaster() {
   const [sort, setSort] = useState<{ key: UnitSortKey; dir: SortDir } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editBaseline, setEditBaseline] = useState<Draft | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const asOf = summaryQuery.data?.asOf || "";
@@ -279,15 +282,25 @@ export function UnitMaster() {
                 <span className="btn-label">Kembali</span>
               </Link>
               <div className="action-row">
+                <Link className="btn" href="/master/model" aria-label="Master model">
+                  <ModelIcon />
+                  <span className="btn-label">Master model</span>
+                </Link>
                 <Link className="btn" href="/master/group" aria-label="Master group">
                   <GroupIcon />
                   <span className="btn-label">Master group</span>
                 </Link>
                 {canWrite ? (
-                  <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
-                    <PlusIcon />
-                    <span className="btn-label">Tambah</span>
-                  </button>
+                  <>
+                    <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
+                      <PlusIcon />
+                      <span className="btn-label">Tambah</span>
+                    </button>
+                    <button className="btn" type="button" aria-label="Upload Excel" onClick={() => setUploadOpen(true)}>
+                      <UploadIcon />
+                      <span className="btn-label">Upload</span>
+                    </button>
+                  </>
                 ) : null}
                 <button className="btn" type="button" aria-label="Export" disabled={!unitsQuery.data || exporting} onClick={() => void exportExcel()}>
                   <DownloadIcon />
@@ -431,10 +444,9 @@ export function UnitMaster() {
                 <div className="form-grid">
                   <label>
                     Model
-                    <input
+                    <ModelSelect
                       value={draft.model}
-                      onChange={(event) => setDraft({ ...draft, model: event.target.value })}
-                      required
+                      onChange={(model) => setDraft((current) => (current ? { ...current, model } : current))}
                     />
                   </label>
                   <label>
@@ -474,6 +486,15 @@ export function UnitMaster() {
               </form>
             </div>
           </div>
+        ) : null}
+        {uploadOpen ? (
+          <MasterUnitUpload
+            onClose={() => setUploadOpen(false)}
+            onSaved={(count) => {
+              setNotice(`${count} unit ditambahkan.`);
+              void queryClient.invalidateQueries({ queryKey: ["units"] });
+            }}
+          />
         ) : null}
       </main>
     </>
@@ -708,6 +729,17 @@ function metricValue(row: MasterRow, scope: "unit" | "group", period: PeriodKey,
   return sisaRemainder(periodValue, hours[period]);
 }
 
+function ModelIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
+}
+
 function GroupIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -722,6 +754,16 @@ function PlusIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20V9" />
+      <path d="M7 13l5-5 5 5" />
+      <path d="M5 4h14" />
     </svg>
   );
 }

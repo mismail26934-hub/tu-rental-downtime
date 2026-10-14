@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
+import { GroupUpload } from "@/components/GroupUpload";
 import { useGroups } from "@/components/GroupSelect";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { Topbar } from "@/components/Topbar";
@@ -36,6 +37,7 @@ export function GroupMaster() {
   const [sort, setSort] = useState<{ key: GroupSortKey; dir: SortDir } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editBaseline, setEditBaseline] = useState<Draft | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -159,15 +161,25 @@ export function GroupMaster() {
                 <span className="btn-label">Kembali</span>
               </Link>
               <div className="action-row">
+                <Link className="btn" href="/master/model" aria-label="Master model">
+                  <ModelIcon />
+                  <span className="btn-label">Master model</span>
+                </Link>
                 <Link className="btn" href="/master/unit" aria-label="Master unit">
                   <UnitIcon />
                   <span className="btn-label">Master unit</span>
                 </Link>
                 {canWrite ? (
-                  <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
-                    <PlusIcon />
-                    <span className="btn-label">Tambah</span>
-                  </button>
+                  <>
+                    <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
+                      <PlusIcon />
+                      <span className="btn-label">Tambah</span>
+                    </button>
+                    <button className="btn" type="button" aria-label="Upload Excel" onClick={() => setUploadOpen(true)}>
+                      <UploadIcon />
+                      <span className="btn-label">Upload</span>
+                    </button>
+                  </>
                 ) : null}
               </div>
               <div className="search-pair">
@@ -294,6 +306,15 @@ export function GroupMaster() {
             </div>
           </div>
         ) : null}
+        {uploadOpen ? (
+          <GroupUpload
+            onClose={() => setUploadOpen(false)}
+            onSaved={(count) => {
+              setNotice(`${count} group ditambahkan.`);
+              void queryClient.invalidateQueries({ queryKey: ["groups"] });
+            }}
+          />
+        ) : null}
       </main>
     </>
   );
@@ -304,6 +325,17 @@ function sameQuota(left: string, right: string): boolean {
   const b = parseQuota(right);
   if (a == null || b == null) return left.trim() === right.trim();
   return a === b;
+}
+
+function ModelIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
 }
 
 function UnitIcon() {
@@ -319,6 +351,16 @@ function PlusIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20V9" />
+      <path d="M7 13l5-5 5 5" />
+      <path d="M5 4h14" />
     </svg>
   );
 }

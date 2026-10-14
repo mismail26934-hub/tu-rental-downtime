@@ -18,15 +18,16 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Token ada di `src/styles/ds-tokens.css`, diimpor oleh `globals.css`.
 - Brand teal: `--ds-brand` `#20A4B0`. Tombol aksi / aksen kuning: `--ds-yellow-80` `#FDBA12` (juga `--ds-btn-primary`). Tombol sekunder hitam `#181818`.
 - Netral Cloudy-0…130 untuk latar, garis, dan teks. Semantik: info biru, sukses hijau, peringatan oranye, kritis merah (solid + subtle).
-- Mode terang: latar halaman Yellow-80, kartu putih, teks Ink (`Cloudy-110`). Mode gelap: latar Cloudy-130/120, teks terang, aksen Yellow-80 dan brand teal.
+- Mode terang: latar halaman Cloudy-0 (`#FAFBFC`), kartu putih, teks Ink (`Cloudy-110`). Mode gelap: latar polos Cloudy-130 (tanpa gradien), teks terang, aksen Yellow-80 dan brand teal.
 - Variabel tema app (`--bg-*`, `--text`, `--amber`, `--red`, `--green`, `--line`, dll.) memetakan ke token di atas. Font tetap Bebas Neue + Source Sans 3.
 
 ### Button
 
 - Semua tombol (dark & light) memakai gaya Primary / tombol Hari: Enable Yellow-80 + teks Cloudy-120; Hover / pressed / focus Black-100 + teks putih (focus border 2px Cloudy-110); Disabled Cloudy-50 + teks Disabled.
 - Class: `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-edit` sama. Ukuran: bawaan 44px, `.btn-lg` 52, `.btn-sm` 36, `.btn-xs` 28.
-- Delete (`.btn-danger`): Enable merah (`--ds-red-80`) + teks putih; Hover / pressed / focus kebalikan (latar putih, teks & border merah).
+- Delete (`.btn-danger`): Enable merah (`--ds-red-80`) + teks putih; Hover / pressed / focus kebalikan (latar putih, teks & border merah). Tinggi mengikuti ukuran tombol induk (mis. `.btn-sm` 36px sama dengan Ubah).
 - Toggle terpilih (`.is-on` / `aria-pressed="true"`) tetap kuning dengan ring inset; hover-nya tetap hitam.
+- Chip akun navbar (Superuser) memakai state hover / pressed / focus yang sama dengan tombol muat ulang (refresh).
 
 ### Dropdown
 
@@ -47,8 +48,9 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 
 ### Layout grid
 
-- Breakpoint: Small < 600px (4 kolom, gutter 16px, margin 16px), Medium 600–1023px (8 / 24 / 32), Large ≥ 1024px (12 / 24 / 64). Lebar konten maksimal 1440px.
-- Token CSS: `--ds-columns`, `--ds-gutter`, `--ds-gutter-min`, `--ds-margin`, `--ds-max`. Dipakai `main.app` dan padding horizontal topbar.
+- Breakpoint kolom/gutter: Small < 600px (4 / 16), Medium 600–1023px (8 / 24), Large ≥ 1024px (12 / 24).
+- Margin kiri–kanan halaman dan topbar: 16px di semua breakpoint (`--ds-margin`), shell full-width tanpa batas 1440px — mengikuti pola inset aplikasi Trakindo BEST TaskList (`https://tbest.trakindo.co.id/TaskList`).
+- Token CSS: `--ds-columns`, `--ds-gutter`, `--ds-gutter-min`, `--ds-margin`. Dipakai `main.app` dan padding horizontal topbar.
 - Utilitas: `.ds-grid`, `.ds-col-1`…`.ds-col-12`, `.ds-col-full`, `.ds-col-half`, `.ds-col-third`, `.ds-col-quarter`, plus `md:` / `lg:` span.
 
 ## Log
@@ -65,7 +67,8 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Tombol muat ulang memuat ulang data halaman yang sedang terbuka. Di summary, SUMMARY UNIT dan SUMMARY GROUP dimuat ulang. Di daftar unit, baris handover dan kolom sisa dimuat ulang. Master, backup, dan pengguna memuat ulang daftar halaman itu.
 - Halaman pertama adalah summary. Judul bagian memakai huruf besar: SUMMARY UNIT, SUMMARY GROUP, dan DAFTAR UNIT.
 - Di layar lebar, Daftar unit adalah tombol pertama di toolbar summary, dan Summary adalah tombol pertama di toolbar daftar unit. Di layar sempit keduanya tetap di dalam menu Kelola.
-- Di summary, menu Kelola berisi Freeze kolom, Daftar unit, Master group, Master unit, dan Backup data. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Master group, Master unit, dan Backup data. Tahun, cari, Tambah unit, dan Mode Edit tetap di luar menu.
+- Di summary, menu Kelola berisi Freeze kolom, Daftar unit, Master model, Master group, Master unit, dan Backup data. Di daftar unit, menu Kelola berisi Summary (paling atas), Freeze kolom, Export, Upload Excel (admin/superuser), Master model, Master group, Master unit, dan Backup data. Tahun, cari, Upload, Tambah unit, dan Mode Edit tetap di luar menu.
+- Upload Excel massal (admin/superuser): di DAFTAR UNIT menambah baris handover tahun aktif (unit harus sudah ada di Master unit); di Master group menambah group + Quota Hrs; di Master unit menambah Model, Quota Hrs, Unit, dan Group (Model/Group harus sudah ada di master). Unduh template dari modal, pilih baris yang valid, lalu simpan.
 - Mode Edit disimpan di perangkat. Kolom Aksi (Ubah/Hapus) hanya tampil saat Mode Edit menyala. Ubah memakai ikon pensil berwarna oranye dan Hapus memakai ikon tong sampah berwarna merah. Di layar sempit hanya ikon yang tampil. Tambah unit dan Mode Edit hanya tampil untuk superuser dan admin.
 - Pada form ubah daftar unit, Simpan nonaktif sampai ada isian yang berbeda dari data saat form dibuka. Mengembalikan isian semula menonaktifkan Simpan lagi. Form tambah tetap bisa disimpan.
 - Di layar sempit, tombol toolbar (Jam, Hari, Cari, Kelola, Tambah unit, Mode Edit, Info, dan Setting) menampilkan ikon saja, berukuran 34 px, lebih kecil dari tombol desktop. Nama tombol muncul saat ikon di-hover atau diketuk. Di daftar unit, baris tombol itu ada di atas kolom pencarian. Filter tahun ada di samping judul DAFTAR UNIT, SUMMARY UNIT, dan MASTER UNIT, sejajar dengan tulisan judul, dengan huruf lebih kecil dari judul.
@@ -73,7 +76,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya diredupkan satu lapisan, sama seperti modal form. Mengetuk area di luar panel menutupnya.
 - Tambah unit ada di daftar unit.
 - Tabel penuh, teks remark membungkus, angka rata kanan. Jam di DAFTAR UNIT, SUMMARY UNIT, dan SUMMARY GROUP memakai pemisah ribuan (contoh 6,792.50). Quota di input master tetap tanpa pemisah.
-- Mode terang memakai latar halaman Yellow-80 (`#FDBA12`) dari Color Guideline. Kartu putih, tombol utama hitam (`#181818`) dengan teks kuning. Tombol dan kartu terangkat sedikit saat kursor di atasnya.
+- Mode terang memakai latar halaman Cloudy-0 (`#FAFBFC`) dari Color Guideline. Kartu putih, tombol utama kuning (`Yellow-80`) dengan teks gelap. Tombol dan kartu terangkat sedikit saat kursor di atasnya.
 - Tiga kolom pertama di daftar unit (#, Crew, Unit) dan di summary (Model atau Group, Quota, Unit) bisa dibekukan lewat "Freeze kolom" di menu Kelola. Di master unit, Freeze kolom ada di menu Setting dan membekukan Model, Quota Hrs, dan Unit. Pengaturan disimpan di perangkat dan dipakai ketiga halaman. Default menyala.
 - Pencarian daftar unit selalu tampil, menempel dengan tombol Cari. Penyaringan jalan setelah tombol Cari diklik, atau setelah Enter. Tombol X mengosongkan pencarian dan menampilkan semua baris. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok."
 - Nomor baris asli tetap saat hasil pencarian disaring.
@@ -112,9 +115,10 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Crew, Unit, dan Waiting Labour wajib diisi, ditandai bintang merah. Tombol Simpan nonaktif selama salah satunya masih kosong.
 - Waiting Labour, Repair Time, dan RD30 tidak terisi sendiri saat form dibuka.
 
-### Master unit dan master group
+### Master model, master unit, dan master group
 
-- Master unit: Model, Quota Hrs, Unit, lalu Daily, WTD, MTD, HYTD 1, HYTD 2, dan YTD, kemudian Group, Quota Hrs (GROUP), dan keenam periode yang sama. Tiap periode punya Quota Hrs, Jam, dan Sisa, dengan warna yang sama seperti summary. Sisi unit memakai quota dan jam unit itu. Sisi group memakai quota group dan jumlah jam anggotanya. Group kosong menampilkan —. Jam dan Sisa mengikuti tahun di navbar: tahun berjalan sampai hari ini, tahun lain sampai 31 Desember. Di mode Jam, Jam Daily dan Sisa Daily tampil jam:menit; periode lain tetap desimal. Bisa tambah, ubah, dan hapus lewat tombol Master unit. Group boleh kosong. Tambah, ubah, dan hapus hanya untuk superuser dan admin.
+- Master model: nama model di halaman `/master/model`. Model wajib dan unik. Dipakai pilihan Model di form Master unit dan validasi Upload Excel master unit. Tabel `unit_models` dibuat lewat `npm run db:ensure`.
+- Master unit: Model, Quota Hrs, Unit, lalu Daily, WTD, MTD, HYTD 1, HYTD 2, dan YTD, kemudian Group, Quota Hrs (GROUP), dan keenam periode yang sama. Tiap periode punya Quota Hrs, Jam, dan Sisa, dengan warna yang sama seperti summary. Sisi unit memakai quota dan jam unit itu. Sisi group memakai quota group dan jumlah jam anggotanya. Group kosong menampilkan —. Jam dan Sisa mengikuti tahun di navbar: tahun berjalan sampai hari ini, tahun lain sampai 31 Desember. Di mode Jam, Jam Daily dan Sisa Daily tampil jam:menit; periode lain tetap desimal. Bisa tambah, ubah, hapus, dan Upload Excel. Model dipilih dari Master model. Group boleh kosong. Tambah, ubah, dan hapus hanya untuk superuser dan admin.
 - Tombol Setting di master unit memilih Quota Hrs, Jam, dan Sisa pada blok periode, pilihan yang sama dengan summary, dan minimal satu kolom tetap tampil. Freeze kolom ada di menu itu.
 - Tombol Export mengunduh seluruh master unit, tidak mengikuti pencarian. File `Export Master Unit Armor yyyymmdd hhmm.xlsx` punya sheet Master unit. Jam di Excel tetap desimal, untuk tahun yang sedang dipilih.
 - Klik judul kolom di master unit dan master group mengubah urutan. Klik lagi membalik arahnya. Panah di judul menunjukkan kolom yang aktif. Kolom Aksi tidak diurutkan, dan nilai kosong berada di akhir.

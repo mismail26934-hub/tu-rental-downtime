@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { HandoverForm } from "@/components/HandoverForm";
+import { UnitUpload } from "@/components/UnitUpload";
 import { HandoverTable } from "@/components/HandoverTable";
 import { CollapseBoard, ModelSummary, type ModelSummaryUnit } from "@/components/ModelSummary";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
@@ -114,6 +115,7 @@ export function HandoverBoard() {
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [exportYear, setExportYear] = useState(() => todayISO().slice(0, 4));
   const [exportError, setExportError] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -546,6 +548,18 @@ export function HandoverBoard() {
           </div>
         ) : null}
 
+        {uploadOpen ? (
+          <UnitUpload
+            year={year}
+            onClose={() => setUploadOpen(false)}
+            onSaved={(count) => {
+              setNotice(`${count} unit ditambahkan dari Excel.`);
+              void queryClient.invalidateQueries({ queryKey: ["board", year] });
+              void queryClient.invalidateQueries({ queryKey: ["dt-summary", year] });
+            }}
+          />
+        ) : null}
+
         {exportOpen ? (
           <div
             className="form-modal-backdrop"
@@ -654,7 +668,14 @@ export function HandoverBoard() {
                   localStorage.setItem("tu-rental-freeze", next ? "1" : "0");
                 }}
                 onExport={openExport}
+                onUpload={canWrite ? () => setUploadOpen(true) : undefined}
               />
+              {canWrite ? (
+                <button className="btn" type="button" aria-label="Upload Excel" onClick={() => setUploadOpen(true)}>
+                  <UploadIcon />
+                  <span className="btn-label">Upload</span>
+                </button>
+              ) : null}
               {canWrite ? (
                 <button className="btn btn-primary" type="button" aria-label="Tambah unit" onClick={openCreate}>
                   <PlusIcon />
@@ -709,10 +730,12 @@ function ManageMenu({
   freezeCols,
   onFreeze,
   onExport,
+  onUpload,
 }: {
   freezeCols: boolean;
   onFreeze: (next: boolean) => void;
   onExport: () => void;
+  onUpload?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -757,6 +780,24 @@ function ManageMenu({
             <DownloadIcon />
             Export
           </button>
+          {onUpload ? (
+            <button
+              className="kelola-item"
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                onUpload();
+              }}
+            >
+              <UploadIcon />
+              Upload Excel
+            </button>
+          ) : null}
+          <Link className="kelola-item" role="menuitem" href="/master/model" onClick={() => setOpen(false)}>
+            <ModelIcon />
+            Master model
+          </Link>
           <Link className="kelola-item" role="menuitem" href="/master/group" onClick={() => setOpen(false)}>
             <GroupIcon />
             Master group
@@ -827,6 +868,16 @@ function ManageIcon() {
   );
 }
 
+function UploadIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20V9" />
+      <path d="M7 13l5-5 5 5" />
+      <path d="M5 4h14" />
+    </svg>
+  );
+}
+
 function DownloadIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -844,6 +895,17 @@ function SummaryIcon() {
       <path d="M10 20V4" />
       <path d="M16 20v-6" />
       <path d="M3 20h18" />
+    </svg>
+  );
+}
+
+function ModelIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
     </svg>
   );
 }

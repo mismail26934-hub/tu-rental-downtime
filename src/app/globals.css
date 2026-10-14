@@ -34,7 +34,8 @@
   /* Design System TU — Responsive Layout Grid */
   --ds-bp-md: 600px;
   --ds-bp-lg: 1024px;
-  --ds-max: 1440px;
+  /* Full-width page shell like Trakindo BEST TaskList: equal side inset, no 1440 cap. */
+  --ds-max: none;
   --ds-columns: 4;
   --ds-gutter: 16px;
   --ds-gutter-min: 4px;
@@ -48,7 +49,7 @@
   [data-theme="light"] {
     --ds-columns: 8;
     --ds-gutter: 24px;
-    --ds-margin: 32px;
+    --ds-margin: 16px;
   }
 }
 
@@ -58,7 +59,7 @@
   [data-theme="light"] {
     --ds-columns: 12;
     --ds-gutter: 24px;
-    --ds-margin: 64px;
+    --ds-margin: 16px;
   }
 }
 
@@ -66,8 +67,8 @@
   --bg-0: var(--ds-cloudy-10);
   --bg-1: var(--ds-white);
   --bg-2: var(--ds-cloudy-0);
-  --bg-deep: var(--ds-yellow-80);
-  --page-bg: var(--ds-yellow-80);
+  --bg-deep: var(--ds-cloudy-0);
+  --page-bg: var(--ds-cloudy-0);
   --glow-1: transparent;
   --glow-2: transparent;
   --line: var(--ds-border);
@@ -88,7 +89,7 @@
   --danger-text: var(--ds-red-90);
   --error-text: var(--ds-red-90);
   --brand-shadow: color-mix(in srgb, var(--ds-cloudy-110) 12%, transparent);
-  --topbar-glass-bg: color-mix(in srgb, var(--ds-yellow-80) 92%, transparent);
+  --topbar-glass-bg: color-mix(in srgb, var(--ds-cloudy-0) 92%, transparent);
   --topbar-glass-border: color-mix(in srgb, var(--ds-cloudy-120) 16%, transparent);
   color-scheme: light;
 }
@@ -105,7 +106,7 @@ html, body {
 
 html[data-theme="light"],
 html[data-theme="light"] body {
-  background: var(--ds-yellow-80);
+  background: var(--page-bg);
   -webkit-font-smoothing: auto;
   -moz-osx-font-smoothing: auto;
   font-weight: 500;
@@ -150,9 +151,9 @@ html[data-theme="light"] .muted {
 button, input, select, textarea { font: inherit; }
 
 .app {
-  max-width: var(--ds-max);
   width: 100%;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   padding: 20px var(--ds-margin) 48px;
   padding-top: calc(16px + var(--topbar-height));
 }
@@ -219,7 +220,7 @@ html.topbar-scrolled .topbar-glass {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px max(var(--ds-margin), calc((100% - var(--ds-max)) / 2 + var(--ds-margin))) 12px;
+  padding: 8px var(--ds-margin) 12px;
   font-family: var(--font-body), "Segoe UI", sans-serif;
 }
 
@@ -798,24 +799,12 @@ html.topbar-scrolled .topbar-glass {
   }
 }
 
-/* Delete: red enable; hover / pressed / focus = inverse */
+/* Delete: red enable; hover / pressed / focus = inverse.
+   Size comes from .btn / .btn-sm — do not reset height here. */
 .btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-sizing: border-box;
-  height: 44px;
-  padding: 0 16px;
-  border: 1px solid transparent;
-  border-radius: 8px;
   background: var(--ds-red-80);
   color: var(--ds-white);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 22px;
-  cursor: pointer;
-  box-shadow: none;
+  border-color: transparent;
 }
 .btn-danger svg { flex: none; color: inherit; }
 @media (hover: hover) and (pointer: fine) {
@@ -829,7 +818,8 @@ html.topbar-scrolled .topbar-glass {
 .btn-danger:focus-visible {
   background: var(--ds-white);
   color: var(--ds-red-80);
-  border: 2px solid var(--ds-red-80);
+  border-color: var(--ds-red-80);
+  border-width: 2px;
   outline: none;
 }
 .btn-danger:disabled {
@@ -1874,8 +1864,8 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   position: fixed;
   z-index: 10040;
   top: 58px;
-  left: max(20px, calc((100% - 1440px) / 2 + 20px));
-  width: min(340px, calc(100vw - 24px));
+  left: var(--ds-margin);
+  width: min(340px, calc(100vw - (2 * var(--ds-margin))));
   display: grid;
   gap: 10px;
   margin: 0;
@@ -2047,31 +2037,54 @@ html[data-theme="light"] .offline-sync-chip--error {
   min-height: 42px;
   border-radius: 10px;
 }
+/* Account chip — same enable / hover / pressed / focus as navbar refresh .btn-icon */
 .nav-account,
 .top-actions .nav-account {
-  padding: 5px 12px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
   gap: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
   background: var(--ds-btn-primary);
   color: var(--ds-cloudy-120);
 }
-.top-actions .nav-account:hover:not(:disabled),
-.top-actions .nav-account:focus-visible {
-  border-color: transparent;
+.top-actions .nav-account .nav-user-name { color: var(--ds-cloudy-120); }
+.top-actions .nav-account .nav-user-level {
+  color: color-mix(in srgb, var(--ds-cloudy-120) 72%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .top-actions .nav-account:hover:not(:disabled) {
+    background: var(--ds-btn-secondary);
+    color: var(--ds-white);
+    border-color: transparent;
+  }
+}
+.top-actions .nav-account:active:not(:disabled),
+.top-actions .nav-account:focus-visible,
+.top-actions .nav-account[aria-expanded="true"] {
   background: var(--ds-btn-secondary);
   color: var(--ds-white);
+  border-color: transparent;
+  outline: none;
 }
-.top-actions .nav-account:hover .nav-user-name,
-.top-actions .nav-account:hover .nav-user-level,
+.top-actions .nav-account:focus-visible {
+  border: 2px solid var(--ds-cloudy-110);
+}
+.top-actions .nav-account:hover:not(:disabled) .nav-user-name,
+.top-actions .nav-account:hover:not(:disabled) .nav-user-level,
+.top-actions .nav-account:active:not(:disabled) .nav-user-name,
+.top-actions .nav-account:active:not(:disabled) .nav-user-level,
 .top-actions .nav-account:focus-visible .nav-user-name,
-.top-actions .nav-account:focus-visible .nav-user-level {
+.top-actions .nav-account:focus-visible .nav-user-level,
+.top-actions .nav-account[aria-expanded="true"] .nav-user-name,
+.top-actions .nav-account[aria-expanded="true"] .nav-user-level {
   color: inherit;
 }
-.top-actions .nav-account .nav-user-name { color: var(--ds-cloudy-120); }
-.top-actions .nav-account .nav-user-level { color: color-mix(in srgb, var(--ds-cloudy-120) 72%, transparent); }
-.top-actions .nav-account:hover .nav-avatar,
-.top-actions .nav-account:focus-visible .nav-avatar {
+.top-actions .nav-account:hover:not(:disabled) .nav-avatar,
+.top-actions .nav-account:active:not(:disabled) .nav-avatar,
+.top-actions .nav-account:focus-visible .nav-avatar,
+.top-actions .nav-account[aria-expanded="true"] .nav-avatar {
   background: color-mix(in srgb, var(--ds-white) 14%, transparent);
   border-color: color-mix(in srgb, var(--ds-white) 35%, transparent);
   color: var(--ds-white);
@@ -2254,6 +2267,20 @@ html[data-theme="light"] .form-modal {
   border: 1px solid var(--line);
 }
 .export-modal { width: min(420px, 100%); }
+.upload-modal { width: min(760px, 100%); }
+.upload-modal-wide { width: min(920px, 100%); }
+.upload-note { margin: 0 0 12px; color: var(--muted, #9aa3b2); }
+.upload-file { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.upload-name { font-size: 0.85rem; word-break: break-all; }
+.upload-select-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 0; }
+.upload-select-count { font-size: 0.85rem; color: var(--muted, #9aa3b2); }
+.upload-table-wrap { max-height: 280px; overflow: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 8px; }
+.upload-preview { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.upload-preview th, .upload-preview td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.upload-preview th.col-check, .upload-preview td.col-check { width: 2rem; text-align: center; }
+.upload-preview tr.is-bad td { color: var(--red); }
+.upload-preview tr.is-skip td { opacity: 0.55; }
+.upload-errors { margin: 8px 0 0; padding-left: 18px; color: var(--red); }
 .alert-backdrop { z-index: 10060; }
 .alert-modal {
   width: min(380px, 100%);
@@ -2652,15 +2679,29 @@ html[data-theme="light"] .nav-avatar {
     font-weight: 700;
   }
   .top-actions-panel--bar .nav-tools .btn:hover,
-  .top-actions-panel--bar .nav-account:hover {
+  .top-actions-panel--bar .nav-tools .btn:active,
+  .top-actions-panel--bar .nav-tools .btn:focus-visible,
+  .top-actions-panel--bar .nav-account:hover,
+  .top-actions-panel--bar .nav-account:active,
+  .top-actions-panel--bar .nav-account:focus-visible,
+  .top-actions-panel--bar .nav-account[aria-expanded="true"] {
     background: var(--ds-btn-secondary);
     color: var(--ds-white);
     border-color: transparent;
     transform: none;
   }
+  .top-actions-panel--bar .nav-account:focus-visible {
+    border: 2px solid var(--ds-cloudy-110);
+  }
   .top-actions-panel--bar .nav-account .nav-user-name { color: var(--ds-cloudy-120); }
   .top-actions-panel--bar .nav-account:hover .nav-user-name,
-  .top-actions-panel--bar .nav-account:hover .nav-user-level {
+  .top-actions-panel--bar .nav-account:hover .nav-user-level,
+  .top-actions-panel--bar .nav-account:active .nav-user-name,
+  .top-actions-panel--bar .nav-account:active .nav-user-level,
+  .top-actions-panel--bar .nav-account:focus-visible .nav-user-name,
+  .top-actions-panel--bar .nav-account:focus-visible .nav-user-level,
+  .top-actions-panel--bar .nav-account[aria-expanded="true"] .nav-user-name,
+  .top-actions-panel--bar .nav-account[aria-expanded="true"] .nav-user-level {
     color: var(--ds-white);
   }
   .sheet-title {
@@ -2791,9 +2832,17 @@ html[data-theme="light"] .nav-avatar {
     transform: none;
   }
   html[data-theme="light"] .top-actions-panel--bar .nav-tools .btn:hover,
-  html[data-theme="light"] .top-actions-panel--bar .nav-account:hover {
+  html[data-theme="light"] .top-actions-panel--bar .nav-tools .btn:active,
+  html[data-theme="light"] .top-actions-panel--bar .nav-tools .btn:focus-visible,
+  html[data-theme="light"] .top-actions-panel--bar .nav-account:hover,
+  html[data-theme="light"] .top-actions-panel--bar .nav-account:active,
+  html[data-theme="light"] .top-actions-panel--bar .nav-account:focus-visible,
+  html[data-theme="light"] .top-actions-panel--bar .nav-account[aria-expanded="true"] {
     background: var(--ds-btn-secondary);
     color: var(--ds-white);
+  }
+  html[data-theme="light"] .top-actions-panel--bar .nav-account:focus-visible {
+    border: 2px solid var(--ds-cloudy-110);
   }
   html[data-theme="light"] .top-actions-panel--bar .nav-end {
     border-left: 0;
@@ -2807,13 +2856,12 @@ html[data-theme="light"] .nav-avatar {
   }
 }
 
-/* Design System TU — Responsive Layout Grid utilities
-   Specs: Small <600 (4 col / gutter 16 / margin 16),
-   Medium 600–1023 (8 / 24 / 32), Large ≥1024 (12 / 24 / 64), max-width 1440. */
+/* Layout grid: columns/gutter from Design System TU; page side inset 16px
+   (full-width shell like Trakindo BEST TaskList). */
 .ds-container {
   width: 100%;
-  max-width: var(--ds-max);
-  margin-inline: auto;
+  max-width: none;
+  margin-inline: 0;
   padding-inline: var(--ds-margin);
 }
 

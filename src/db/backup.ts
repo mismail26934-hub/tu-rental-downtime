@@ -2,7 +2,7 @@ import type { Pool, PoolConnection } from "mysql2/promise";
 import { getPool } from "@/db/pool";
 
 export type BackupAction = "ubah" | "hapus";
-export type BackupEntity = "handover_row" | "unit" | "group";
+export type BackupEntity = "handover_row" | "unit" | "group" | "model";
 
 export type BackupActor = {
   id: string;

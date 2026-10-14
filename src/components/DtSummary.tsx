@@ -322,6 +322,10 @@ function SummaryManage({ freezeCols, onFreeze }: { freezeCols: boolean; onFreeze
             <ListIcon />
             Daftar unit
           </Link>
+          <Link className="kelola-item" role="menuitem" href="/master/model" onClick={() => setOpen(false)}>
+            <ModelIcon />
+            Master model
+          </Link>
           <Link className="kelola-item" role="menuitem" href="/master/group" onClick={() => setOpen(false)}>
             <GroupIcon />
             Master group
@@ -380,6 +384,17 @@ function ListIcon() {
       <path d="M3 6h.01" />
       <path d="M3 12h.01" />
       <path d="M3 18h.01" />
+    </svg>
+  );
+}
+
+function ModelIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
     </svg>
   );
 }
