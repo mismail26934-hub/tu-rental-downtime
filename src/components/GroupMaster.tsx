@@ -1,14 +1,16 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { GroupUpload } from "@/components/GroupUpload";
 import { useGroups } from "@/components/GroupSelect";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { Topbar } from "@/components/Topbar";
 import { canManage } from "@/lib/access";
 import { validateGroupInput, type UnitGroup } from "@/lib/groups";
+import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 import { formatQuota, parseQuota } from "@/lib/units";
 
 type Draft = {
@@ -30,13 +32,31 @@ export function GroupMaster() {
   const canWrite = canManage(session?.user?.level);
   const queryClient = useQueryClient();
   const groupsQuery = useGroups();
+  const year = useSheetYear((state) => state.year);
+  const setYear = useSheetYear((state) => state.setYear);
+  const [yearReady, setYearReady] = useState(false);
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: GroupSortKey; dir: SortDir } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editBaseline, setEditBaseline] = useState<Draft | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    void Promise.resolve(useSheetYear.persist.rehydrate()).then(() => setYearReady(true));
+  }, []);
+
+  const yearsQuery = useQuery({
+    queryKey: ["dt-summary", year],
+    queryFn: async () => {
+      const response = await fetch(`/api/summary?year=${year}`);
+      if (!response.ok) throw new Error("Gagal memuat tahun");
+      return (await response.json()) as { years?: number[] };
+    },
+    enabled: yearReady,
+  });
 
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -151,22 +171,46 @@ export function GroupMaster() {
       <main className="app">
         <section className="panel">
           <div className="panel-head">
-            <h2>Master group</h2>
+            <div className="board-title">
+              <h2>Master group</h2>
+              <select
+                className="year-filter board-year"
+                aria-label="Tahun"
+                value={year}
+                onChange={(event) => setYear(event.target.value)}
+              >
+                {yearChoices(year, yearsQuery.data?.years || []).map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="panel-actions">
               <Link className="btn back-btn" href="/" aria-label="Kembali">
                 <BackIcon />
                 <span className="btn-label">Kembali</span>
               </Link>
               <div className="action-row">
+                <Link className="btn" href="/master/model" aria-label="Master model">
+                  <ModelIcon />
+                  <span className="btn-label">Master model</span>
+                </Link>
                 <Link className="btn" href="/master/unit" aria-label="Master unit">
                   <UnitIcon />
                   <span className="btn-label">Master unit</span>
                 </Link>
                 {canWrite ? (
-                  <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
-                    <PlusIcon />
-                    <span className="btn-label">Tambah</span>
-                  </button>
+                  <>
+                    <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
+                      <PlusIcon />
+                      <span className="btn-label">Tambah</span>
+                    </button>
+                    <button className="btn" type="button" aria-label="Upload Excel" onClick={() => setUploadOpen(true)}>
+                      <UploadIcon />
+                      <span className="btn-label">Upload</span>
+                    </button>
+                  </>
                 ) : null}
               </div>
               <div className="search-pair">
@@ -290,6 +334,15 @@ export function GroupMaster() {
             </div>
           </div>
         ) : null}
+        {uploadOpen ? (
+          <GroupUpload
+            onClose={() => setUploadOpen(false)}
+            onSaved={(count) => {
+              setNotice(`${count} group ditambahkan.`);
+              void queryClient.invalidateQueries({ queryKey: ["groups"] });
+            }}
+          />
+        ) : null}
       </main>
     </>
   );
@@ -300,6 +353,17 @@ function sameQuota(left: string, right: string): boolean {
   const b = parseQuota(right);
   if (a == null || b == null) return left.trim() === right.trim();
   return a === b;
+}
+
+function ModelIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
 }
 
 function UnitIcon() {
@@ -315,6 +379,16 @@ function PlusIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20V9" />
+      <path d="M7 13l5-5 5 5" />
+      <path d="M5 4h14" />
     </svg>
   );
 }

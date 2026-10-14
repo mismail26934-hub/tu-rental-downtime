@@ -74,6 +74,14 @@ CREATE TABLE IF NOT EXISTS unit_groups (
   UNIQUE KEY uk_unit_groups_name (group_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS unit_models (
+  id         VARCHAR(64)  NOT NULL PRIMARY KEY,
+  model_name VARCHAR(64)  NOT NULL,
+  created_at VARCHAR(64)  NOT NULL DEFAULT '',
+  updated_at VARCHAR(64)  NOT NULL DEFAULT '',
+  UNIQUE KEY uk_unit_models_name (model_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS wa_model_schedule (
   id                VARCHAR(64)  NOT NULL PRIMARY KEY,
   enabled           TINYINT(1)   NOT NULL DEFAULT 0,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { findGroupByName } from "@/db/groups";
+import { findModelByName } from "@/db/models";
 import { insertUnit, isDuplicateUnitError, listUnits } from "@/db/units";
 import { badRequest, requireUser, requireWriter, unauthorized } from "@/lib/http";
 import { publishLive } from "@/lib/live";
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
     group?: string;
   } | null;
   const id = String(body?.id || "");
-  const model = String(body?.model || "").trim();
+  let model = String(body?.model || "").trim();
   const unit = String(body?.unit || "").trim();
   let group = String(body?.group || "").trim();
   const quota = parseQuota(String(body?.quota_hrs ?? ""));
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
   if (!unit) return badRequest("Unit wajib diisi");
   if (unit.length > 128) return badRequest("Unit terlalu panjang");
   if (group.length > 128) return badRequest("Group terlalu panjang");
+  const knownModel = await findModelByName(model);
+  if (!knownModel) return badRequest("Model harus dipilih dari master");
+  model = knownModel.model;
   if (group) {
     const known = await findGroupByName(group);
     if (!known) return badRequest("Group harus dipilih dari master");

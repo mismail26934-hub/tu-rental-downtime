@@ -10,11 +10,12 @@ const QUERY_KEYS: Record<LiveTopic, string[][]> = {
   board: [["board"], ["dt-summary"], ["backups"]],
   units: [["units"], ["dt-summary"], ["backups"]],
   groups: [["groups"], ["units"], ["dt-summary"], ["backups"]],
+  models: [["models"], ["units"], ["dt-summary"], ["backups"]],
   users: [["users"]],
 };
 
 function isTopic(value: string): value is LiveTopic {
-  return value === "board" || value === "units" || value === "groups" || value === "users";
+  return value === "board" || value === "units" || value === "groups" || value === "models" || value === "users";
 }
 
 export function LiveSync() {

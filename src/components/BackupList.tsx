@@ -9,7 +9,7 @@ import { formatStamp } from "@/lib/format";
 type BackupView = {
   id: string;
   action: "ubah" | "hapus";
-  entity: "handover_row" | "unit" | "group";
+  entity: "handover_row" | "unit" | "group" | "model";
   recordId: string;
   label: string;
   userName: string;
@@ -23,6 +23,7 @@ const ENTITY_LABEL = {
   handover_row: "Daftar unit",
   unit: "Master unit",
   group: "Master group",
+  model: "Master model",
 } as const;
 
 const FIELD_LABELS: Record<string, string> = {
@@ -30,6 +31,7 @@ const FIELD_LABELS: Record<string, string> = {
   unit: "Unit",
   unit_code: "Unit",
   model: "Model",
+  model_name: "Model",
   location: "Location",
   technician: "Technician",
   status: "Status",

@@ -1,0 +1,56 @@
+/* Design System TU — Figma 3YV8o4WPgdeWLEv86doPUs */
+
+:root {
+  --ds-brand: #20a4b0;
+  --ds-brand-soft: #def3f5;
+  --ds-brand-active: #3cb6c1;
+
+  --ds-yellow-0: #fef9ed;
+  --ds-yellow-10: #fff3d6;
+  --ds-yellow-20: #ffecbd;
+  --ds-yellow-40: #ffd879;
+  --ds-yellow-60: #ffcf55;
+  --ds-yellow-70: #ffc840;
+  --ds-yellow-80: #fdba12;
+
+  --ds-btn-primary: #fdba12;
+  --ds-btn-secondary: #181818;
+  --ds-btn-disabled: #cfd3db;
+
+  --ds-orange-80: #f26d0f;
+  --ds-orange-90: #d75e09;
+  --ds-blue-80: #2196f3;
+  --ds-blue-90: #1480d8;
+  --ds-green-80: #4caf50;
+  --ds-green-90: #3b9d3f;
+  --ds-red-80: #e52a34;
+  --ds-red-90: #cd1924;
+
+  --ds-cloudy-0: #fafbfc;
+  --ds-cloudy-10: #f6f8fb;
+  --ds-cloudy-20: #f2f5fa;
+  --ds-cloudy-30: #e8ecf4;
+  --ds-cloudy-40: #dadfea;
+  --ds-cloudy-50: #cfd3db;
+  --ds-cloudy-60: #b0b8c7;
+  --ds-cloudy-70: #959dac;
+  --ds-cloudy-80: #79808f;
+  --ds-cloudy-90: #5e677b;
+  --ds-cloudy-100: #4b5262;
+  --ds-cloudy-110: #2c313a;
+  --ds-cloudy-120: #1a202c;
+  --ds-cloudy-130: #1a1d22;
+  --ds-white: #ffffff;
+
+  --ds-ink: #2c313a;
+  --ds-text-neutral: #5e677b;
+  --ds-text-disabled: #959dac;
+  --ds-text-invert: #ffffff;
+  --ds-border: #cfd3db;
+  --ds-border-active: #3cb6c1;
+  --ds-border-critical: #e52a34;
+  --ds-bg-subtle-critical: #f8e1e2;
+  --ds-bg-subtle-success: #e5f6e5;
+  --ds-bg-hover: #f6f8fb;
+  --ds-shadow-raised: 0 16px 20px 4px #81868e29;
+}

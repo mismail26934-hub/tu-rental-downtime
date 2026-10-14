@@ -83,4 +83,6 @@ export async function ensureSchema(): Promise<void> {
   for (const statement of splitSql(sql)) {
     await db.query(statement);
   }
+  const { ensureModelsFromUnits } = await import("@/db/models");
+  await ensureModelsFromUnits();
 }

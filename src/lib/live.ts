@@ -1,4 +1,4 @@
-export type LiveTopic = "board" | "units" | "groups" | "users";
+export type LiveTopic = "board" | "units" | "groups" | "models" | "users";
 
 type Listener = (topic: LiveTopic) => void;
 

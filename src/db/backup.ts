@@ -2,7 +2,7 @@ import type { Pool, PoolConnection } from "mysql2/promise";
 import { getPool } from "@/db/pool";
 
 export type BackupAction = "ubah" | "hapus";
-export type BackupEntity = "handover_row" | "unit" | "group";
+export type BackupEntity = "handover_row" | "unit" | "group" | "model";
 
 export type BackupActor = {
   id: string;
@@ -67,7 +67,10 @@ export async function listBackups(limit = 300): Promise<BackupView[]> {
   );
   return (rows as BackupPacket[]).flatMap((row) => {
     const action = row.action === "hapus" ? "hapus" : row.action === "ubah" ? "ubah" : null;
-    const entity = row.entity === "unit" || row.entity === "group" || row.entity === "handover_row" ? row.entity : null;
+    const entity =
+      row.entity === "unit" || row.entity === "group" || row.entity === "model" || row.entity === "handover_row"
+        ? row.entity
+        : null;
     if (!action || !entity) return [];
     return [{
       id: text(row.id),

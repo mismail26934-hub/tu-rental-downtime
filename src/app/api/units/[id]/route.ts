@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { findGroupByName } from "@/db/groups";
 import { actorFromUser } from "@/db/backup";
+import { findModelByName } from "@/db/models";
 import { deleteUnit, isDuplicateUnitError, updateUnit } from "@/db/units";
 import { badRequest, requireWriter } from "@/lib/http";
 import { publishLive } from "@/lib/live";
@@ -22,7 +23,7 @@ export async function PATCH(request: Request, context: Context) {
     unit?: string;
     group?: string;
   } | null;
-  const model = String(body?.model || "").trim();
+  let model = String(body?.model || "").trim();
   const unit = String(body?.unit || "").trim();
   let group = String(body?.group || "").trim();
   const quota = parseQuota(String(body?.quota_hrs ?? ""));
@@ -32,6 +33,9 @@ export async function PATCH(request: Request, context: Context) {
   if (!unit) return badRequest("Unit wajib diisi");
   if (unit.length > 128) return badRequest("Unit terlalu panjang");
   if (group.length > 128) return badRequest("Group terlalu panjang");
+  const knownModel = await findModelByName(model);
+  if (!knownModel) return badRequest("Model harus dipilih dari master");
+  model = knownModel.model;
   if (group) {
     const known = await findGroupByName(group);
     if (!known) return badRequest("Group harus dipilih dari master");
