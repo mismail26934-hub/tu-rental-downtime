@@ -11,6 +11,12 @@ Aplikasi input handover downtime shift. ARMOR adalah Asset Readiness & Monitorin
 
 Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti bentuk `tu_prima.users`, tetapi aplikasi ini tidak menulis ke database `tu_prima`.
 
+## Layout grid (Design System TU)
+
+- Breakpoint: Small < 600px (4 kolom, gutter 16px, margin 16px), Medium 600–1023px (8 / 24 / 32), Large ≥ 1024px (12 / 24 / 64). Lebar konten maksimal 1440px.
+- Token CSS: `--ds-columns`, `--ds-gutter`, `--ds-gutter-min`, `--ds-margin`, `--ds-max`. Dipakai `main.app` dan padding horizontal topbar.
+- Utilitas: `.ds-grid`, `.ds-col-1`…`.ds-col-12`, `.ds-col-full`, `.ds-col-half`, `.ds-col-third`, `.ds-col-quarter`, plus `md:` / `lg:` span.
+
 ## Log
 
 ### Papan handover

@@ -26,7 +26,35 @@
   --topbar-glass-bg: rgba(13, 16, 20, 0.72);
   --topbar-glass-border: rgba(255, 255, 255, 0.1);
   --topbar-height: 4.75rem;
+  /* Design System TU — Responsive Layout Grid */
+  --ds-bp-md: 600px;
+  --ds-bp-lg: 1024px;
+  --ds-max: 1440px;
+  --ds-columns: 4;
+  --ds-gutter: 16px;
+  --ds-gutter-min: 4px;
+  --ds-margin: 16px;
   color-scheme: dark;
+}
+
+@media (min-width: 600px) {
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --ds-columns: 8;
+    --ds-gutter: 24px;
+    --ds-margin: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --ds-columns: 12;
+    --ds-gutter: 24px;
+    --ds-margin: 64px;
+  }
 }
 
 [data-theme="light"] {
@@ -118,10 +146,10 @@ html[data-theme="light"] .muted {
 button, input, select, textarea { font: inherit; }
 
 .app {
-  max-width: 1440px;
+  max-width: var(--ds-max);
   width: 100%;
   margin: 0 auto;
-  padding: 20px 20px 48px;
+  padding: 20px var(--ds-margin) 48px;
   padding-top: calc(16px + var(--topbar-height));
 }
 
@@ -187,7 +215,7 @@ html.topbar-scrolled .topbar-glass {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px max(20px, calc((100% - 1440px) / 2 + 20px)) 12px;
+  padding: 8px max(var(--ds-margin), calc((100% - var(--ds-max)) / 2 + var(--ds-margin))) 12px;
   font-family: var(--font-body), "Segoe UI", sans-serif;
 }
 
@@ -2319,3 +2347,76 @@ html[data-theme="light"] .nav-avatar { background: #fff; border-color: #d0d0d0; 
     height: 40px;
   }
 }
+
+/* Design System TU — Responsive Layout Grid utilities
+   Specs: Small <600 (4 col / gutter 16 / margin 16),
+   Medium 600–1023 (8 / 24 / 32), Large ≥1024 (12 / 24 / 64), max-width 1440. */
+.ds-container {
+  width: 100%;
+  max-width: var(--ds-max);
+  margin-inline: auto;
+  padding-inline: var(--ds-margin);
+}
+
+.ds-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--ds-columns), minmax(0, 1fr));
+  column-gap: var(--ds-gutter);
+  row-gap: var(--ds-gutter);
+}
+
+.ds-grid-tight { column-gap: var(--ds-gutter-min); row-gap: var(--ds-gutter-min); }
+
+.ds-col-full { grid-column: 1 / -1; }
+.ds-col-1 { grid-column: span 1; }
+.ds-col-2 { grid-column: span 2; }
+.ds-col-3 { grid-column: span 3; }
+.ds-col-4 { grid-column: span 4; }
+.ds-col-5 { grid-column: span 5; }
+.ds-col-6 { grid-column: span 6; }
+.ds-col-7 { grid-column: span 7; }
+.ds-col-8 { grid-column: span 8; }
+.ds-col-9 { grid-column: span 9; }
+.ds-col-10 { grid-column: span 10; }
+.ds-col-11 { grid-column: span 11; }
+.ds-col-12 { grid-column: span 12; }
+
+/* Half / third / quarter of the active column count */
+.ds-col-half { grid-column: span 2; }
+.ds-col-third { grid-column: span 1; }
+.ds-col-quarter { grid-column: span 1; }
+
+@media (min-width: 600px) {
+  .ds-col-half { grid-column: span 4; }
+  .ds-col-third { grid-column: span 3; }
+  .ds-col-quarter { grid-column: span 2; }
+  .md\:ds-col-1 { grid-column: span 1; }
+  .md\:ds-col-2 { grid-column: span 2; }
+  .md\:ds-col-3 { grid-column: span 3; }
+  .md\:ds-col-4 { grid-column: span 4; }
+  .md\:ds-col-5 { grid-column: span 5; }
+  .md\:ds-col-6 { grid-column: span 6; }
+  .md\:ds-col-7 { grid-column: span 7; }
+  .md\:ds-col-8 { grid-column: span 8; }
+  .md\:ds-col-full { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1024px) {
+  .ds-col-half { grid-column: span 6; }
+  .ds-col-third { grid-column: span 4; }
+  .ds-col-quarter { grid-column: span 3; }
+  .lg\:ds-col-1 { grid-column: span 1; }
+  .lg\:ds-col-2 { grid-column: span 2; }
+  .lg\:ds-col-3 { grid-column: span 3; }
+  .lg\:ds-col-4 { grid-column: span 4; }
+  .lg\:ds-col-5 { grid-column: span 5; }
+  .lg\:ds-col-6 { grid-column: span 6; }
+  .lg\:ds-col-7 { grid-column: span 7; }
+  .lg\:ds-col-8 { grid-column: span 8; }
+  .lg\:ds-col-9 { grid-column: span 9; }
+  .lg\:ds-col-10 { grid-column: span 10; }
+  .lg\:ds-col-11 { grid-column: span 11; }
+  .lg\:ds-col-12 { grid-column: span 12; }
+  .lg\:ds-col-full { grid-column: 1 / -1; }
+}
+
