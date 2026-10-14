@@ -21,6 +21,13 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Mode terang: latar halaman Yellow-80, kartu putih, teks Ink (`Cloudy-110`). Mode gelap: latar Cloudy-130/120, teks terang, aksen Yellow-80 dan brand teal.
 - Variabel tema app (`--bg-*`, `--text`, `--amber`, `--red`, `--green`, `--line`, dll.) memetakan ke token di atas. Font tetap Bebas Neue + Source Sans 3.
 
+### Button
+
+- Mengikuti komponen Button Design System TU (Primary). Class: `.btn` (default/outline toolbar), `.btn-primary`, `.btn-secondary`, `.btn-danger`.
+- Ukuran: bawaan Medium (tinggi 44px, radius 8), `.btn-lg` (52 / 8), `.btn-sm` (36 / 6), `.btn-xs` (28 / 4). Font bold 16 / 14 / 14 / 12.
+- Primary Enable: latar Yellow-80 (`#FDBA12`), teks Cloudy-120. Hover, pressed, dan focus: latar Black-100 (`#181818`), teks putih; focus punya border 2px Cloudy-110. Disabled: latar Cloudy-50, teks Disabled.
+- Secondary: latar Black-100, teks putih. Ikon + label memakai `inline-flex` dengan jarak 8px (4px pada xs).
+
 ### Layout grid
 
 - Breakpoint: Small < 600px (4 kolom, gutter 16px, margin 16px), Medium 600–1023px (8 / 24 / 32), Large ≥ 1024px (12 / 24 / 64). Lebar konten maksimal 1440px.
