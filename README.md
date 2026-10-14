@@ -11,7 +11,17 @@ Aplikasi input handover downtime shift. ARMOR adalah Asset Readiness & Monitorin
 
 Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti bentuk `tu_prima.users`, tetapi aplikasi ini tidak menulis ke database `tu_prima`.
 
-## Layout grid (Design System TU)
+## Design System TU
+
+### Warna (Color Guideline)
+
+- Token ada di `src/styles/ds-tokens.css`, diimpor oleh `globals.css`.
+- Brand teal: `--ds-brand` `#20A4B0`. Tombol aksi / aksen kuning: `--ds-yellow-80` `#FDBA12` (juga `--ds-btn-primary`). Tombol sekunder hitam `#181818`.
+- Netral Cloudy-0…130 untuk latar, garis, dan teks. Semantik: info biru, sukses hijau, peringatan oranye, kritis merah (solid + subtle).
+- Mode terang: latar halaman Yellow-80, kartu putih, teks Ink (`Cloudy-110`). Mode gelap: latar Cloudy-130/120, teks terang, aksen Yellow-80 dan brand teal.
+- Variabel tema app (`--bg-*`, `--text`, `--amber`, `--red`, `--green`, `--line`, dll.) memetakan ke token di atas. Font tetap Bebas Neue + Source Sans 3.
+
+### Layout grid
 
 - Breakpoint: Small < 600px (4 kolom, gutter 16px, margin 16px), Medium 600–1023px (8 / 24 / 32), Large ≥ 1024px (12 / 24 / 64). Lebar konten maksimal 1440px.
 - Token CSS: `--ds-columns`, `--ds-gutter`, `--ds-gutter-min`, `--ds-margin`, `--ds-max`. Dipakai `main.app` dan padding horizontal topbar.
@@ -39,7 +49,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Di layar sempit, Info, Setting, Kelola, menu navbar, menu akun, dan formulir tampil sebagai panel di bagian bawah. Halaman di belakangnya diredupkan satu lapisan, sama seperti modal form. Mengetuk area di luar panel menutupnya.
 - Tambah unit ada di daftar unit.
 - Tabel penuh, teks remark membungkus, angka rata kanan. Jam di DAFTAR UNIT, SUMMARY UNIT, dan SUMMARY GROUP memakai pemisah ribuan (contoh 6,792.50). Quota di input master tetap tanpa pemisah.
-- Mode terang memakai latar halaman kuning CAT. Kartu putih, tombol utama hitam dengan teks kuning. Tombol dan kartu terangkat sedikit saat kursor di atasnya.
+- Mode terang memakai latar halaman Yellow-80 (`#FDBA12`) dari Color Guideline. Kartu putih, tombol utama hitam (`#181818`) dengan teks kuning. Tombol dan kartu terangkat sedikit saat kursor di atasnya.
 - Tiga kolom pertama di daftar unit (#, Crew, Unit) dan di summary (Model atau Group, Quota, Unit) bisa dibekukan lewat "Freeze kolom" di menu Kelola. Di master unit, Freeze kolom ada di menu Setting dan membekukan Model, Quota Hrs, dan Unit. Pengaturan disimpan di perangkat dan dipakai ketiga halaman. Default menyala.
 - Pencarian daftar unit selalu tampil, menempel dengan tombol Cari. Penyaringan jalan setelah tombol Cari diklik, atau setelah Enter. Tombol X mengosongkan pencarian dan menampilkan semua baris. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok."
 - Nomor baris asli tetap saat hasil pencarian disaring.
