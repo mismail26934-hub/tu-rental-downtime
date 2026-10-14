@@ -492,32 +492,94 @@ html.topbar-scrolled .topbar-glass {
 .form label,
 .board-filters label { display: grid; gap: 4px; }
 .form label .req {
-  color: #b42318;
+  color: var(--ds-text-critical);
   font-weight: 700;
   text-decoration: none;
   letter-spacing: 0;
 }
 
+/* Design System TU Dropdown / Input Field (Figma 24:7282)
+   Default border Cloudy-50; focus/expand Border/Active teal; error Border/Critical;
+   sizes lg 56/radius 8, sm 44/radius 12. */
 .form input,
 .form textarea,
 .form select,
 .board-filters input,
-.board-filters select {
-  background: var(--bg-0);
-  border: 1px solid var(--line);
-  color: var(--text);
-  border-radius: 8px;
+.board-filters select,
+.year-filter,
+.unit-select > input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
   padding: 10px 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--bg-0);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
-
-.form textarea { min-height: 84px; resize: vertical; }
+.form textarea {
+  min-height: 84px;
+  resize: vertical;
+  border-radius: 8px;
+}
+.form select,
+.board-filters select,
+.year-filter {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2379808f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  cursor: pointer;
+}
+.form select.ds-select-lg,
+.board-filters select.ds-select-lg,
+.year-filter.ds-select-lg,
+.unit-select.ds-select-lg > input {
+  min-height: 56px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.form input::placeholder,
+.form textarea::placeholder,
+.board-filters input::placeholder,
+.unit-select > input::placeholder {
+  color: var(--ds-text-disabled);
+  opacity: 1;
+}
 .form input:focus,
 .form textarea:focus,
 .form select:focus,
 .board-filters input:focus,
-.board-filters select:focus {
-  outline: 2px solid var(--amber);
-  border-color: var(--amber);
+.board-filters select:focus,
+.year-filter:focus,
+.unit-select > input:focus,
+.unit-select:has(> input[aria-expanded="true"]) > input {
+  outline: none;
+  border-color: var(--ds-border-active);
+  box-shadow: none;
+}
+.form input:disabled,
+.form select:disabled,
+.board-filters input:disabled,
+.board-filters select:disabled,
+.year-filter:disabled,
+.unit-select > input:disabled {
+  background: var(--ds-bg-disabled);
+  color: var(--ds-text-disabled);
+  border-color: var(--ds-border);
+  cursor: not-allowed;
+  opacity: 1;
 }
 .form input:read-only {
   background: var(--bg-2);
@@ -525,10 +587,19 @@ html.topbar-scrolled .topbar-glass {
 }
 .form input:read-only:focus {
   outline: none;
-  border-color: var(--line);
+  border-color: var(--ds-border);
+  box-shadow: none;
 }
-.form input[aria-invalid="true"] {
-  border-color: var(--danger-border);
+.form input[aria-invalid="true"],
+.form select[aria-invalid="true"],
+.board-filters select[aria-invalid="true"],
+.unit-select > input[aria-invalid="true"] {
+  border-color: var(--ds-border-critical);
+  color: var(--ds-text-critical);
+}
+.form input[aria-invalid="true"]:focus,
+.form select[aria-invalid="true"]:focus {
+  border-color: var(--ds-border-critical);
 }
 .datetime-field {
   display: flex;
@@ -878,59 +949,112 @@ html.topbar-scrolled .topbar-glass {
   padding: 0 14px;
 }
 .year-filter {
-  background: var(--bg-0);
-  border: 1px solid var(--line);
-  color: var(--text);
-  border-radius: 8px;
-  padding: 10px 12px;
-  min-height: 42px;
-}
-.year-filter:focus {
-  outline: 2px solid var(--amber);
-  border-color: var(--amber);
+  width: auto;
+  min-width: 5.5rem;
 }
 .btn-label { white-space: nowrap; }
 a.btn { text-decoration: none; display: inline-flex; align-items: center; }
 
 .unit-select { position: relative; display: grid; gap: 4px; }
+.unit-select > input {
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2379808f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+}
+.unit-select:has(> input[aria-expanded="true"]) > input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2379808f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m15 12.5-5-5-5 5'/%3E%3C/svg%3E");
+}
 .unit-select-menu {
   position: absolute;
   z-index: 30;
   top: calc(100% + 4px);
   left: 0;
   right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   margin: 0;
-  padding: 4px;
+  padding: 12px;
   list-style: none;
-  max-height: 240px;
+  max-height: 280px;
   overflow: auto;
   background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  box-shadow: var(--ds-dropdown-shadow);
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
 }
 .unit-select-menu button {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  align-items: baseline;
+  gap: 8px;
+  align-items: center;
   text-align: left;
   border: 0;
   background: transparent;
   color: var(--text);
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
   cursor: pointer;
 }
-.unit-select-menu button small { color: var(--muted); }
+.unit-select-menu button small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 18px;
+}
 .unit-select-menu button.is-active,
-.unit-select-menu button:hover { background: color-mix(in srgb, var(--amber) 28%, transparent); }
-.unit-select-empty { padding: 8px 10px; color: var(--muted); }
-.unit-select-meta { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.unit-select-menu button:hover {
+  background: color-mix(in srgb, var(--ds-border-active) 16%, transparent);
+}
+.unit-select-empty {
+  padding: 8px 12px;
+  color: var(--ds-text-disabled);
+  font-size: 14px;
+  line-height: 22px;
+}
+.unit-select-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+html[data-theme="light"] .form input,
+html[data-theme="light"] .form textarea,
+html[data-theme="light"] .form select,
+html[data-theme="light"] .board-filters input,
+html[data-theme="light"] .board-filters select,
+html[data-theme="light"] .year-filter,
+html[data-theme="light"] .unit-select > input {
+  background: var(--ds-white);
+  border-color: var(--ds-border);
+  color: var(--ds-ink);
+}
+html[data-theme="light"] .form input:disabled,
+html[data-theme="light"] .form select:disabled,
+html[data-theme="light"] .board-filters select:disabled,
+html[data-theme="light"] .year-filter:disabled,
+html[data-theme="light"] .unit-select > input:disabled {
+  background: var(--ds-bg-disabled);
+  color: var(--ds-text-disabled);
+}
 html[data-theme="light"] .unit-select-menu {
-  background: #fff;
-  border: 1px solid var(--line);
+  background: var(--ds-white);
+  border-color: var(--ds-border);
+  box-shadow: var(--ds-dropdown-shadow);
+}
+html[data-theme="light"] .unit-select-menu button {
+  color: var(--ds-ink);
+}
+html[data-theme="light"] .unit-select-menu button.is-active,
+html[data-theme="light"] .unit-select-menu button:hover {
+  background: var(--ds-bg-hover);
 }
 .collapse-board {
   margin-bottom: 16px;

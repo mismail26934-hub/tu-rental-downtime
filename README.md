@@ -28,6 +28,14 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Primary Enable: latar Yellow-80 (`#FDBA12`), teks Cloudy-120. Hover, pressed, dan focus: latar Black-100 (`#181818`), teks putih; focus punya border 2px Cloudy-110. Disabled: latar Cloudy-50, teks Disabled.
 - Secondary: latar Black-100, teks putih. Ikon + label memakai `inline-flex` dengan jarak 8px (4px pada xs).
 
+### Dropdown
+
+- Mengikuti Dropdown 2.0 Design System TU. Dipakai pada `select` form/filter, `.year-filter`, dan combobox `.unit-select` (Unit/Group).
+- Bawaan ukuran Small: tinggi 44px, radius 12, teks 14/22. Opsional `.ds-select-lg`: tinggi 56px, radius 8, teks 16/24.
+- Default: latar putih (light) / `--bg-0` (dark), border `--ds-border`, placeholder `--ds-text-disabled`, chevron kanan.
+- Focus / expand: border `--ds-border-active` (`#3CB6C1`). Error (`aria-invalid`): border `--ds-border-critical`, teks `--ds-text-critical`. Disabled: latar `--ds-bg-disabled`, teks Disabled.
+- Menu daftar: panel radius 8, padding 12, bayangan `--ds-dropdown-shadow`; item hover/aktif memakai `--ds-bg-hover` (light). Required mark `.req` memakai merah critical.
+
 ### Layout grid
 
 - Breakpoint: Small < 600px (4 kolom, gutter 16px, margin 16px), Medium 600–1023px (8 / 24 / 32), Large ≥ 1024px (12 / 24 / 64). Lebar konten maksimal 1440px.

@@ -115,5 +115,8 @@
   --ds-bg-subtle-warning: #faf4e0;
   --ds-bg-subtle-critical: #f8e1e2;
   --ds-bg-hover: #f6f8fb;
+  --ds-bg-disabled: #f2f5fa;
+  --ds-text-critical: #cd1924;
   --ds-shadow-raised: 0 16px 20px 4px #81868e29;
+  --ds-dropdown-shadow: 0 8px 24px rgba(26, 32, 44, 0.12);
 }
