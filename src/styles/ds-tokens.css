@@ -1,6 +1,6 @@
-/* Design System TU — Color Guideline + Specs
+/* Design System TU — Color Guideline + Specs + Typography
    Figma: 3YV8o4WPgdeWLEv86doPUs
-   Color Guideline (1:4913), Specs / Dropdown (24:6035) */
+   Color Guideline (1:4913), Specs / Dropdown (24:6035), Typography (1:5287) */
 
 :root {
   /* Brand (teal / Trakindo) */
@@ -142,4 +142,66 @@
   --ds-body-sm-line: 22px;
   --ds-body-xs-size: 12px;
   --ds-body-xs-line: 18px;
+
+  /* Typography (Figma 1:5287) — Inter scale; app face = Source Sans 3 via --font-body
+     Mobile → Desktop fluid with clamp where used in UI. */
+
+  /* Page section titles outside tables — below navbar ARMOR (16–18)
+     Title sm → Title md (14–16), never larger than .brand */
+  --ds-title-page-size: clamp(0.875rem, 0.25vw + 0.8rem, 1rem); /* 14–16px */
+  --ds-title-page-line: clamp(1.375rem, 0.35vw + 1.2rem, 1.5rem); /* 22–24px */
+  --ds-title-page-weight: 700;
+  --ds-title-page-tracking: 0;
+
+  /* Title lg (modals / secondary heads): 18/28 */
+  --ds-title-lg-size: 1.125rem;
+  --ds-title-lg-line: 1.75rem;
+  --ds-title-lg-weight: 700;
+  --ds-title-lg-tracking: -0.03125rem;
+
+  /* Title md: 16/24 */
+  --ds-title-md-size: 1rem;
+  --ds-title-md-line: 1.5rem;
+  --ds-title-md-weight: 700;
+  --ds-title-md-tracking: 0;
+
+  /* Title sm: 14/22 */
+  --ds-title-sm-size: 0.875rem;
+  --ds-title-sm-line: 1.375rem;
+  --ds-title-sm-weight: 700;
+
+  /* Subtitle */
+  --ds-subtitle-md-size: 1rem;
+  --ds-subtitle-md-line: 1.5rem;
+  --ds-subtitle-md-weight: 600;
+  --ds-subtitle-sm-size: 0.875rem;
+  --ds-subtitle-sm-line: 1.375rem;
+  --ds-subtitle-sm-weight: 600;
+  --ds-subtitle-xs-weight: 600;
+
+  /* Body regular / bold */
+  --ds-body-md-size: 1rem;
+  --ds-body-md-line: 1.5rem;
+  --ds-body-sm-weight: 400;
+  --ds-body-sm-bold-weight: 700;
+  --ds-body-xs-weight: 400;
+
+  /* Button type — Bold; default sm, lg = md, xs = xs */
+  --ds-btn-md-size: 1rem; /* 16 */
+  --ds-btn-md-line: 1.5rem; /* 24 */
+  --ds-btn-sm-size: 0.875rem; /* 14 */
+  --ds-btn-sm-line: 1.375rem; /* 22 */
+  --ds-btn-xs-size: 0.75rem; /* 12 */
+  --ds-btn-xs-line: 1.125rem; /* 18 */
+  --ds-btn-weight: 700;
+  --ds-btn-tracking: 0;
+
+  /* Label (form field labels) */
+  --ds-label-md-size: 1rem;
+  --ds-label-md-line: 1.5rem;
+  --ds-label-sm-size: 0.875rem;
+  --ds-label-sm-line: 1.375rem;
+  --ds-label-xs-size: 0.75rem;
+  --ds-label-xs-line: 1.125rem;
+  --ds-label-weight: 600;
 }

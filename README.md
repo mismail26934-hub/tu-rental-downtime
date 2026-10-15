@@ -19,20 +19,31 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Brand teal: `--ds-brand` `#20A4B0`. Tombol aksi / aksen kuning: `--ds-yellow-80` `#FDBA12` (juga `--ds-btn-primary`). Tombol sekunder hitam `#181818`.
 - Netral Cloudy-0…130 untuk latar, garis, dan teks. Semantik: info biru, sukses hijau, peringatan oranye, kritis merah (solid + subtle).
 - Mode terang: latar halaman Cloudy-0 (`#FAFBFC`), kartu putih, teks Ink (`Cloudy-110`). Mode gelap: latar polos Cloudy-130 (tanpa gradien), teks terang, aksen Yellow-80 dan brand teal.
-- Variabel tema app (`--bg-*`, `--text`, `--amber`, `--red`, `--green`, `--line`, dll.) memetakan ke token di atas. Font tetap Bebas Neue + Source Sans 3.
+- Variabel tema app (`--bg-*`, `--text`, `--amber`, `--red`, `--green`, `--line`, dll.) memetakan ke token di atas. UI (wordmark ARMOR, judul, tombol, input) memakai Source Sans 3 sebagai face app untuk skala tipografi Design System (Inter di Figma).
+
+### Typography (Figma `1:5287`)
+
+- Token di `src/styles/ds-tokens.css` dari lembar Typography Design System TU.
+- Wordmark navbar / login (`.brand`, `.login-card h1`): Title md→lg 16–18 px Bold, tracking −0.5 px. Tagline navbar: Body/Subtitle xs 12/18 Semibold.
+- Judul di luar tabel (`.panel h2`, `.board-title h2`, mis. SUMMARY UNIT / GROUP, DAFTAR UNIT, MASTER *): Title sm→md `--ds-title-page-*` (14–16 px / line 22–24, Bold) — selalu lebih kecil dari wordmark ARMOR (16–18 px).
+- Judul modal / dialog (`.alert-modal h2`, `.nav-dialog h2`): Title lg 18/28 Bold.
+- Tombol: Button sm 14/22 Bold (bawaan), Button md 16/24 (`.btn-lg`), Button xs 12/18 (`.btn-xs`).
+- Form input / select / textarea: Body regular sm 14/22. Label field: Label sm 14/22 Semibold (tanpa uppercase paksa).
+- Subtitle / body / label token lain (`--ds-subtitle-*`, `--ds-body-*`, `--ds-label-*`) tersedia untuk komponen lain.
 
 ### Button
 
 - Semua tombol (dark & light) memakai gaya Primary / tombol Hari: Enable Yellow-80 + teks Cloudy-120; Hover / pressed / focus Black-100 + teks putih (focus border 2px Cloudy-110); Disabled Cloudy-50 + teks Disabled.
-- Class: `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-edit` sama. Ukuran: bawaan 44px, `.btn-lg` 52, `.btn-sm` 36, `.btn-xs` 28.
-- Delete (`.btn-danger`): Enable merah (`--ds-red-80`) + teks putih; Hover / pressed / focus kebalikan (latar putih, teks & border merah). Tinggi mengikuti ukuran tombol induk (mis. `.btn-sm` 36px sama dengan Ubah).
+- Class: `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-edit` sama. Hierarki tinggi: navbar `--ctrl-size` (32–44) > toolbar halaman `--ctrl-size-ui` (28–36) > aksi tabel `.btn-sm` / `.col-act` `--ctrl-size-table` (24–28). Tipografi toolbar Button sm; tabel Button xs. `.btn-lg` tinggi 52 + Button md; `.btn-xs` 28.
+- Delete (`.btn-danger`): Enable merah (`--ds-red-80`) + teks putih; Hover / pressed / focus kebalikan (latar putih, teks & border merah). Tinggi mengikuti ukuran tombol induk (mis. `.btn-sm` / Ubah di tabel sama-sama `--ctrl-size-table`).
+- Toggle Jam/Hari (`.summary-unit .btn`) memakai tinggi toolbar `--ctrl-size-ui`, sama dengan tombol header halaman.
 - Toggle terpilih (`.is-on` / `aria-pressed="true"`) tetap kuning dengan ring inset; hover-nya tetap hitam.
 - Chip akun navbar (Superuser) memakai state hover / pressed / focus yang sama dengan tombol muat ulang (refresh).
 
-### Dropdown
+### Dropdown / form input
 
 - Mengikuti Dropdown 2.0 Design System TU. Dipakai pada `select` form/filter, `.year-filter`, dan combobox `.unit-select` (Unit/Group).
-- Bawaan ukuran Small: tinggi 44px, radius 12, teks 14/22. Opsional `.ds-select-lg`: tinggi 56px, radius 8, teks 16/24.
+- Bawaan ukuran Small: tinggi 44px, radius 12, teks Body sm 14/22. Opsional `.ds-select-lg`: tinggi 56px, radius 8, teks Body md 16/24.
 - Default: latar putih (light) / `--bg-0` (dark), border `--ds-border`, placeholder `--ds-text-disabled`, chevron kanan.
 - Focus / expand: border `--ds-border-active` (`#3CB6C1`). Error (`aria-invalid`): border `--ds-border-critical`, teks `--ds-text-critical`. Disabled: latar `--ds-bg-disabled`, teks Disabled.
 - Menu daftar: panel radius 8, padding 12, bayangan `--ds-dropdown-shadow`; item hover/aktif memakai `--ds-bg-hover` (light). Required mark `.req` memakai merah critical.
@@ -42,7 +53,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Lembar Specs Figma (`24:6035`) memetakan token Dropdown ke CSS di `ds-tokens.css`.
 - Spacing: `--ds-spacing-xs` 4px (jarak label/field/helper), `--ds-spacing-sm` 12px (padding field & menu).
 - Radius: `--ds-radius-md` 12px (field default), `--ds-radius-sm` 8px (menu terbuka / field lg).
-- Teks: `--ds-text-ink`, `--ds-text-subtle` (placeholder/disabled), `--ds-text-error`. Type: subtitle-xs 12/18, body-sm 14/22, body-xs 12/18.
+- Teks: `--ds-text-ink`, `--ds-text-subtle` (placeholder/disabled), `--ds-text-error`. Type: subtitle-xs 12/18, body-sm 14/22, body-xs 12/18 (plus skala Typography `1:5287`).
 - Border: `--ds-border-default`, `--ds-border-active`, `--ds-border-error`. Container: `--ds-white`, `--ds-ui-disabled-bg`. Scroll indicator: `--ds-cloudy-30`.
 - Ikon: `--ds-icon-ink` / netral chevron default, `--ds-icon-brand` saat open/search aktif, `--ds-icon-disabled` saat disabled.
 
@@ -61,8 +72,8 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Kolom: crew, unit, location, technician, status, waiting labour, repair time, RD30, HM awal, HM akhir, Unit Back up, Back up time, breakdown problem, done / action, continue / handover, SO, lalu waktu output. SO disimpan sebagai teks dan ikut pencarian serta export. Unit Back up dan Back up time boleh kosong. Jika Unit Back up diisi, unit itu harus dipilih dari master.
 - Equipment Type dan User MSD/MOD dihapus dari form, tabel, dan database.
 - Form tambah dan ubah unit dibuka sebagai modal.
-- Navbar kiri: logo Trakindo CAT (`public/trakindo-cat.png`), garis pemisah, lalu ARMOR + tagline (lockup kompak seperti Trakindo BEST). Klik lockup membuka halaman utama (summary). Di layar lebar tagline "Asset Readiness & Monitoring of Operational Repair" tampil di bawah ARMOR (Source Sans 3). Di layar sempit tagline disembunyikan. Wordmark ARMOR memakai Bebas Neue; mode gelap emas, mode terang hitam.
-- Tinggi kontrol navbar dan tombol toolbar memakai `clamp` (`--ctrl-size` 32–44 px) agar proporsional dari mobile ke desktop; tombol ikon bar Summary by Model (WhatsApp / jadwal / Data kartu / panah) memakai `--ctrl-size-sm` (30–40 px). Tombol ikon berbentuk persegi; ukuran glyph ikut `--ctrl-glyph` (14–18 px).
+- Navbar kiri: logo Trakindo CAT (`public/trakindo-cat.png`), garis pemisah, lalu ARMOR + tagline (lockup kompak seperti Trakindo BEST). Klik lockup membuka halaman utama (summary). Di layar lebar tagline "Asset Readiness & Monitoring of Operational Repair" tampil di bawah ARMOR. Di layar sempit tagline disembunyikan. Wordmark ARMOR memakai tipografi Title DS (Source Sans 3 Bold); mode gelap emas, mode terang hitam.
+- Hierarki tinggi kontrol: navbar `--ctrl-size` (32–44 px) > toolbar halaman / Jam–Hari `--ctrl-size-ui` (28–36 px) > aksi tabel Ubah/Hapus `--ctrl-size-table` (24–28 px). Ikon bar Summary by Model `--ctrl-size-sm` (28–32 px). Tombol ikon berbentuk persegi; glyph `--ctrl-glyph` (14–18 px).
 - Tombol hamburger hanya tampil di layar sempit (≤800 px); di layar lebar disembunyikan. Menu hamburger membuka lembaran bawah berisi tahun, muat ulang, tema, dan akun.
 - Judul tab diawali ARMOR, misalnya `ARMOR - Daftar unit` dan `ARMOR - Summary DT`. Halaman masuk berjudul `ARMOR`. Favicon-nya kotak kuning dengan huruf A gelap.
 - Kontrol kanan navbar: muat ulang, tema, dan akun (edit profil, ubah password, logout). Superuser juga melihat Pengguna di menu akun. Tombol akun berbentuk seperti PRIMA: nama dan level di kiri, avatar di kanan. Tahun tampil di navbar pada layar lebar, tanpa label "Tahun".

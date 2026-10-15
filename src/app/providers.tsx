@@ -7,6 +7,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { del, get, set } from "idb-keyval";
+import { AppFrame } from "@/components/AppFrame";
 import { LiveSync } from "@/components/LiveSync";
 import { hydrateOutbox } from "@/lib/offline/outbox";
 import { bindQueryClient, shouldHoldServerRefresh, startOutboxSync } from "@/lib/offline/sync";
@@ -99,7 +100,9 @@ export function Providers({ children }: { children: ReactNode }) {
         persistOptions={{ persister, maxAge: MAX_AGE_MS, buster: "v1" }}
       >
         <LiveSync />
-        <ReadyContext.Provider value={ready}>{children}</ReadyContext.Provider>
+        <ReadyContext.Provider value={ready}>
+          <AppFrame>{children}</AppFrame>
+        </ReadyContext.Provider>
         <ReactQueryDevtools initialIsOpen={false} />
       </PersistQueryClientProvider>
     </SessionProvider>

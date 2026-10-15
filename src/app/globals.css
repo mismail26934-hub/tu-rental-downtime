@@ -31,9 +31,11 @@
   --topbar-glass-bg: color-mix(in srgb, var(--ds-cloudy-130) 88%, transparent);
   --topbar-glass-border: color-mix(in srgb, var(--ds-white) 10%, transparent);
   --topbar-height: 3.5rem;
-  /* Square control / icon buttons: mobile → tablet → desktop */
-  --ctrl-size: clamp(2rem, 1.35vw + 1.55rem, 2.75rem); /* 32–44px */
-  --ctrl-size-sm: clamp(1.875rem, 1.2vw + 1.45rem, 2.5rem); /* 30–40px */
+  /* Navbar > page header toolbar > table row actions */
+  --ctrl-size: clamp(2rem, 1.35vw + 1.55rem, 2.75rem); /* 32–44px navbar */
+  --ctrl-size-ui: clamp(1.75rem, 1vw + 1.4rem, 2.25rem); /* 28–36px page UI */
+  --ctrl-size-table: clamp(1.5rem, 0.75vw + 1.2rem, 1.75rem); /* 24–28px table */
+  --ctrl-size-sm: clamp(1.75rem, 1vw + 1.35rem, 2rem); /* 28–32px summary icons */
   --ctrl-radius: clamp(0.375rem, 0.2vw + 0.3rem, 0.5rem); /* 6–8px */
   --ctrl-glyph: clamp(0.875rem, 0.35vw + 0.75rem, 1.125rem); /* 14–18px */
   --ctrl-gap: clamp(0.25rem, 0.4vw + 0.15rem, 0.5rem); /* 4–8px */
@@ -140,19 +142,31 @@ html[data-theme="light"] .brand-tagline {
   opacity: 0.72;
 }
 html[data-theme="light"] .panel h2,
+html[data-theme="light"] .board-title h2,
+html[data-theme="light"] .form-modal .panel-head h2 {
+  font-weight: var(--ds-title-page-weight);
+  color: var(--ds-ink);
+}
 html[data-theme="light"] .login-card h1 {
-  font-weight: 800;
+  font-weight: var(--ds-title-lg-weight);
 }
 html[data-theme="light"] .stat .value,
 html[data-theme="light"] .metric .value {
-  font-weight: 800;
+  font-weight: 700;
 }
 html[data-theme="light"] .stat .label,
-html[data-theme="light"] .metric .label,
-html[data-theme="light"] .form label,
-html[data-theme="light"] .muted {
+html[data-theme="light"] .metric .label {
   color: var(--ds-ink);
-  font-weight: 700;
+  font-weight: var(--ds-label-weight);
+}
+html[data-theme="light"] .form label,
+html[data-theme="light"] .board-filters label {
+  color: var(--ds-text-neutral);
+  font-weight: var(--ds-label-weight);
+}
+html[data-theme="light"] .muted {
+  color: var(--ds-text-neutral);
+  font-weight: 400;
 }
 
 button, input, select, textarea { font: inherit; }
@@ -163,6 +177,75 @@ button, input, select, textarea { font: inherit; }
   margin: 0;
   padding: 20px var(--ds-margin) 48px;
   padding-top: calc(12px + var(--topbar-height));
+}
+
+/* Desktop frame: lay out at 1440px, then scale that picture to the window.
+   Browser zoom shrinks the viewport; the summary keeps the same proportions. */
+html.is-framed {
+  --ctrl-size: 2.75rem;
+  --ctrl-size-ui: 2.25rem;
+  --ctrl-size-table: 1.75rem;
+  --ctrl-size-sm: 2rem;
+  --ctrl-radius: 0.5rem;
+  --ctrl-glyph: 1.125rem;
+  --ctrl-gap: 0.5rem;
+}
+html.is-framed,
+html.is-framed body {
+  height: 100%;
+  overflow: hidden;
+}
+.app-stage.is-framed {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+}
+.app-stage.is-framed .app-scale-slot {
+  width: calc(1440px * var(--app-scale, 1));
+  height: 100%;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.app-stage.is-framed .app-frame {
+  width: 1440px;
+  height: calc(100% / var(--app-scale, 1));
+  transform: scale(var(--app-scale, 1));
+  transform-origin: top left;
+}
+.app-stage.is-framed .app-scroll {
+  height: 100%;
+  overflow: auto;
+}
+html.is-framed .topbar {
+  position: sticky;
+  top: 0;
+  left: auto;
+  right: auto;
+  width: auto;
+  padding: 0.375rem var(--ds-margin);
+}
+html.is-framed .brand-lockup { gap: 0.625rem; }
+html.is-framed .brand { font-size: 1.125rem; }
+html.is-framed .btn:not(.btn-icon),
+html.is-framed .btn-primary:not(.btn-icon),
+html.is-framed .btn-secondary:not(.btn-icon),
+html.is-framed .btn-edit:not(.btn-icon) { padding: 0 1rem; }
+html.is-framed .topbar-glass { display: none; }
+html.is-framed.topbar-scrolled .topbar {
+  background: var(--topbar-glass-bg);
+  border-bottom: 1px solid var(--topbar-glass-border);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+html.is-framed .app { padding-top: 12px; }
+html.is-framed .app-login { min-height: calc(100vh / var(--app-scale, 1)); }
+html.is-framed .nav-session-portal-menu {
+  transform: scale(var(--app-scale, 1));
+  transform-origin: top right;
+}
+html.is-framed .time-panel {
+  transform: scale(var(--app-scale, 1));
+  transform-origin: top left;
 }
 
 .app-login {
@@ -180,14 +263,18 @@ button, input, select, textarea { font: inherit; }
   padding: 22px;
 }
 
-.login-card h1,
-.brand,
-.panel h2,
+/* Login hero wordmark — DS Title lg scale (same face as navbar .brand) */
+.login-card h1 {
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-weight: var(--ds-title-lg-weight);
+  letter-spacing: var(--ds-title-lg-tracking);
+}
+
 .metric .value,
 .stat .value {
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 400;
-  letter-spacing: 0.04em;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .login-card h1 {
@@ -233,16 +320,14 @@ html.topbar-scrolled .topbar-glass {
   font-family: var(--font-body), "Segoe UI", sans-serif;
 }
 
-/* Navbar lockup — compact logo + title like Trakindo BEST TaskList */
+/* Navbar lockup — Trakindo CAT + DS Title/Subtitle (Figma 1:5287) */
 .brand-lockup {
   display: inline-flex;
   align-items: center;
   gap: clamp(0.5rem, 0.4vw + 0.4rem, 0.625rem);
   min-width: 0;
   max-width: 100%;
-  height: var(--ctrl-size);
   min-height: var(--ctrl-size);
-  max-height: var(--ctrl-size);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -269,7 +354,7 @@ html.topbar-scrolled .topbar-glass {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0;
+  gap: 1px;
   min-width: 0;
   line-height: 1.1;
 }
@@ -277,12 +362,12 @@ html.topbar-scrolled .topbar-glass {
   display: block;
   min-width: 0;
   color: var(--amber);
-  font-family: var(--font-display), Impact, sans-serif;
-  font-size: 1.45rem;
-  font-weight: 400;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: clamp(1rem, 0.35vw + 0.9rem, 1.125rem); /* Title md → lg 16–18 */
+  font-weight: var(--ds-title-lg-weight);
   font-synthesis: none;
-  letter-spacing: 0.04em;
-  line-height: 1;
+  letter-spacing: var(--ds-title-lg-tracking);
+  line-height: 1.2;
   text-shadow: none;
 }
 .brand-tagline {
@@ -293,12 +378,12 @@ html.topbar-scrolled .topbar-glass {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-body), "Segoe UI", sans-serif;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  line-height: 1.15;
+  font-size: var(--ds-body-xs-size); /* 12 */
+  font-weight: var(--ds-subtitle-xs-weight); /* 600 */
+  letter-spacing: 0;
+  line-height: var(--ds-body-xs-line); /* 18 */
   color: var(--muted);
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .brand-row,
@@ -415,9 +500,16 @@ html.topbar-scrolled .topbar-glass {
   margin-bottom: 14px;
 }
 
-.panel h2 {
+/* DS Typography Title (Figma 1:5287) — section heads outside tables */
+.panel h2,
+.board-title h2,
+.form-modal .panel-head h2 {
   margin: 0;
-  font-size: 1.7rem;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: var(--ds-title-page-size);
+  font-weight: var(--ds-title-page-weight);
+  line-height: var(--ds-title-page-line);
+  letter-spacing: var(--ds-title-page-tracking);
 }
 
 .summary,
@@ -501,13 +593,23 @@ html.topbar-scrolled .topbar-glass {
 
 .stat .label,
 .metric .label,
-.model-card .label,
+.model-card .label {
+  color: var(--muted);
+  font-size: var(--ds-label-xs-size);
+  font-weight: var(--ds-label-weight);
+  line-height: var(--ds-label-xs-line);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
 .board-filters label,
 .form label {
   color: var(--muted);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: var(--ds-label-sm-size);
+  font-weight: var(--ds-label-weight);
+  line-height: var(--ds-label-sm-line);
+  letter-spacing: 0;
+  text-transform: none;
 }
 .stat .label,
 .model-card .label {
@@ -564,9 +666,11 @@ html.topbar-scrolled .topbar-glass {
   border-radius: var(--ds-radius-md);
   background-color: var(--bg-0);
   color: var(--text);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
   font-size: var(--ds-body-sm-size);
-  font-weight: 400;
+  font-weight: var(--ds-body-sm-weight);
   line-height: var(--ds-body-sm-line);
+  letter-spacing: 0;
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
@@ -743,15 +847,17 @@ html.topbar-scrolled .topbar-glass {
   justify-content: center;
   gap: 8px;
   box-sizing: border-box;
-  height: var(--ctrl-size);
+  height: var(--ctrl-size-ui);
   padding: 0 clamp(0.75rem, 0.5vw + 0.55rem, 1rem);
   border: 1px solid transparent;
   background: var(--ds-btn-primary);
   color: var(--ds-cloudy-120);
   border-radius: var(--ctrl-radius);
-  font-size: clamp(0.8125rem, 0.2vw + 0.75rem, 0.875rem);
-  font-weight: 700;
-  line-height: 1.4;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: var(--ds-btn-sm-size);
+  font-weight: var(--ds-btn-weight);
+  line-height: var(--ds-btn-sm-line);
+  letter-spacing: var(--ds-btn-tracking);
   cursor: pointer;
   box-shadow: none;
   -webkit-tap-highlight-color: transparent;
@@ -814,22 +920,27 @@ html.topbar-scrolled .topbar-glass {
 .btn-lg {
   height: 52px;
   border-radius: 8px;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--ds-btn-md-size);
+  line-height: var(--ds-btn-md-line);
+  font-weight: var(--ds-btn-weight);
 }
 .btn-sm {
-  height: 36px;
+  height: var(--ctrl-size-table);
+  min-height: var(--ctrl-size-table);
+  max-height: var(--ctrl-size-table);
   border-radius: 6px;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: var(--ds-btn-xs-size);
+  line-height: var(--ds-btn-xs-line);
+  font-weight: var(--ds-btn-weight);
 }
 .btn-xs {
   height: 28px;
   padding: 0 12px;
   gap: 4px;
   border-radius: 4px;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--ds-btn-xs-size);
+  line-height: var(--ds-btn-xs-line);
+  font-weight: var(--ds-btn-weight);
 }
 
 /* Selected / pressed toggle stays yellow like Hari enable */
@@ -1005,7 +1116,7 @@ html.topbar-scrolled .topbar-glass {
   flex: 1 1 auto;
   width: min(280px, 70vw);
   min-width: 0;
-  min-height: var(--ctrl-size);
+  min-height: var(--ctrl-size-ui);
   height: auto;
   margin: 0;
   padding: 0 var(--ds-spacing-sm);
@@ -1024,7 +1135,7 @@ html.topbar-scrolled .topbar-glass {
 .search-pair .btn {
   flex: 0 0 auto;
   height: auto;
-  min-height: var(--ctrl-size);
+  min-height: var(--ctrl-size-ui);
   margin: 0;
   border-radius: 0;
   border-left: 1px solid color-mix(in srgb, var(--ds-cloudy-120) 22%, transparent);
@@ -1063,7 +1174,9 @@ html[data-theme="light"] .unit-search:focus {
 .summary-unit .btn {
   display: inline-flex;
   align-items: center;
-  min-height: 42px;
+  height: var(--ctrl-size-ui);
+  min-height: var(--ctrl-size-ui);
+  max-height: var(--ctrl-size-ui);
   padding: 0 14px;
   background: var(--ds-btn-primary);
   color: var(--ds-cloudy-120);
@@ -1810,13 +1923,20 @@ html[data-theme="light"] .pager-ellipsis { color: #000; font-weight: 700; }
   align-items: center;
   justify-content: center;
   gap: 6px;
+  height: var(--ctrl-size-table);
+  min-height: var(--ctrl-size-table);
+  max-height: var(--ctrl-size-table);
   min-width: 6.25rem;
   box-sizing: border-box;
+  padding: 0 10px;
 }
 .col-act .btn + .btn { margin-left: 6px; }
-.col-act .btn svg { flex: none; }
+.col-act .btn svg { flex: none; width: 14px; height: 14px; }
 .col-act .btn-sm {
   min-width: 6.25rem;
+  height: var(--ctrl-size-table);
+  min-height: var(--ctrl-size-table);
+  max-height: var(--ctrl-size-table);
 }
 .col-act .btn-edit {
   background: var(--ds-btn-primary);
@@ -2398,8 +2518,11 @@ html[data-theme="light"] .form-modal {
 }
 .alert-modal h2 {
   margin: 0;
-  font-family: var(--font-display), Impact, sans-serif;
-  letter-spacing: 0.04em;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: var(--ds-title-lg-size);
+  font-weight: var(--ds-title-lg-weight);
+  line-height: var(--ds-title-lg-line);
+  letter-spacing: var(--ds-title-lg-tracking);
 }
 .alert-modal p { margin: 0; }
 
@@ -2424,16 +2547,32 @@ html[data-theme="light"] .form-modal {
 }
 .nav-dialog h2 {
   margin: 0;
-  font-family: var(--font-display), Impact, sans-serif;
-  letter-spacing: 0.04em;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: var(--ds-title-lg-size);
+  font-weight: var(--ds-title-lg-weight);
+  line-height: var(--ds-title-lg-line);
+  letter-spacing: var(--ds-title-lg-tracking);
 }
-.nav-dialog label { display: grid; gap: 4px; color: var(--muted); font-size: 0.85rem; }
+.nav-dialog label {
+  display: grid;
+  gap: var(--ds-spacing-xs);
+  color: var(--muted);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: var(--ds-label-sm-size);
+  font-weight: var(--ds-label-weight);
+  line-height: var(--ds-label-sm-line);
+}
 .nav-dialog input {
   background: var(--bg-0);
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-spacing-sm);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: var(--ds-body-sm-size);
+  font-weight: var(--ds-body-sm-weight);
+  line-height: var(--ds-body-sm-line);
+  min-height: 44px;
 }
 
 html[data-theme="light"] .nav-end { align-self: center; }
@@ -2563,7 +2702,7 @@ html[data-theme="light"] .nav-avatar {
     min-width: 0;
   }
   .panel-actions .unit-search {
-    height: var(--ctrl-size);
+    height: var(--ctrl-size-ui);
     min-height: 0;
     padding: 0 10px;
   }
@@ -2579,16 +2718,16 @@ html[data-theme="light"] .nav-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--ctrl-size);
-    height: var(--ctrl-size);
-    min-width: var(--ctrl-size);
-    min-height: var(--ctrl-size);
-    max-width: var(--ctrl-size);
-    max-height: var(--ctrl-size);
+    width: var(--ctrl-size-ui);
+    height: var(--ctrl-size-ui);
+    min-width: var(--ctrl-size-ui);
+    min-height: var(--ctrl-size-ui);
+    max-width: var(--ctrl-size-ui);
+    max-height: var(--ctrl-size-ui);
     padding: 0;
     gap: 0;
     aspect-ratio: 1 / 1;
-    flex: 0 0 var(--ctrl-size);
+    flex: 0 0 var(--ctrl-size-ui);
     border-radius: var(--ctrl-radius);
   }
   .panel-actions .btn-label {
@@ -2663,8 +2802,12 @@ html[data-theme="light"] .nav-avatar {
   .panel-actions .btn.desktop-only { display: none; }
   .col-act .btn:has(.btn-label) {
     justify-content: center;
-    width: 42px;
-    height: 42px;
+    width: var(--ctrl-size-table);
+    height: var(--ctrl-size-table);
+    min-width: var(--ctrl-size-table);
+    min-height: var(--ctrl-size-table);
+    max-width: var(--ctrl-size-table);
+    max-height: var(--ctrl-size-table);
     padding: 0;
   }
   .col-act .btn-label {
@@ -2727,8 +2870,8 @@ html[data-theme="light"] .nav-avatar {
   .topbar { align-items: center; padding: 4px var(--ds-margin); }
   .brand-divider { margin: 2px 0; }
   .brand {
-    font-size: clamp(1.1rem, 0.4vw + 1rem, 1.2rem);
-    line-height: 1;
+    font-size: var(--ds-title-md-size); /* 16 */
+    line-height: 1.2;
   }
   .brand-tagline { display: none; }
   .top-actions { position: relative; flex: 0 0 auto; }

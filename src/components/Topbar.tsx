@@ -118,18 +118,22 @@ export function Topbar({ busy = false, onRefresh }: Props) {
   useEffect(() => {
     const el = topbarRef.current;
     if (!el) return;
+    const scroller = () => document.querySelector<HTMLElement>(".app-stage.is-framed .app-scroll");
     const sync = () => {
-      const box = el.getBoundingClientRect();
-      document.documentElement.style.setProperty("--topbar-height", `${Math.ceil(box.height)}px`);
-      document.documentElement.classList.toggle("topbar-scrolled", window.scrollY > 4);
+      document.documentElement.style.setProperty("--topbar-height", `${el.offsetHeight}px`);
+      const y = scroller()?.scrollTop ?? window.scrollY;
+      document.documentElement.classList.toggle("topbar-scrolled", y > 4);
     };
     sync();
     const observer = new ResizeObserver(sync);
     observer.observe(el);
+    const scrollEl = scroller();
+    scrollEl?.addEventListener("scroll", sync, { passive: true });
     window.addEventListener("scroll", sync, { passive: true });
     window.addEventListener("resize", sync);
     return () => {
       observer.disconnect();
+      scrollEl?.removeEventListener("scroll", sync);
       window.removeEventListener("scroll", sync);
       window.removeEventListener("resize", sync);
     };
