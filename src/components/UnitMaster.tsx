@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { GroupSelect } from "@/components/GroupSelect";
 import { MasterUnitUpload } from "@/components/MasterUnitUpload";
 import { ModelSelect } from "@/components/ModelSelect";
@@ -100,6 +101,7 @@ export function UnitMaster() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<UnitMaster | null>(null);
   const asOf = summaryQuery.data?.asOf || "";
   const tableHidden = useMasterView((state) => state.tableHidden);
   const setTableHidden = useMasterView((state) => state.setTableHidden);
@@ -421,10 +423,7 @@ export function UnitMaster() {
                             className="btn btn-sm btn-danger"
                             type="button"
                             aria-label="Hapus"
-                            onClick={() => {
-                              if (!window.confirm(`Hapus unit ${unit.unit}?`)) return;
-                              deleteMutation.mutate(unit);
-                            }}
+                            onClick={() => setDeleteTarget(unit)}
                           >
                             <TrashIcon />
                             <span className="btn-label">Hapus</span>
@@ -505,6 +504,19 @@ export function UnitMaster() {
             onSaved={(count) => {
               setNotice(`${count} unit ditambahkan.`);
               void queryClient.invalidateQueries({ queryKey: ["units"] });
+            }}
+          />
+        ) : null}
+        {deleteTarget ? (
+          <ConfirmDelete
+            title="Hapus unit?"
+            message={`Master unit ${deleteTarget.unit} akan dihapus.`}
+            busy={deleteMutation.isPending}
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={() => {
+              const unit = deleteTarget;
+              setDeleteTarget(null);
+              deleteMutation.mutate(unit);
             }}
           />
         ) : null}

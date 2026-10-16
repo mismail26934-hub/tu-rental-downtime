@@ -12,7 +12,7 @@ import {
   type OutboxItem,
 } from "@/lib/offline/outbox";
 
-const MOBILE_MQ = "(max-width: 800px)";
+const MOBILE_MQ = "(max-width: 767px)";
 
 const ACTION: Record<OutboxItem["method"], string> = {
   POST: "Tambah",

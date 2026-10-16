@@ -2,10 +2,10 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
-/** Desktop composition width. The frame is scaled to the window instead of reflowing. */
+/** Desktop composition width (Figma Large 1280 + gutter room). Scaled to the window. */
 const DESIGN_WIDTH = 1440;
-/** Match the existing phone layout breakpoint. Below this, the page stays fluid. */
-const DESKTOP_MIN = 801;
+/** Align with Design System TU Medium breakpoint (768px). Below this, layout stays fluid. */
+const DESKTOP_MIN = 768;
 
 export function AppFrame({ children }: { children: ReactNode }) {
   const scrollRef = useRef<HTMLDivElement>(null);

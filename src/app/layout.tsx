@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -12,13 +13,13 @@ const display = localFont({
   adjustFontFallback: "Arial",
 });
 
-const body = localFont({
-  src: "../fonts/source-sans-3-latin.woff2",
-  weight: "200 900",
-  style: "normal",
+/* Design System TU Typography (Figma 1:5287) — Inter */
+const body = Inter({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
   display: "swap",
   variable: "--font-body",
-  adjustFontFallback: "Arial",
+  adjustFontFallback: true,
 });
 
 const themeScript = `try{var t=localStorage.getItem("tu-rental-theme");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){}`;
@@ -39,7 +40,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id" data-theme="light" suppressHydrationWarning>
-      <body className={`${display.variable} ${body.variable}`}>
+      <body className={`${body.className} ${display.variable} ${body.variable}`}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Providers>{children}</Providers>
       </body>

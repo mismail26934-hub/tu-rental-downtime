@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { useModels } from "@/components/ModelSelect";
 import { compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { PageShimmer } from "@/components/PageShimmer";
@@ -39,6 +40,7 @@ export function ModelMaster() {
   const [editBaseline, setEditBaseline] = useState<Draft | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<UnitModel | null>(null);
 
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -230,10 +232,7 @@ export function ModelMaster() {
                             className="btn btn-sm btn-danger"
                             type="button"
                             aria-label="Hapus"
-                            onClick={() => {
-                              if (!window.confirm(`Hapus model ${model.model}?`)) return;
-                              deleteMutation.mutate(model);
-                            }}
+                            onClick={() => setDeleteTarget(model)}
                           >
                             <TrashIcon />
                             <span className="btn-label">Hapus</span>
@@ -283,6 +282,19 @@ export function ModelMaster() {
               </form>
             </div>
           </div>
+        ) : null}
+        {deleteTarget ? (
+          <ConfirmDelete
+            title="Hapus model?"
+            message={`Model ${deleteTarget.model} akan dihapus.`}
+            busy={deleteMutation.isPending}
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={() => {
+              const model = deleteTarget;
+              setDeleteTarget(null);
+              deleteMutation.mutate(model);
+            }}
+          />
         ) : null}
       </main>
     </>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { GroupUpload } from "@/components/GroupUpload";
 import { useGroups } from "@/components/GroupSelect";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
@@ -44,6 +45,7 @@ export function GroupMaster() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<UnitGroup | null>(null);
 
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -253,10 +255,7 @@ export function GroupMaster() {
                             className="btn btn-sm btn-danger"
                             type="button"
                             aria-label="Hapus"
-                            onClick={() => {
-                              if (!window.confirm(`Hapus group ${group.group}?`)) return;
-                              deleteMutation.mutate(group);
-                            }}
+                            onClick={() => setDeleteTarget(group)}
                           >
                             <TrashIcon />
                             <span className="btn-label">Hapus</span>
@@ -322,6 +321,19 @@ export function GroupMaster() {
             onSaved={(count) => {
               setNotice(`${count} group ditambahkan.`);
               void queryClient.invalidateQueries({ queryKey: ["groups"] });
+            }}
+          />
+        ) : null}
+        {deleteTarget ? (
+          <ConfirmDelete
+            title="Hapus group?"
+            message={`Group ${deleteTarget.group} akan dihapus.`}
+            busy={deleteMutation.isPending}
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={() => {
+              const group = deleteTarget;
+              setDeleteTarget(null);
+              deleteMutation.mutate(group);
             }}
           />
         ) : null}

@@ -1,6 +1,7 @@
-/* Design System TU — Color Guideline + Specs + Typography
-   Figma: 3YV8o4WPgdeWLEv86doPUs
-   Color Guideline (1:4913), Specs / Dropdown (24:6035), Typography (1:5287) */
+/* Design System TU — Color Guideline + Specs + Typography + Action
+   Figma: xkqwaYJnltsvh4V9N8A7vr (Copy)
+   Color Guideline (1:4913), Typography (1:5287), Layout (2:4146),
+   Button (3:4420), Badge (17:4367), Dropdown (24:7282), Specs (24:6035) */
 
 :root {
   /* Brand (teal / Trakindo) */
@@ -13,7 +14,7 @@
   --ds-brand-30: #c7edf0;
   --ds-brand-20: #def3f5;
   --ds-brand-10: #edf7f8;
-  --ds-brand-0: #fef9ed;
+  --ds-brand-0: #edf7f8;
 
   /* Action yellow */
   --ds-yellow-0: #fef9ed;
@@ -29,6 +30,7 @@
   --ds-btn-primary: #fdba12;
   --ds-btn-secondary: #181818;
   --ds-btn-disabled: #cfd3db;
+  --ds-btn-ink: #1a202c;
 
   /* UI accent */
   --ds-orange-0: #faf7f6;
@@ -120,12 +122,22 @@
   --ds-text-critical: #cd1924;
   --ds-shadow-raised: 0 16px 20px 4px #81868e29;
   --ds-dropdown-shadow: 0 8px 24px rgba(26, 32, 44, 0.12);
+  --ds-shadow-lifted: 0 12px 16px #1a1d221f;
+
+  /* Status accents (sisa / model-card) — Orange & Green scales */
+  --ds-status-half: var(--ds-orange-80);
+  --ds-status-half-bright: var(--ds-orange-70);
+  --ds-status-ok: var(--ds-green-80);
+  --ds-status-ok-deep: var(--ds-green-100);
+  --ds-bg-subtle-ytd: #fff1e0;
+  --ds-bg-ytd: #ffc98a;
 
   /* Specs (Figma 24:6035) — Dropdown token sheet aliases */
   --ds-spacing-xs: 4px;
   --ds-spacing-sm: 12px;
   --ds-radius-sm: 8px;
   --ds-radius-md: 12px;
+  --ds-radius-pill: 32px;
   --ds-text-ink: var(--ds-ink);
   --ds-text-subtle: var(--ds-text-disabled);
   --ds-text-error: var(--ds-text-critical);
@@ -143,8 +155,62 @@
   --ds-body-xs-size: 12px;
   --ds-body-xs-line: 18px;
 
-  /* Typography (Figma 1:5287) — Inter scale; app face = Source Sans 3 via --font-body
-     Mobile → Desktop fluid with clamp where used in UI. */
+  /* Responsive Layout Grid (Figma 2:4146)
+     Phone 360 / Tablet 768 / Desktop 1280 — margins 16 / 32 / 64 */
+  --ds-bp-sm: 360px;
+  --ds-bp-md: 768px;
+  --ds-bp-lg: 1280px;
+
+  /* Button Action (Figma 3:4420) — fixed sizes */
+  --ds-btn-xs-h: 28px;
+  --ds-btn-xs-radius: 4px;
+  --ds-btn-xs-pad-x: 12px;
+  --ds-btn-xs-gap: 4px;
+  --ds-btn-xs-icon: 16px;
+
+  --ds-btn-sm-h: 36px;
+  --ds-btn-sm-radius: 6px;
+  --ds-btn-sm-pad-x: 16px;
+  --ds-btn-sm-gap: 8px;
+  --ds-btn-sm-icon: 20px;
+
+  --ds-btn-md-h: 44px;
+  --ds-btn-md-radius: 8px;
+  --ds-btn-md-pad-x: 16px;
+  --ds-btn-md-gap: 8px;
+  --ds-btn-md-icon: 20px;
+
+  --ds-btn-lg-h: 52px;
+  --ds-btn-lg-radius: 8px;
+  --ds-btn-lg-pad-x: 16px;
+  --ds-btn-lg-gap: 8px;
+  --ds-btn-lg-icon: 24px;
+
+  --ds-btn-focus-border: 2px solid var(--ds-cloudy-110);
+
+  /* Badge (Figma 17:4367) */
+  --ds-badge-h: 18px;
+  --ds-badge-radius: 32px;
+  --ds-badge-pad-x: 8px;
+  --ds-badge-pad-y: 4px;
+  --ds-badge-font-size: 8px;
+  --ds-badge-font-weight: 700;
+  --ds-badge-dot: 8px;
+  --ds-badge-critical: var(--ds-red-90);
+  --ds-badge-neutral-bg: var(--ds-cloudy-40);
+  --ds-badge-neutral-text: var(--ds-cloudy-90);
+  --ds-badge-info: var(--ds-blue-90);
+
+  /* Carousel / PageController (Figma 24:4785, 24:5617, 24:4892) */
+  --ds-carousel-gap: 16px;
+  --ds-carousel-gap-sm: 12px;
+  --ds-carousel-card-radius: 12px;
+  --ds-carousel-card-pad: 16px;
+  --ds-carousel-nav-pad: 10px;
+  --ds-carousel-nav-icon: 24px;
+  --ds-carousel-nav-sm: 32px;
+
+  /* Typography (Figma 1:5287) — Inter scale via --font-body */
 
   /* Page section titles outside tables — below navbar ARMOR (16–18)
      Title sm → Title md (14–16), never larger than .brand */
@@ -153,7 +219,7 @@
   --ds-title-page-weight: 700;
   --ds-title-page-tracking: 0;
 
-  /* Title lg (modals / secondary heads): 18/28 */
+  /* Title lg (modals / secondary heads): 18/28, tracking −0.5 */
   --ds-title-lg-size: 1.125rem;
   --ds-title-lg-line: 1.75rem;
   --ds-title-lg-weight: 700;
@@ -196,11 +262,13 @@
   --ds-btn-weight: 700;
   --ds-btn-tracking: 0;
 
-  /* Label (form field labels) */
+  /* Label — Dropdown sm uses subtitle-xs 12/18; lg uses subtitle-sm 14/22 */
   --ds-label-md-size: 1rem;
   --ds-label-md-line: 1.5rem;
   --ds-label-sm-size: 0.875rem;
   --ds-label-sm-line: 1.375rem;
+  --ds-label-field-size: 0.75rem; /* 12 — Figma dropdown sm label */
+  --ds-label-field-line: 1.125rem; /* 18 */
   --ds-label-xs-size: 0.75rem;
   --ds-label-xs-line: 1.125rem;
   --ds-label-weight: 600;

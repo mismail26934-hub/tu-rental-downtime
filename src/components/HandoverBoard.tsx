@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { HandoverForm } from "@/components/HandoverForm";
 import { UnitUpload } from "@/components/UnitUpload";
 import { HandoverTable } from "@/components/HandoverTable";
@@ -104,6 +105,7 @@ export function HandoverBoard() {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [saveConfirm, setSaveConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<HandoverRow | null>(null);
   const [freezeCols, setFreezeCols] = useState(true);
   const editMode = useBoardView((state) => state.editMode);
   const setEditMode = useBoardView((state) => state.setEditMode);
@@ -731,13 +733,24 @@ export function HandoverBoard() {
             sisa={sisa}
             emptyText="Belum ada unit pada tahun ini."
             onEdit={openEdit}
-            onDelete={(row) => {
-              if (!window.confirm(`Hapus unit ${row.unit}?`)) return;
-              deleteMutation.mutate(row.id);
-            }}
+            onDelete={(row) => setDeleteTarget(row)}
           />
           </CollapseBoard>
         </section>
+        ) : null}
+
+        {deleteTarget ? (
+          <ConfirmDelete
+            title="Hapus unit?"
+            message={`Data unit ${deleteTarget.unit} akan dihapus.`}
+            busy={deleteMutation.isPending}
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={() => {
+              const rowId = deleteTarget.id;
+              setDeleteTarget(null);
+              deleteMutation.mutate(rowId);
+            }}
+          />
         ) : null}
       </main>
     </>

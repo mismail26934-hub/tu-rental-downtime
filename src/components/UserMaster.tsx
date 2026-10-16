@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { PageShimmer } from "@/components/PageShimmer";
 import { Topbar } from "@/components/Topbar";
@@ -62,6 +63,7 @@ export function UserMaster() {
   const [editBaseline, setEditBaseline] = useState<Draft | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<PublicUser | null>(null);
   const selfId = session?.user?.id || "";
 
   const rows = useMemo(() => {
@@ -274,10 +276,7 @@ export function UserMaster() {
                             className="btn btn-sm btn-danger"
                             type="button"
                             aria-label="Hapus"
-                            onClick={() => {
-                              if (!window.confirm(`Hapus pengguna ${user.username}?`)) return;
-                              deleteMutation.mutate(user);
-                            }}
+                            onClick={() => setDeleteTarget(user)}
                           >
                             <TrashIcon />
                             <span className="btn-label">Hapus</span>
@@ -375,6 +374,19 @@ export function UserMaster() {
               </form>
             </div>
           </div>
+        ) : null}
+        {deleteTarget ? (
+          <ConfirmDelete
+            title="Hapus pengguna?"
+            message={`Pengguna ${deleteTarget.username} akan dihapus.`}
+            busy={deleteMutation.isPending}
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={() => {
+              const user = deleteTarget;
+              setDeleteTarget(null);
+              deleteMutation.mutate(user);
+            }}
+          />
         ) : null}
       </main>
     </>
