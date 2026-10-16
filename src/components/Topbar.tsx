@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { OfflineChip } from "@/components/OfflineChip";
+import { NavBarShimmer, ShimmerBlock } from "@/components/PageShimmer";
 import { canManage, isSuperuser } from "@/lib/access";
 import { passwordPolicyError } from "@/lib/password-policy";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
@@ -123,6 +124,13 @@ export function Topbar({ busy = false, onRefresh }: Props) {
   useEffect(() => {
     setLight(document.documentElement.getAttribute("data-theme") === "light");
   }, []);
+
+  useEffect(() => {
+    if (!busy) return;
+    setNavOpen(false);
+    setSessionOpen(false);
+    setSheetAccountOpen(false);
+  }, [busy]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("menu-open", navOpen);
@@ -253,77 +261,83 @@ export function Topbar({ busy = false, onRefresh }: Props) {
               <span className="brand-tagline">Asset Readiness &amp; Monitoring of Operational Repair</span>
             </span>
           </Link>
-          <OfflineChip />
+          {busy ? <ShimmerBlock className="shimmer-block--offline-chip" /> : <OfflineChip />}
         </div>
         <div className="top-actions">
-          <div className="top-actions-panel top-actions-panel--bar">
-            <div className="nav-tools">
-              <YearFilter />
-              <button
-                className="btn btn-icon"
-                type="button"
-                disabled={busy}
-                aria-label={text.refresh}
-                title={text.refresh}
-                onClick={onRefresh}
-              >
-                <RefreshIcon />
-              </button>
-              <button
-                className="btn btn-icon"
-                type="button"
-                aria-label={light ? text.dark : text.light}
-                title={light ? text.dark : text.light}
-                onClick={toggleTheme}
-              >
-                {light ? <MoonIcon /> : <SunIcon />}
-              </button>
-            </div>
-            <div className="nav-end">
-              <div className={`nav-session-menu${sessionOpen ? " is-open" : ""}`} ref={sessionRef}>
+          {busy ? (
+            <NavBarShimmer label="Memuat…" />
+          ) : (
+            <>
+              <div className="top-actions-panel top-actions-panel--bar">
+                <div className="nav-tools">
+                  <YearFilter />
+                  <button
+                    className="btn btn-icon"
+                    type="button"
+                    disabled={busy}
+                    aria-label={text.refresh}
+                    title={text.refresh}
+                    onClick={onRefresh}
+                  >
+                    <RefreshIcon />
+                  </button>
+                  <button
+                    className="btn btn-icon"
+                    type="button"
+                    aria-label={light ? text.dark : text.light}
+                    title={light ? text.dark : text.light}
+                    onClick={toggleTheme}
+                  >
+                    {light ? <MoonIcon /> : <SunIcon />}
+                  </button>
+                </div>
+                <div className="nav-end">
+                  <div className={`nav-session-menu${sessionOpen ? " is-open" : ""}`} ref={sessionRef}>
+                    <button
+                      className="btn nav-account"
+                      type="button"
+                      aria-haspopup="menu"
+                      aria-expanded={sessionOpen}
+                      aria-label={text.account}
+                      title={`${name} · ${level}`}
+                      onClick={() => setSessionOpen((open) => !open)}
+                    >
+                      <span className="nav-user">
+                        <span className="nav-user-name">{shortName(name)}</span>
+                        <span className="nav-user-level">{level}</span>
+                      </span>
+                      <AccountAvatar url={avatarUrl} size={28} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="top-actions-mobile">
                 <button
-                  className="btn nav-account"
+                  className="btn btn-icon"
                   type="button"
-                  aria-haspopup="menu"
-                  aria-expanded={sessionOpen}
-                  aria-label={text.account}
-                  title={`${name} · ${level}`}
-                  onClick={() => setSessionOpen((open) => !open)}
+                  disabled={busy}
+                  aria-label={text.refresh}
+                  title={text.refresh}
+                  onClick={onRefresh}
                 >
-                  <span className="nav-user">
-                    <span className="nav-user-name">{shortName(name)}</span>
-                    <span className="nav-user-level">{level}</span>
-                  </span>
-                  <AccountAvatar url={avatarUrl} size={28} />
+                  <RefreshIcon />
+                </button>
+                <button
+                  className={`btn btn-icon nav-burger${navOpen ? " is-on" : ""}`}
+                  type="button"
+                  aria-label={navOpen ? "Tutup menu" : text.menu}
+                  aria-expanded={navOpen}
+                  onClick={() => {
+                    setSessionOpen(false);
+                    setSheetAccountOpen(false);
+                    setNavOpen((open) => !open);
+                  }}
+                >
+                  <BurgerIcon open={navOpen} />
                 </button>
               </div>
-            </div>
-          </div>
-          <div className="top-actions-mobile">
-            <button
-              className="btn btn-icon"
-              type="button"
-              disabled={busy}
-              aria-label={text.refresh}
-              title={text.refresh}
-              onClick={onRefresh}
-            >
-              <RefreshIcon />
-            </button>
-            <button
-              className={`btn btn-icon nav-burger${navOpen ? " is-on" : ""}`}
-              type="button"
-              aria-label={navOpen ? "Tutup menu" : text.menu}
-              aria-expanded={navOpen}
-              onClick={() => {
-                setSessionOpen(false);
-                setSheetAccountOpen(false);
-                setNavOpen((open) => !open);
-              }}
-            >
-              <BurgerIcon open={navOpen} />
-            </button>
-          </div>
+            </>
+          )}
         </div>
       </header>
       {navOpen && portalReady

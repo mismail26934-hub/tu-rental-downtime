@@ -8,9 +8,11 @@ import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { GroupUpload } from "@/components/GroupUpload";
 import { useGroups } from "@/components/GroupSelect";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
+import { PageShimmer } from "@/components/PageShimmer";
 import { Topbar } from "@/components/Topbar";
 import { canManage } from "@/lib/access";
 import { validateGroupInput, type UnitGroup } from "@/lib/groups";
+import { useManualRefresh } from "@/lib/use-manual-refresh";
 import { formatQuota, parseQuota } from "@/lib/units";
 
 type Draft = {
@@ -32,6 +34,8 @@ export function GroupMaster() {
   const canWrite = canManage(session?.user?.level);
   const queryClient = useQueryClient();
   const groupsQuery = useGroups();
+  const { refreshing, refresh } = useManualRefresh();
+  const showShimmer = groupsQuery.isLoading || refreshing;
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: GroupSortKey; dir: SortDir } | null>(null);
@@ -150,8 +154,13 @@ export function GroupMaster() {
 
   return (
     <>
-      <Topbar busy={groupsQuery.isFetching} onRefresh={() => void groupsQuery.refetch()} />
+      <Topbar
+        busy={groupsQuery.isFetching || refreshing}
+        onRefresh={() => refresh(() => groupsQuery.refetch())}
+      />
       <main className="app">
+        {showShimmer ? <PageShimmer label="Memuat master group…" cards={2} rows={5} /> : null}
+        {!showShimmer ? (
         <section className="panel">
           <div className="panel-head">
             <h2>Master group</h2>
@@ -261,6 +270,7 @@ export function GroupMaster() {
             </table>
           </div>
         </section>
+        ) : null}
         {draft ? (
           <div className="form-modal-backdrop" onMouseDown={closeDraft}>
             <div

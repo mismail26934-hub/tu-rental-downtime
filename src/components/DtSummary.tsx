@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { PageShimmer } from "@/components/PageShimmer";
 import { SisaValue } from "@/components/SisaValue";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { Topbar } from "@/components/Topbar";
@@ -20,6 +21,7 @@ import {
   type SummaryMetric,
   type SummaryUnit,
 } from "@/lib/summary-view";
+import { useManualRefresh } from "@/lib/use-manual-refresh";
 import { groupByModel, sisaRemainder } from "@/lib/unit-sisa";
 
 async function fetchSummary(year: string): Promise<SummaryReport> {
@@ -42,6 +44,8 @@ export function DtSummary() {
     enabled: ready,
     refetchInterval: 30_000,
   });
+  const { refreshing, refresh } = useManualRefresh();
+  const showShimmer = !ready || summaryQuery.isLoading || refreshing;
   const report = summaryQuery.data;
 
   useEffect(() => {
@@ -84,93 +88,102 @@ export function DtSummary() {
 
   return (
     <>
-      <Topbar busy={summaryQuery.isFetching} onRefresh={() => void summaryQuery.refetch()} />
+      <Topbar
+        busy={summaryQuery.isFetching || refreshing}
+        onRefresh={() => refresh(() => summaryQuery.refetch())}
+      />
       <main className="app">
-        <section className="panel">
-          <div className="panel-head">
-            <div className="board-title">
-              <h2>SUMMARY UNIT</h2>
-              <select
-                className="year-filter board-year"
-                aria-label="Tahun"
-                value={year}
-                onChange={(event) => setYear(event.target.value)}
-              >
-                {yearChoices(year, report?.years || []).map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="panel-actions">
-              <SummaryUnitToggle />
-              <Link className="btn desktop-only" href="/daftar">
-                <ListIcon />
-                <span className="btn-label">Daftar unit</span>
-              </Link>
-              <div className="search-pair">
-                <input
-                  ref={searchRef}
-                  className="unit-search"
-                  type="search"
-                  aria-label="Cari summary"
-                  placeholder="Model, unit, atau group"
-                  value={searchDraft}
-                  onChange={(event) => {
-                    const next = event.target.value;
-                    setSearchDraft(next);
-                    if (!next.trim()) setSearch("");
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      setSearch(searchDraft.trim());
-                    }
-                  }}
-                />
-                <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
-                  <SearchIcon />
-                  <span className="btn-label">Cari</span>
-                </button>
+        {showShimmer ? (
+          <PageShimmer label="Memuat summary…" />
+        ) : (
+          <>
+            <section className="panel">
+              <div className="panel-head">
+                <div className="board-title">
+                  <h2>SUMMARY UNIT</h2>
+                  <select
+                    className="year-filter board-year"
+                    aria-label="Tahun"
+                    value={year}
+                    onChange={(event) => setYear(event.target.value)}
+                  >
+                    {yearChoices(year, report?.years || []).map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="panel-actions">
+                  <SummaryUnitToggle />
+                  <Link className="btn desktop-only" href="/daftar">
+                    <ListIcon />
+                    <span className="btn-label">Daftar unit</span>
+                  </Link>
+                  <div className="search-pair">
+                    <input
+                      ref={searchRef}
+                      className="unit-search"
+                      type="search"
+                      aria-label="Cari summary"
+                      placeholder="Model, unit, atau group"
+                      value={searchDraft}
+                      onChange={(event) => {
+                        const next = event.target.value;
+                        setSearchDraft(next);
+                        if (!next.trim()) setSearch("");
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          setSearch(searchDraft.trim());
+                        }
+                      }}
+                    />
+                    <button className="btn" type="button" aria-label="Cari" onClick={() => setSearch(searchDraft.trim())}>
+                      <SearchIcon />
+                      <span className="btn-label">Cari</span>
+                    </button>
+                  </div>
+                  <SummaryInfo report={report} />
+                  <SummarySettings />
+                  <SummaryManage
+                    freezeCols={freezeCols}
+                    onFreeze={(next) => {
+                      setFreezeCols(next);
+                      localStorage.setItem("tu-rental-freeze", next ? "1" : "0");
+                    }}
+                  />
+                </div>
               </div>
-              <SummaryInfo report={report} />
-              <SummarySettings />
-              <SummaryManage
-                freezeCols={freezeCols}
-                onFreeze={(next) => {
-                  setFreezeCols(next);
-                  localStorage.setItem("tu-rental-freeze", next ? "1" : "0");
-                }}
+              {summaryQuery.isError ? (
+                <div className="error">
+                  {summaryQuery.error instanceof Error ? summaryQuery.error.message : "Gagal memuat data"}
+                </div>
+              ) : null}
+              <SummaryTable
+                rows={unitRows}
+                labelHeader="Model"
+                grouped
+                asOf={report?.asOf}
+                frozen={freezeCols}
+                empty={unitEmpty}
               />
-            </div>
-          </div>
-          {summaryQuery.isError ? (
-            <div className="error">
-              {summaryQuery.error instanceof Error ? summaryQuery.error.message : "Gagal memuat data"}
-            </div>
-          ) : null}
-          <SummaryTable
-            rows={unitRows}
-            labelHeader="Model"
-            grouped
-            asOf={report?.asOf}
-            frozen={freezeCols}
-            empty={unitEmpty}
-          />
-        </section>
-        <section className="panel">
-          <div className="panel-head">
-            <h2>SUMMARY GROUP</h2>
-          </div>
-          <SummaryTable
-            rows={groupRows}
-            labelHeader="Group"
-            asOf={report?.asOf}
-            frozen={freezeCols}
-            empty={groupEmpty}
-          />
-        </section>
+            </section>
+            <section className="panel">
+              <div className="panel-head">
+                <h2>SUMMARY GROUP</h2>
+              </div>
+              <SummaryTable
+                rows={groupRows}
+                labelHeader="Group"
+                asOf={report?.asOf}
+                frozen={freezeCols}
+                empty={groupEmpty}
+              />
+            </section>
+          </>
+        )}
       </main>
     </>
   );

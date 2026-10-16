@@ -6,8 +6,10 @@ import { useSession } from "next-auth/react";
 import { FormEvent, useMemo, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { compareText, SortColumn, type SortDir } from "@/components/SortColumn";
+import { PageShimmer } from "@/components/PageShimmer";
 import { Topbar } from "@/components/Topbar";
 import { USER_LEVELS, type PublicUser } from "@/lib/types";
+import { useManualRefresh } from "@/lib/use-manual-refresh";
 import { validateUserInput } from "@/lib/user-input";
 
 type Draft = {
@@ -51,6 +53,8 @@ export function UserMaster() {
   const { data: session, update } = useSession();
   const queryClient = useQueryClient();
   const usersQuery = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
+  const { refreshing, refresh } = useManualRefresh();
+  const showShimmer = usersQuery.isLoading || refreshing;
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: UserSortKey; dir: SortDir } | null>(null);
@@ -185,8 +189,13 @@ export function UserMaster() {
 
   return (
     <>
-      <Topbar busy={usersQuery.isFetching} onRefresh={() => void usersQuery.refetch()} />
+      <Topbar
+        busy={usersQuery.isFetching || refreshing}
+        onRefresh={() => refresh(() => usersQuery.refetch())}
+      />
       <main className="app">
+        {showShimmer ? <PageShimmer label="Memuat pengguna…" cards={2} rows={5} /> : null}
+        {!showShimmer ? (
         <section className="panel">
           <div className="panel-head">
             <h2>Pengguna</h2>
@@ -282,6 +291,7 @@ export function UserMaster() {
             </table>
           </div>
         </section>
+        ) : null}
         {draft ? (
           <div className="form-modal-backdrop" onMouseDown={closeDraft}>
             <div

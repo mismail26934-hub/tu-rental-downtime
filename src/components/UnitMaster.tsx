@@ -9,11 +9,13 @@ import { GroupSelect } from "@/components/GroupSelect";
 import { MasterUnitUpload } from "@/components/MasterUnitUpload";
 import { ModelSelect } from "@/components/ModelSelect";
 import { CollapseBoard, ModelSummary } from "@/components/ModelSummary";
+import { PageShimmer } from "@/components/PageShimmer";
 import { SisaValue } from "@/components/SisaValue";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
 import { canManage, isSuperuser } from "@/lib/access";
+import { useManualRefresh } from "@/lib/use-manual-refresh";
 import { formatHourClock, formatHours, formatQuotaDisplay } from "@/lib/format";
 import { rehydrateMasterView, useMasterView } from "@/lib/master-view";
 import { rehydrateModelCardFields } from "@/lib/model-card-fields";
@@ -88,6 +90,8 @@ export function UnitMaster() {
     enabled: ready,
     refetchInterval: 30_000,
   });
+  const { refreshing, refresh } = useManualRefresh();
+  const showShimmer = !ready || unitsQuery.isLoading || refreshing;
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: UnitSortKey; dir: SortDir } | null>(null);
@@ -255,13 +259,16 @@ export function UnitMaster() {
   return (
     <>
       <Topbar
-        busy={unitsQuery.isFetching || summaryQuery.isFetching}
-        onRefresh={() => {
-          void unitsQuery.refetch();
-          void summaryQuery.refetch();
-        }}
+        busy={unitsQuery.isFetching || summaryQuery.isFetching || refreshing}
+        onRefresh={() =>
+          refresh(async () => {
+            await Promise.all([unitsQuery.refetch(), summaryQuery.refetch()]);
+          })
+        }
       />
       <main className="app">
+        {showShimmer ? <PageShimmer label="Memuat master unit…" /> : null}
+        {!showShimmer ? (
         <section className="panel">
           <div className="panel-head">
             <div className="board-title">
@@ -432,6 +439,7 @@ export function UnitMaster() {
           </div>
           </CollapseBoard>
         </section>
+        ) : null}
         {draft ? (
           <div className="form-modal-backdrop" onMouseDown={closeDraft}>
             <div

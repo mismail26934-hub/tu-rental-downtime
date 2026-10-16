@@ -7,9 +7,11 @@ import { FormEvent, useMemo, useState } from "react";
 import { EditIcon, TrashIcon } from "@/components/ActionIcons";
 import { useModels } from "@/components/ModelSelect";
 import { compareText, SortColumn, type SortDir } from "@/components/SortColumn";
+import { PageShimmer } from "@/components/PageShimmer";
 import { Topbar } from "@/components/Topbar";
 import { canManage } from "@/lib/access";
 import { validateModelInput, type UnitModel } from "@/lib/models";
+import { useManualRefresh } from "@/lib/use-manual-refresh";
 
 type Draft = {
   id: string;
@@ -28,6 +30,8 @@ export function ModelMaster() {
   const canWrite = canManage(session?.user?.level);
   const queryClient = useQueryClient();
   const modelsQuery = useModels();
+  const { refreshing, refresh } = useManualRefresh();
+  const showShimmer = modelsQuery.isLoading || refreshing;
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: ModelSortKey; dir: SortDir } | null>(null);
@@ -135,8 +139,13 @@ export function ModelMaster() {
 
   return (
     <>
-      <Topbar busy={modelsQuery.isFetching} onRefresh={() => void modelsQuery.refetch()} />
+      <Topbar
+        busy={modelsQuery.isFetching || refreshing}
+        onRefresh={() => refresh(() => modelsQuery.refetch())}
+      />
       <main className="app">
+        {showShimmer ? <PageShimmer label="Memuat master model…" cards={2} rows={5} /> : null}
+        {!showShimmer ? (
         <section className="panel">
           <div className="panel-head">
             <h2>Master model</h2>
@@ -238,6 +247,7 @@ export function ModelMaster() {
             </table>
           </div>
         </section>
+        ) : null}
         {draft ? (
           <div className="form-modal-backdrop" onMouseDown={closeDraft}>
             <div

@@ -3,8 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
+import { PageShimmer } from "@/components/PageShimmer";
 import { Topbar } from "@/components/Topbar";
 import { formatStamp } from "@/lib/format";
+import { useManualRefresh } from "@/lib/use-manual-refresh";
 
 type BackupView = {
   id: string;
@@ -81,6 +83,8 @@ export function BackupList() {
     queryKey: ["backups"],
     queryFn: fetchBackups,
   });
+  const { refreshing, refresh } = useManualRefresh();
+  const showShimmer = backupsQuery.isLoading || refreshing;
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -120,8 +124,13 @@ export function BackupList() {
 
   return (
     <>
-      <Topbar busy={backupsQuery.isFetching} onRefresh={() => void backupsQuery.refetch()} />
+      <Topbar
+        busy={backupsQuery.isFetching || refreshing}
+        onRefresh={() => refresh(() => backupsQuery.refetch())}
+      />
       <main className="app">
+        {showShimmer ? <PageShimmer label="Memuat backup…" cards={2} rows={5} /> : null}
+        {!showShimmer ? (
         <section className="panel">
           <div className="panel-head">
             <h2>BACKUP DATA</h2>
@@ -240,6 +249,7 @@ export function BackupList() {
           </div>
           <Pager page={currentPage} totalPages={totalPages} onChange={showPage} />
         </section>
+        ) : null}
       </main>
     </>
   );

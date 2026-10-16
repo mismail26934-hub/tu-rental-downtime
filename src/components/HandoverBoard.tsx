@@ -10,8 +10,10 @@ import { HandoverTable } from "@/components/HandoverTable";
 import { CollapseBoard, ModelSummary, type ModelSummaryUnit } from "@/components/ModelSummary";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { useUnits } from "@/components/UnitSelect";
+import { PageShimmer } from "@/components/PageShimmer";
 import { Topbar } from "@/components/Topbar";
 import { canManage } from "@/lib/access";
+import { useManualRefresh } from "@/lib/use-manual-refresh";
 import { sendMutation, type MutationResult } from "@/lib/api";
 import { computeMetrics, deriveStatus } from "@/lib/calc";
 import { defaultShift, todayISO } from "@/lib/format";
@@ -464,29 +466,41 @@ export function HandoverBoard() {
     () => (unitsQuery.isFetched ? boardSummaryUnits(rows, unitsQuery.data || []) : []),
     [rows, unitsQuery.data, unitsQuery.isFetched]
   );
+  const { refreshing, refresh } = useManualRefresh();
+  const showShimmer = boardQuery.isLoading || refreshing;
 
   if (status === "loading" || !filtersReady) {
-    return <div className="page-loading">Memuat…</div>;
+    return (
+      <>
+        <Topbar busy onRefresh={() => undefined} />
+        <main className="app">
+          <PageShimmer label="Memuat…" />
+        </main>
+      </>
+    );
   }
 
   return (
     <>
       <Topbar
-        busy={boardQuery.isFetching || summaryQuery.isFetching}
-        onRefresh={() => {
-          setNow(new Date());
-          void boardQuery.refetch();
-          void summaryQuery.refetch();
-        }}
+        busy={boardQuery.isFetching || summaryQuery.isFetching || refreshing}
+        onRefresh={() =>
+          refresh(async () => {
+            setNow(new Date());
+            await Promise.all([boardQuery.refetch(), summaryQuery.refetch()]);
+          })
+        }
       />
       <main className="app">
-        {boardQuery.isError ? (
+        {showShimmer ? <PageShimmer label="Memuat daftar unit…" /> : null}
+        {!showShimmer && boardQuery.isError ? (
           <div className="error">
             {boardQuery.error instanceof Error
               ? boardQuery.error.message
               : "Gagal memuat data"}
           </div>
         ) : null}
+        {!showShimmer ? (
         <ModelSummary
           units={summaryUnits}
           report={summaryQuery.data}
@@ -496,6 +510,7 @@ export function HandoverBoard() {
           hidden={summaryHidden}
           onToggle={() => setSummaryHidden(!summaryHidden)}
         />
+        ) : null}
 
         {formOpen ? (
           <div className="form-modal-backdrop" onMouseDown={closeForm}>
@@ -611,6 +626,7 @@ export function HandoverBoard() {
           </div>
         ) : null}
 
+        {!showShimmer ? (
         <section className="panel">
           <div className="panel-head board-bar">
             <div className="board-title">
@@ -722,6 +738,7 @@ export function HandoverBoard() {
           />
           </CollapseBoard>
         </section>
+        ) : null}
       </main>
     </>
   );
