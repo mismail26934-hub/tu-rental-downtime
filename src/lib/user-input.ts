@@ -1,4 +1,4 @@
-import { passwordPolicyError } from "@/lib/password";
+import { passwordPolicyError } from "@/lib/password-policy";
 import { USER_LEVELS, type UserLevel } from "@/lib/types";
 
 export type UserInput = {

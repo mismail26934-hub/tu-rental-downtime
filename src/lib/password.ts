@@ -1,22 +1,15 @@
 import bcrypt from "bcrypt";
 
-const ROUNDS = 10;
+export {
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+  passwordPolicyError,
+} from "@/lib/password-policy";
 
-export const MIN_PASSWORD_LENGTH = 8;
-export const MAX_PASSWORD_LENGTH = 72;
+const ROUNDS = 10;
 
 export function isBcryptHash(value: string): boolean {
   return /^\$2[aby]\$\d{2}\$/.test(value);
-}
-
-/** Returns an error message when the password fails policy, otherwise null. */
-export function passwordPolicyError(plain: string): string | null {
-  if (!plain) return "Password wajib diisi";
-  if (plain.length < MIN_PASSWORD_LENGTH) {
-    return `Password minimal ${MIN_PASSWORD_LENGTH} karakter`;
-  }
-  if (plain.length > MAX_PASSWORD_LENGTH) return "Password terlalu panjang";
-  return null;
 }
 
 export async function hashPassword(plain: string): Promise<string> {
