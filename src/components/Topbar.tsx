@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { OfflineChip } from "@/components/OfflineChip";
-import { isSuperuser } from "@/lib/access";
+import { canManage, isSuperuser } from "@/lib/access";
 import { passwordPolicyError } from "@/lib/password-policy";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 
@@ -103,18 +103,31 @@ export function Topbar({ busy = false, onRefresh }: Props) {
   const [light, setLight] = useState(false);
   const [sessionOpen, setSessionOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [sheetAccountOpen, setSheetAccountOpen] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
   const [dialog, setDialog] = useState<"profile" | "password" | null>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
   const sessionRef = useRef<HTMLDivElement>(null);
-  const navRef = useRef<HTMLDivElement>(null);
   const topbarRef = useRef<HTMLElement>(null);
   const name = data?.user?.name || data?.user?.email || "Pengguna";
   const level = levelLabel(data?.user?.level || "");
   const superuser = isSuperuser(data?.user?.level);
+  const writer = canManage(data?.user?.level);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   useEffect(() => {
     setLight(document.documentElement.getAttribute("data-theme") === "light");
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("menu-open", navOpen);
+    return () => {
+      document.documentElement.classList.remove("menu-open");
+    };
+  }, [navOpen]);
 
   useEffect(() => {
     const el = topbarRef.current;
@@ -169,11 +182,11 @@ export function Topbar({ busy = false, onRefresh }: Props) {
       }
       if (menu?.contains(target)) return;
       if (sessionRef.current && !sessionRef.current.contains(target)) setSessionOpen(false);
-      if (navRef.current && !navRef.current.contains(target)) setNavOpen(false);
     }
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setSessionOpen(false);
+        setSheetAccountOpen(false);
         setNavOpen(false);
       }
     }
@@ -192,6 +205,39 @@ export function Topbar({ busy = false, onRefresh }: Props) {
     setLight(next === "light");
   }
 
+  function closeMenu() {
+    setNavOpen(false);
+    setSessionOpen(false);
+    setSheetAccountOpen(false);
+  }
+
+  const manageLinks = (
+    <>
+      <Link className="nav-manage-item" role="menuitem" href="/daftar" onClick={closeMenu}>
+        Daftar unit
+      </Link>
+      <Link className="nav-manage-item" role="menuitem" href="/master/model" onClick={closeMenu}>
+        Master model
+      </Link>
+      <Link className="nav-manage-item" role="menuitem" href="/master/group" onClick={closeMenu}>
+        Master group
+      </Link>
+      <Link className="nav-manage-item" role="menuitem" href="/master/unit" onClick={closeMenu}>
+        Master unit
+      </Link>
+      {writer ? (
+        <Link className="nav-manage-item" role="menuitem" href="/backup" onClick={closeMenu}>
+          Backup data
+        </Link>
+      ) : null}
+      {superuser ? (
+        <Link className="nav-manage-item" role="menuitem" href="/pengguna" onClick={closeMenu}>
+          Pengguna
+        </Link>
+      ) : null}
+    </>
+  );
+
   return (
     <>
       <div className="topbar-glass" />
@@ -207,53 +253,29 @@ export function Topbar({ busy = false, onRefresh }: Props) {
           </Link>
           <OfflineChip />
         </div>
-        <div className={`top-actions${navOpen ? " is-open" : ""}`} ref={navRef}>
-          <button
-            className={`btn btn-icon nav-burger${navOpen ? " is-on" : ""}`}
-            type="button"
-            aria-label={text.menu}
-            aria-expanded={navOpen}
-            onClick={() => {
-              setSessionOpen(false);
-              setNavOpen((open) => !open);
-            }}
-          >
-            <BurgerIcon open={navOpen} />
-          </button>
-          {navOpen ? (
-            <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setNavOpen(false)} />
-          ) : null}
+        <div className="top-actions">
           <div className="top-actions-panel top-actions-panel--bar">
-            <p className="sheet-title">Menu</p>
             <div className="nav-tools">
-            <YearFilter />
-            <button
-              className="btn btn-icon"
-              type="button"
-              disabled={busy}
-              aria-label={text.refresh}
-              title={text.refresh}
-              onClick={() => {
-                setNavOpen(false);
-                onRefresh();
-              }}
-            >
-              <RefreshIcon />
-              <span className="sheet-label">{text.refresh}</span>
-            </button>
-            <button
-              className="btn btn-icon"
-              type="button"
-              aria-label={light ? text.dark : text.light}
-              title={light ? text.dark : text.light}
-              onClick={() => {
-                toggleTheme();
-                setNavOpen(false);
-              }}
-            >
-              {light ? <MoonIcon /> : <SunIcon />}
-              <span className="sheet-label">{light ? text.dark : text.light}</span>
-            </button>
+              <YearFilter />
+              <button
+                className="btn btn-icon"
+                type="button"
+                disabled={busy}
+                aria-label={text.refresh}
+                title={text.refresh}
+                onClick={onRefresh}
+              >
+                <RefreshIcon />
+              </button>
+              <button
+                className="btn btn-icon"
+                type="button"
+                aria-label={light ? text.dark : text.light}
+                title={light ? text.dark : text.light}
+                onClick={toggleTheme}
+              >
+                {light ? <MoonIcon /> : <SunIcon />}
+              </button>
             </div>
             <div className="nav-end">
               <div className={`nav-session-menu${sessionOpen ? " is-open" : ""}`} ref={sessionRef}>
@@ -275,8 +297,144 @@ export function Topbar({ busy = false, onRefresh }: Props) {
               </div>
             </div>
           </div>
+          <div className="top-actions-mobile">
+            <button
+              className="btn btn-icon"
+              type="button"
+              disabled={busy}
+              aria-label={text.refresh}
+              title={text.refresh}
+              onClick={onRefresh}
+            >
+              <RefreshIcon />
+            </button>
+            <button
+              className={`btn btn-icon nav-burger${navOpen ? " is-on" : ""}`}
+              type="button"
+              aria-label={navOpen ? "Tutup menu" : text.menu}
+              aria-expanded={navOpen}
+              onClick={() => {
+                setSessionOpen(false);
+                setSheetAccountOpen(false);
+                setNavOpen((open) => !open);
+              }}
+            >
+              <BurgerIcon open={navOpen} />
+            </button>
+          </div>
         </div>
       </header>
+      {navOpen && portalReady
+        ? createPortal(
+            <>
+              <div
+                className="top-menu-backdrop"
+                onClick={closeMenu}
+                aria-hidden="true"
+              />
+              <div
+                className="top-actions-panel top-actions-panel--float is-open"
+                role="dialog"
+                aria-label={text.menu}
+              >
+                <div className="nav-sheet-handle" aria-hidden="true" />
+                <div className="nav-sheet-profile-row">
+                  <button
+                    type="button"
+                    className="nav-user nav-user--menu nav-user--menu-btn"
+                    title={`${name} · ${level}`}
+                    aria-haspopup="dialog"
+                    aria-expanded={sheetAccountOpen}
+                    aria-label={text.account}
+                    onClick={() => setSheetAccountOpen(true)}
+                  >
+                    <PersonAvatar size={44} />
+                    <span className="nav-user-text">
+                      <span className="nav-user-name">{name}</span>
+                      <span className="nav-user-level">{level}</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-icon nav-sheet-logout"
+                    aria-label={text.logout}
+                    title={text.logout}
+                    onClick={() => {
+                      closeMenu();
+                      void signOut({ callbackUrl: "/sign-in" });
+                    }}
+                  >
+                    <LogoutIcon />
+                  </button>
+                </div>
+                <p className="nav-menu-label">Tampilan</p>
+                <div className="nav-menu-prefs">
+                  <YearFilter />
+                  <button
+                    className="btn btn-icon"
+                    type="button"
+                    onClick={toggleTheme}
+                    aria-label={light ? text.dark : text.light}
+                    title={light ? text.dark : text.light}
+                  >
+                    {light ? <MoonIcon /> : <SunIcon />}
+                  </button>
+                </div>
+                <p className="nav-menu-label">Kelola</p>
+                <div className="nav-sheet-list" role="menu">
+                  {manageLinks}
+                </div>
+              </div>
+              {sheetAccountOpen ? (
+                <div
+                  className="nav-sheet-account-backdrop"
+                  onClick={() => setSheetAccountOpen(false)}
+                >
+                  <div
+                    className="nav-sheet-account-modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Akun"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <div className="nav-sheet-account-head">
+                      <strong>Akun</strong>
+                      <button
+                        type="button"
+                        className="btn btn-icon"
+                        aria-label="Tutup"
+                        onClick={() => setSheetAccountOpen(false)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      className="nav-sheet-item"
+                      onClick={() => {
+                        closeMenu();
+                        setDialog("profile");
+                      }}
+                    >
+                      {text.profile}
+                    </button>
+                    <button
+                      type="button"
+                      className="nav-sheet-item"
+                      onClick={() => {
+                        closeMenu();
+                        setDialog("password");
+                      }}
+                    >
+                      {text.password}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </>,
+            document.body
+          )
+        : null}
       {sessionOpen && menuPos
         ? createPortal(
             <>
@@ -293,42 +451,42 @@ export function Topbar({ busy = false, onRefresh }: Props) {
                 style={{ top: menuPos.top, right: menuPos.right }}
               >
                 <p className="sheet-title">Akun</p>
-              <button
-                type="button"
-                role="menuitem"
-                className="nav-manage-item"
-                onClick={() => {
-                  setSessionOpen(false);
-                  setDialog("profile");
-                }}
-              >
-                {text.profile}
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                className="nav-manage-item"
-                onClick={() => {
-                  setSessionOpen(false);
-                  setDialog("password");
-                }}
-              >
-                {text.password}
-              </button>
-              {superuser ? (
-                <Link className="nav-manage-item" role="menuitem" href="/pengguna" onClick={() => setSessionOpen(false)}>
-                  Pengguna
-                </Link>
-              ) : null}
-              <button
-                type="button"
-                role="menuitem"
-                className="nav-manage-item"
-                onClick={() => signOut({ callbackUrl: "/sign-in" })}
-              >
-                {text.logout}
-              </button>
-            </div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="nav-manage-item"
+                  onClick={() => {
+                    setSessionOpen(false);
+                    setDialog("profile");
+                  }}
+                >
+                  {text.profile}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="nav-manage-item"
+                  onClick={() => {
+                    setSessionOpen(false);
+                    setDialog("password");
+                  }}
+                >
+                  {text.password}
+                </button>
+                {superuser ? (
+                  <Link className="nav-manage-item" role="menuitem" href="/pengguna" onClick={() => setSessionOpen(false)}>
+                    Pengguna
+                  </Link>
+                ) : null}
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="nav-manage-item"
+                  onClick={() => signOut({ callbackUrl: "/sign-in" })}
+                >
+                  {text.logout}
+                </button>
+              </div>
             </>,
             document.body
           )
@@ -491,6 +649,16 @@ function RefreshIcon() {
   );
 }
 
+function LogoutIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </svg>
+  );
+}
+
 function MoonIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -508,10 +676,11 @@ function SunIcon() {
   );
 }
 
-function PersonAvatar() {
+function PersonAvatar({ size = 28 }: { size?: number }) {
+  const glyph = Math.round(size * 0.54);
   return (
-    <span className="nav-avatar" aria-hidden="true">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <span className="nav-avatar" style={{ width: size, height: size }} aria-hidden="true">
+      <svg width={glyph} height={glyph} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
       </svg>
