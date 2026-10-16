@@ -204,7 +204,7 @@ export function Topbar({ busy = false, onRefresh }: Props) {
               <span className="brand-tagline">Asset Readiness &amp; Monitoring of Operational Repair</span>
             </span>
           </Link>
-          <OfflineChip onRefresh={onRefresh} refreshBusy={busy} />
+          <OfflineChip />
         </div>
         <div className={`top-actions${navOpen ? " is-open" : ""}`} ref={navRef}>
           <button

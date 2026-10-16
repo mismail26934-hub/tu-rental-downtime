@@ -227,10 +227,10 @@ html.is-framed .topbar {
 }
 html.is-framed .brand-lockup { gap: 0.625rem; }
 html.is-framed .brand { font-size: 1.125rem; }
-html.is-framed .btn:not(.btn-icon),
-html.is-framed .btn-primary:not(.btn-icon),
-html.is-framed .btn-secondary:not(.btn-icon),
-html.is-framed .btn-edit:not(.btn-icon) { padding: 0 1rem; }
+html.is-framed .btn:not(.btn-icon):not(.btn-lg),
+html.is-framed .btn-primary:not(.btn-icon):not(.btn-lg),
+html.is-framed .btn-secondary:not(.btn-icon):not(.btn-lg),
+html.is-framed .btn-edit:not(.btn-icon):not(.btn-lg) { padding: 0 1rem; }
 html.is-framed .topbar-glass { display: none; }
 html.is-framed.topbar-scrolled .topbar {
   background: var(--topbar-glass-bg);
@@ -287,6 +287,12 @@ html.is-framed .time-panel {
 .muted { color: var(--muted); }
 
 .login-card p { margin: 0 0 14px; }
+
+/* Login CTA — full-width Primary lg so it stays proportional to fields on desktop & mobile */
+.login-card .login-submit {
+  width: 100%;
+  margin-top: 4px;
+}
 
 .topbar-glass {
   position: fixed;
@@ -398,6 +404,22 @@ html.topbar-scrolled .topbar-glass {
 }
 .brand-row {
   flex: 1 1 auto;
+}
+.brand-row .offline-sync {
+  flex-shrink: 0;
+}
+.brand-row .offline-sync-chip {
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-shadow: none;
+  height: 28px;
+  padding: 0 10px;
+}
+.brand-row .offline-sync-pop {
+  left: 0;
+  right: auto;
 }
 .nav-stats {
   display: flex;
@@ -917,11 +939,16 @@ html.topbar-scrolled .topbar-glass {
   box-shadow: none;
 }
 
+/* Primary lg — Figma Design System TU Action 3:4420 (Size=lg, Text) */
 .btn-lg {
   height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  padding: 0 16px;
+  gap: 8px;
   border-radius: 8px;
-  font-size: var(--ds-btn-md-size);
-  line-height: var(--ds-btn-md-line);
+  font-size: var(--ds-btn-md-size); /* 16 */
+  line-height: var(--ds-btn-md-line); /* 24 */
   font-weight: var(--ds-btn-weight);
 }
 .btn-sm {
@@ -2005,25 +2032,15 @@ html[data-theme="light"] .summary-table td.summary-ytd,
 html[data-theme="light"] .master-table td.summary-ytd,
 html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background: #fff1e0; }
 
-/* Offline / sync chip — match tus-best (yellow outline pill + bottom sheet on mobile) */
 .offline-sync {
   position: relative;
-  flex-shrink: 0;
-}
-.brand-row .offline-sync-chip {
-  height: 28px;
-  padding: 0 10px;
-  font-family: var(--font-body), "Segoe UI", sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0;
 }
 .offline-sync-chip {
   appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 32px;
+  height: 42px;
   padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -2059,10 +2076,9 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
 }
 .offline-sync-pop {
   position: absolute;
-  z-index: 130;
   top: calc(100% + 8px);
-  left: 0;
-  right: auto;
+  right: 0;
+  z-index: 130;
   width: min(340px, calc(100vw - 32px));
   padding: 12px 12px 14px;
   background: var(--bg-1);
@@ -2070,8 +2086,24 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   border-radius: 10px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
   color: var(--text);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
   font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.4;
+}
+.offline-sync-pop .btn,
+.offline-sync-sheet .btn {
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+.offline-sync-btn {
+  padding: 8px 12px;
+  height: auto;
+  min-height: 36px;
 }
 .offline-sync-panel-head {
   display: flex;
@@ -2082,17 +2114,11 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
 }
 .offline-sync-pop-title {
   margin: 0;
-  font-size: 0.92rem;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
   font-weight: 700;
+  font-size: 0.92rem;
   line-height: 1.3;
   color: var(--text);
-}
-.offline-sync-pop-body {
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 0.84rem;
-  font-weight: 500;
-  line-height: 1.45;
 }
 .offline-sync-changes-label {
   margin: 10px 0 6px;
@@ -2115,11 +2141,15 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--text) 3%, transparent);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+.offline-sync-change.is-error {
+  border-color: color-mix(in srgb, var(--red) 55%, transparent);
 }
 .offline-sync-change-title,
 .offline-sync-change-meta {
   margin: 0;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
 }
 .offline-sync-change-title {
   color: var(--text);
@@ -2131,6 +2161,14 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   color: var(--muted);
   font-size: 0.75rem;
   line-height: 1.35;
+}
+.offline-sync-pop-body {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.45;
 }
 .offline-sync-pop-actions {
   display: flex;
@@ -2147,19 +2185,16 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   width: 100%;
   justify-content: center;
 }
-.offline-sync-btn {
-  padding: 8px 12px;
-  height: auto;
-  min-height: 36px;
-}
 .offline-sync-pop-status {
   margin: 0;
   padding: 8px 10px;
   width: 100%;
   box-sizing: border-box;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--muted);
+  text-align: left;
   line-height: 1.4;
   background: var(--bg-2);
   border: 1px solid var(--line);
@@ -2169,19 +2204,20 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   position: fixed;
   inset: 0;
   z-index: 10050;
-  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: flex-end;
+  background: rgba(0, 0, 0, 0.55);
 }
 .offline-sync-sheet {
   width: 100%;
+  padding: 18px var(--ds-margin) calc(18px + env(safe-area-inset-bottom, 0px));
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  padding: 18px var(--ds-margin) calc(18px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.38);
   animation: offline-sheet-rise 0.28s ease both;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
 }
 .offline-sync-sheet .offline-sync-pop-title {
   margin: 0;
@@ -2191,7 +2227,6 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   margin: 8px 0 0;
   font-size: 0.92rem;
 }
-.btn.btn-icon.offline-sync-sheet-close,
 .offline-sync-sheet-close {
   flex-shrink: 0;
   width: 32px;
@@ -2205,16 +2240,6 @@ html[data-theme="light"] .summary-table tr.is-detail td.summary-ytd { background
   line-height: 1;
   color: var(--muted);
   border-radius: 8px;
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-}
-@media (hover: hover) and (pointer: fine) {
-  .btn.btn-icon.offline-sync-sheet-close:hover:not(:disabled),
-  .offline-sync-sheet-close:hover:not(:disabled) {
-    background: var(--bg-2);
-    color: var(--text);
-  }
 }
 @keyframes offline-sheet-rise {
   from { transform: translateY(100%); }
@@ -2290,16 +2315,19 @@ html[data-theme="light"] .offline-sync-chip--offline {
   background: var(--ds-bg-subtle-warning);
   border: 1px solid var(--ds-border-warning);
   color: var(--ds-orange-100);
+  font-weight: 700;
 }
 html[data-theme="light"] .offline-sync-chip--sync {
   background: var(--ds-bg-subtle-success);
   border: 1px solid var(--ds-border-success);
   color: var(--ds-green-100);
+  font-weight: 700;
 }
 html[data-theme="light"] .offline-sync-chip--error {
   background: var(--danger-bg);
   border: 1px solid var(--danger-border);
   color: var(--danger-text);
+  font-weight: 700;
 }
 
 .top-actions {
@@ -3028,13 +3056,6 @@ html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar 
   }
   .metric-row, .form-grid { grid-template-columns: 1fr; }
   .topbar { align-items: center; padding: 4px var(--ds-margin); }
-  .brand-divider { margin: 2px 0; }
-  .brand {
-    font-size: var(--ds-title-md-size); /* 16 */
-    line-height: 1.2;
-  }
-  .brand-tagline { display: none; }
-  /* Offline chip under lockup so it doesn't collide with burger / actions */
   .brand-row {
     display: flex;
     flex-direction: column;
@@ -3046,6 +3067,12 @@ html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar 
   .brand-row .offline-sync-chip {
     max-width: 100%;
   }
+  .brand-divider { margin: 2px 0; }
+  .brand {
+    font-size: var(--ds-title-md-size); /* 16 */
+    line-height: 1.2;
+  }
+  .brand-tagline { display: none; }
   .top-actions { position: relative; flex: 0 0 auto; }
   .btn.btn-icon.nav-burger,
   .nav-burger {

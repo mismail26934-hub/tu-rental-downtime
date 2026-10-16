@@ -64,7 +64,7 @@ function LoginForm() {
             />
           </label>
           {error ? <div className="error">{error}</div> : null}
-          <button className="btn btn-primary" disabled={busy} type="submit">
+          <button className="btn btn-primary btn-lg login-submit" disabled={busy} type="submit">
             {busy ? "Memeriksa…" : "Masuk"}
           </button>
         </form>
