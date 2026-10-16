@@ -2219,7 +2219,7 @@ html[data-theme="light"] .offline-sync-chip--error {
   min-height: var(--ctrl-size);
   border-radius: var(--ctrl-radius);
 }
-/* Account chip — same height as toolbar / icon controls */
+/* Account chip — same enable / hover / press / focus as toolbar .btn / refresh */
 .nav-account,
 .top-actions .nav-account,
 .topbar .nav-account {
@@ -2232,27 +2232,44 @@ html[data-theme="light"] .offline-sync-chip--error {
   border: 1px solid transparent;
   background: var(--ds-btn-primary);
   color: var(--ds-cloudy-120);
+  box-shadow: none;
 }
-.top-actions .nav-account .nav-user-name { color: var(--ds-cloudy-120); }
-.top-actions .nav-account .nav-user-level {
+.top-actions .nav-account .nav-user-name,
+.topbar .nav-account .nav-user-name { color: var(--ds-cloudy-120); }
+.top-actions .nav-account .nav-user-level,
+.topbar .nav-account .nav-user-level {
   color: color-mix(in srgb, var(--ds-cloudy-120) 72%, transparent);
 }
+/* Avatar reads as the button glyph (like refresh icon), not a nested chip */
+.top-actions .nav-account .nav-avatar,
+.topbar .nav-account .nav-avatar {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--ds-cloudy-120) 35%, transparent);
+  color: var(--ds-cloudy-120);
+}
 @media (hover: hover) and (pointer: fine) {
-  .top-actions .nav-account:hover:not(:disabled) {
+  .top-actions .nav-account:hover:not(:disabled),
+  .topbar .nav-account:hover:not(:disabled) {
     background: var(--ds-btn-secondary);
     color: var(--ds-white);
     border-color: transparent;
+    box-shadow: none;
   }
 }
 .top-actions .nav-account:active:not(:disabled),
 .top-actions .nav-account:focus-visible,
-.top-actions .nav-account[aria-expanded="true"] {
+.top-actions .nav-account[aria-expanded="true"],
+.topbar .nav-account:active:not(:disabled),
+.topbar .nav-account:focus-visible,
+.topbar .nav-account[aria-expanded="true"] {
   background: var(--ds-btn-secondary);
   color: var(--ds-white);
   border-color: transparent;
   outline: none;
+  box-shadow: none;
 }
-.top-actions .nav-account:focus-visible {
+.top-actions .nav-account:focus-visible,
+.topbar .nav-account:focus-visible {
   border: 2px solid var(--ds-cloudy-110);
 }
 .top-actions .nav-account:hover:not(:disabled) .nav-user-name,
@@ -2262,15 +2279,27 @@ html[data-theme="light"] .offline-sync-chip--error {
 .top-actions .nav-account:focus-visible .nav-user-name,
 .top-actions .nav-account:focus-visible .nav-user-level,
 .top-actions .nav-account[aria-expanded="true"] .nav-user-name,
-.top-actions .nav-account[aria-expanded="true"] .nav-user-level {
-  color: inherit;
+.top-actions .nav-account[aria-expanded="true"] .nav-user-level,
+.topbar .nav-account:hover:not(:disabled) .nav-user-name,
+.topbar .nav-account:hover:not(:disabled) .nav-user-level,
+.topbar .nav-account:active:not(:disabled) .nav-user-name,
+.topbar .nav-account:active:not(:disabled) .nav-user-level,
+.topbar .nav-account:focus-visible .nav-user-name,
+.topbar .nav-account:focus-visible .nav-user-level,
+.topbar .nav-account[aria-expanded="true"] .nav-user-name,
+.topbar .nav-account[aria-expanded="true"] .nav-user-level {
+  color: var(--ds-white);
 }
 .top-actions .nav-account:hover:not(:disabled) .nav-avatar,
 .top-actions .nav-account:active:not(:disabled) .nav-avatar,
 .top-actions .nav-account:focus-visible .nav-avatar,
-.top-actions .nav-account[aria-expanded="true"] .nav-avatar {
-  background: color-mix(in srgb, var(--ds-white) 14%, transparent);
-  border-color: color-mix(in srgb, var(--ds-white) 35%, transparent);
+.top-actions .nav-account[aria-expanded="true"] .nav-avatar,
+.topbar .nav-account:hover:not(:disabled) .nav-avatar,
+.topbar .nav-account:active:not(:disabled) .nav-avatar,
+.topbar .nav-account:focus-visible .nav-avatar,
+.topbar .nav-account[aria-expanded="true"] .nav-avatar {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--ds-white) 40%, transparent);
   color: var(--ds-white);
 }
 .nav-manage-caret { transition: transform 0.15s ease; }
@@ -2580,6 +2609,25 @@ html[data-theme="light"] .nav-avatar {
   background: color-mix(in srgb, var(--ds-cloudy-120) 8%, var(--ds-white));
   border-color: color-mix(in srgb, var(--ds-cloudy-120) 18%, transparent);
   color: var(--ds-cloudy-120);
+}
+/* Keep account avatar as a glyph on the yellow chip in light theme too */
+html[data-theme="light"] .top-actions .nav-account .nav-avatar,
+html[data-theme="light"] .topbar .nav-account .nav-avatar {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--ds-cloudy-120) 35%, transparent);
+  color: var(--ds-cloudy-120);
+}
+html[data-theme="light"] .top-actions .nav-account:hover:not(:disabled) .nav-avatar,
+html[data-theme="light"] .top-actions .nav-account:active:not(:disabled) .nav-avatar,
+html[data-theme="light"] .top-actions .nav-account:focus-visible .nav-avatar,
+html[data-theme="light"] .top-actions .nav-account[aria-expanded="true"] .nav-avatar,
+html[data-theme="light"] .topbar .nav-account:hover:not(:disabled) .nav-avatar,
+html[data-theme="light"] .topbar .nav-account:active:not(:disabled) .nav-avatar,
+html[data-theme="light"] .topbar .nav-account:focus-visible .nav-avatar,
+html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--ds-white) 40%, transparent);
+  color: var(--ds-white);
 }
 
 /* Must beat .btn.btn-icon { display: inline-flex } so burger stays desktop-hidden */
