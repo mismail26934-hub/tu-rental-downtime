@@ -1,3 +1,4 @@
+import { passwordPolicyError } from "@/lib/password";
 import { USER_LEVELS, type UserLevel } from "@/lib/types";
 
 export type UserInput = {
@@ -24,7 +25,9 @@ export function validateUserInput(input: UserInput, creating: boolean): string |
   if (!isUserLevel(input.level)) return "Level tidak valid";
   if (input.active !== "1" && input.active !== "0") return "Status tidak valid";
   if (creating && !input.password) return "Password wajib diisi";
-  if (input.password && input.password.length < 4) return "Password minimal 4 karakter";
-  if (input.password.length > 72) return "Password terlalu panjang";
+  if (input.password) {
+    const passwordError = passwordPolicyError(input.password);
+    if (passwordError) return passwordError;
+  }
   return null;
 }

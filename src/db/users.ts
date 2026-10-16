@@ -1,6 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getPool } from "@/db/pool";
-import { hashPassword, needsPasswordHash, verifyPassword } from "@/lib/password";
+import { verifyPassword } from "@/lib/password";
 import type { PublicUser } from "@/lib/types";
 
 type UserRow = RowDataPacket & {
@@ -45,13 +45,6 @@ export async function authenticateUser(
   if (!user) return null;
   const stored = String(user.password_hash || "");
   if (!(await verifyPassword(password, stored))) return null;
-  if (needsPasswordHash(stored)) {
-    const hashed = await hashPassword(password);
-    await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [
-      hashed,
-      user.id,
-    ]);
-  }
   return toPublic(user);
 }
 

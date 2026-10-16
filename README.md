@@ -7,9 +7,48 @@ Aplikasi input handover downtime shift. ARMOR adalah Asset Readiness & Monitorin
 - Dev server: `npm run dev` di http://localhost:3010
 - Schema database: `npm run db:ensure`
 - Seed akun admin (hanya jika username belum ada): `npm run seed`
-- Login awal: `admin` / `admin`
+- Login awal seed: `admin` / `ChangeMe-Admin1` (atau nilai `SEED_ADMIN_PASSWORD`). Segera ganti password setelah login pertama.
+- Salin `.env.example` ke `.env`. Isi `AUTH_SECRET` kuat (minimal 32 karakter), misalnya `openssl rand -base64 32`. Di production, secret lemah/default membuat server gagal start.
 
 Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti bentuk `tu_prima.users`, tetapi aplikasi ini tidak menulis ke database `tu_prima`.
+
+## Keamanan
+
+Hardening setelah audit (dibandingkan dengan pola TSMS / aplikasi internal Trakindo):
+
+### Autentikasi & sesi
+
+- Session Auth.js memakai cookie **httpOnly** + `SameSite=lax` (bukan token di `localStorage`).
+- JWT di-revalidasi dari database paling lambat tiap **60 detik**: user nonaktif atau dihapus kehilangan sesi; level ikut diperbarui.
+- Setiap API mutasi/baca lewat `requireUser` / `requireWriter` / `requireSuperuser` juga mengecek `active` + `level` di DB.
+- Middleware melindungi halaman dan **semua `/api/*`** kecuali `/api/auth/*` (tanpa sesi → 401 JSON).
+- Login credentials: rate limit **5 gagal / 15 menit** per username+IP, lalu lockout **15 menit**.
+
+### Password & secret
+
+- Password hanya bcrypt (cost 10). **Tidak ada fallback plaintext.**
+- Kebijakan: minimal **8** karakter, maksimal 72 (batas bcrypt).
+- `AUTH_SECRET` / `NEXTAUTH_SECRET`: production wajib kuat (≥32 karakter, bukan `change-me`). Development hanya memperingatkan di log.
+
+### Otorisasi sensitif
+
+- Kirim WhatsApp Summary by Model: **admin / superuser** (`requireWriter`). Tombol jadwal otomatis hanya **superuser** di UI.
+- Halaman dan API backup data: **admin / superuser**. Role `user` diarahkan ke beranda / ditolak 403.
+- CRUD pengguna: hanya **superuser**.
+
+### Header HTTP
+
+Di `next.config.ts` (semua path):
+
+- `Content-Security-Policy` (default `self`; script mengizinkan inline/eval untuk Next.js + bootstrap tema)
+- `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`
+- `Referrer-Policy`, `Permissions-Policy` (kamera/mikrofon/geolokasi/payment dimatikan)
+- `Strict-Transport-Security` jika `AUTH_URL` memakai `https://`
+
+### Catatan operasional
+
+- Akun lama dengan hash bukan bcrypt tidak bisa login — reset password lewat superuser.
+- Cookie `secure` aktif bila `AUTH_URL` (atau `NEXTAUTH_URL`) diawali `https://`.
 
 ## Design System TU
 
@@ -97,7 +136,7 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 - Panel Summary by Model ada di atas tabel Master unit dan di Daftar unit, menggantikan kartu Baris, N/Y Ready, RD30, dan Status RT. Satu model satu kartu, di dalam satu panel. Di Master unit kartunya memakai semua unit master. Di Daftar unit, unit yang masuk adalah unit unik pada tabel tahun yang dipilih; model dan quota diambil dari master. Nama model tetap tampil.
 - Angka utama kartu adalah Sisa Daily. Di mode Jam angkanya jam:menit. Di bawahnya Quota dan Jam Daily, lalu sisa WTD, MTD, HYTD 1, HYTD 2, dan YTD. Model yang jamnya 0 tetap menampilkan sisa penuh di kartu. Di tabel, sel sisa tetap kosong bila jam unit itu 0. Garis kiri kartu hijau bila sisa Daily masih di atas setengah quota, oranye bila setengah atau kurang, dan merah bila minus. Unit N/Y Ready merah bertanda `*`. Unit yang sudah ada backup hijau tanpa tanda bintang. Kartu diurutkan dari model yang unit N/Y Ready-nya paling banyak. Di dalam satu kartu, unit N/Y Ready ditulis lebih dulu. Di layar sempit kartu tersusun satu kolom.
 - Tombol panah di kanan judul menyembunyikan panel Summary by Model, tabel Master unit, dan tabel Daftar unit. Pilihan sembunyi dan tampil disimpan di perangkat lewat Zustand. Tombol gerigi Data kartu memilih bagian yang tampil di setiap kartu: Unit, Sisa Daily, Quota, Jam, WTD, MTD, HYTD 1, HYTD 2, dan YTD. Pilihan yang sama dipakai Master unit dan Daftar unit.
-- Di Master unit, ikon WhatsApp pada bar Summary by Model membuka modal "Kirim ke WhatsApp?". Summary by Model baru terkirim setelah tombol Kirim diklik. Batal menutup modal. Ikon jam di sebelahnya mengatur kirim otomatis.
+- Di Master unit, ikon WhatsApp pada bar Summary by Model (admin/superuser) membuka modal "Kirim ke WhatsApp?". Summary by Model baru terkirim setelah tombol Kirim diklik. Batal menutup modal. Ikon jam (hanya superuser) mengatur kirim otomatis.
 - Pengiriman memakai Fonnte. Token perangkat diisi di `FONNTE_TOKEN`, dan id grup WhatsApp di `FONNTE_GROUP` (bentuknya `120363...@g.us`, bukan nama grup). Keduanya ada di `.env` server. Pesan memakai tahun, mode Jam/Hari, dan data kartu yang sedang tampil saat dikirim atau saat jadwal disimpan.
 - Isi pesan: nama model, jumlah unit, kode unit (N/Y Ready tetap bertanda `*`), Sisa Daily, quota, jam, lalu WTD sampai YTD sesuai bagian kartu yang tampil. Gambar kartu ikut dilampirkan. Paket Fonnte Free hanya mengirim teks. Gambar kartu terkirim pada paket Super, Advanced, atau Ultra.
 - Kirim otomatis disimpan di database. Interval paling rapat 30 menit, dengan pilihan 30 menit, 1 jam, 2 jam, 3 jam, 6 jam, atau 12 jam. Jam aktif bawaan 06:00–22:00; di luar jam itu pesan tidak dikirim. Kiriman pertama menunggu satu interval setelah jadwal disimpan. Jika server sempat mati, pesan yang terlewat tidak dikirim bertumpuk. Server memeriksa jadwal kira-kira setiap menit, dan hanya menyusun pesan saat waktunya kirim.
@@ -176,15 +215,16 @@ Database aplikasi adalah `tu_rental` di MariaDB lokal. Tabel `users` mengikuti b
 
 - Ubah dan hapus pada baris daftar unit, master unit, dan master group menyimpan cadangan di tabel `data_backups` sebelum data berubah. Data yang baru ditambah tidak dicadangkan.
 - Setiap cadangan menyimpan isi data sebelumnya, pengguna (id, nama, dan username), serta tanggal dan waktu aksi.
-- Menu Kelola → Backup data membuka halaman `/backup`. Daftar menampilkan waktu, aksi (Ubah atau Hapus), jenis, nama data, dan pengguna. Tombol Lihat membuka isi cadangan. Pencarian data atau pengguna menempel dengan tombol Cari. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok." Di layar sempit tombol Kembali hanya ikon dan berada di kanan judul.
+- Menu Kelola → Backup data (hanya admin/superuser) membuka halaman `/backup`. Role user tidak melihat menu itu dan dibatasi di server. Daftar menampilkan waktu, aksi (Ubah atau Hapus), jenis, nama data, dan pengguna. Tombol Lihat membuka isi cadangan. Pencarian data atau pengguna menempel dengan tombol Cari. Jika tidak ada yang cocok, pesannya "Tidak ada data yang cocok." Di layar sempit tombol Kembali hanya ikon dan berada di kanan judul.
 - Daftar backup menampilkan 10 baris per halaman. Di bawah tabel ada tombol halaman sebelumnya, nomor halaman, dan halaman berikutnya. Halaman yang sedang dibuka berwarna amber. Nomor yang jauh diringkas dengan tanda elipsis. Pencarian kembali ke halaman pertama. Jika hasilnya hanya satu halaman, navigasi disembunyikan.
 
 ### Login, peran, dan offline
 
-- Login memakai tabel `users` lokal lewat NextAuth. Level yang dipakai aplikasi adalah superuser, admin, dan user.
+- Login memakai tabel `users` lokal lewat NextAuth. Level yang dipakai aplikasi adalah superuser, admin, dan user. Detail hardening ada di bagian **Keamanan** di atas.
 - Superuser dan admin boleh menambah, mengubah, dan menghapus data daftar unit, master unit, dan master group. Role user hanya melihat data. Tombol Tambah, Mode Edit, Ubah, dan Hapus disembunyikan, dan server menolak simpan atau hapus dari role itu.
+- Backup data dan kirim WhatsApp hanya untuk admin/superuser. Jadwal WhatsApp otomatis di UI hanya untuk superuser.
 - Menu akun superuser punya Pengguna, di halaman `/pengguna`. Role lain tidak melihat menu itu. Membuka alamatnya langsung dikembalikan ke beranda, dan server menolak permintaan datanya.
-- Superuser menambah, mengubah, dan menghapus pengguna: username, nama, level, status aktif, dan password. Password saat ubah boleh dikosongkan jika tidak diganti. Akun yang sedang dipakai tidak bisa dihapus dan harus tetap superuser aktif. Simpan pada form ubah nonaktif sampai ada perubahan.
+- Superuser menambah, mengubah, dan menghapus pengguna: username, nama, level, status aktif, dan password (minimal 8 karakter). Password saat ubah boleh dikosongkan jika tidak diganti. Akun yang sedang dipakai tidak bisa dihapus dan harus tetap superuser aktif. Simpan pada form ubah nonaktif sampai ada perubahan.
 - Draft ketikan disimpan di perangkat, per tahun dan baris yang sedang diubah. Pesan "Draft dipulihkan dari perangkat" berarti form diisi lagi dari ketikan yang belum disimpan, bukan dari database.
 - Buang draft mengembalikan data terakhir yang sudah disimpan. Simpan menulis ke database.
 - Perubahan yang gagal terkirim saat offline masuk antrean dan dikirim saat online.

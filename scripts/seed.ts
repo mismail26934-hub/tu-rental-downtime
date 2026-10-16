@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type { RowDataPacket } from "mysql2";
 import { closePool, ensureSchema, getPool } from "../src/db/pool";
-import { hashPassword } from "../src/lib/password";
+import { hashPassword, MIN_PASSWORD_LENGTH, passwordPolicyError } from "../src/lib/password";
 
 async function main() {
   await ensureSchema();
@@ -13,7 +13,12 @@ async function main() {
   if (rows[0]) {
     console.log("Akun admin sudah ada.");
   } else {
-    const passwordHash = await hashPassword("admin");
+    const password = (process.env.SEED_ADMIN_PASSWORD || "ChangeMe-Admin1").trim();
+    const policyError = passwordPolicyError(password);
+    if (policyError) {
+      throw new Error(`SEED_ADMIN_PASSWORD tidak valid: ${policyError} (min ${MIN_PASSWORD_LENGTH})`);
+    }
+    const passwordHash = await hashPassword(password);
     await pool.query(
       `INSERT INTO users (
         id, username, password_hash, name, email, phone, level, active, created_at, photo_name
@@ -31,7 +36,8 @@ async function main() {
         "",
       ]
     );
-    console.log("Akun admin dibuat. Username: admin  Password: admin");
+    console.log(`Akun admin dibuat. Username: admin  Password: ${password}`);
+    console.log("Segera ganti password setelah login pertama.");
   }
   await closePool();
 }

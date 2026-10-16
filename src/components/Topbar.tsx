@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { OfflineChip } from "@/components/OfflineChip";
 import { isSuperuser } from "@/lib/access";
+import { passwordPolicyError } from "@/lib/password";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
 
 type Copy = {
@@ -372,9 +373,16 @@ function AccountDialog({
     event.preventDefault();
     setError("");
     setNotice("");
-    if (mode === "password" && newPassword !== confirmPassword) {
-      setError(text.mismatch);
-      return;
+    if (mode === "password") {
+      const policyError = passwordPolicyError(newPassword);
+      if (policyError) {
+        setError(policyError);
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setError(text.mismatch);
+        return;
+      }
     }
     setPending(true);
     try {

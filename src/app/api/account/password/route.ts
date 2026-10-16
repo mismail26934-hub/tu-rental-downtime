@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { RowDataPacket } from "mysql2";
 import { getPool } from "@/db/pool";
 import { badRequest, requireUser, unauthorized } from "@/lib/http";
-import { hashPassword, verifyPassword } from "@/lib/password";
+import { hashPassword, passwordPolicyError, verifyPassword } from "@/lib/password";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,8 @@ export async function PATCH(request: Request) {
   const currentPassword = String(body?.currentPassword || "");
   const newPassword = String(body?.newPassword || "");
   if (!currentPassword || !newPassword) return badRequest("Password wajib diisi");
-  if (newPassword.length < 4) return badRequest("Password baru minimal 4 karakter");
+  const policyError = passwordPolicyError(newPassword);
+  if (policyError) return badRequest(policyError);
 
   const pool = getPool();
   const [rows] = await pool.query<RowDataPacket[]>(

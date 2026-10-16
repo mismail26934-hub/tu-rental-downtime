@@ -6,8 +6,18 @@ const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;
-  const isLoggedIn = Boolean(req.auth);
+  const isLoggedIn = Boolean(req.auth?.user);
   const isLoginPage = nextUrl.pathname.startsWith("/sign-in");
+  const isApi = nextUrl.pathname.startsWith("/api");
+  const isAuthApi = nextUrl.pathname.startsWith("/api/auth");
+
+  if (isApi) {
+    if (isAuthApi) return NextResponse.next();
+    if (!isLoggedIn) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.next();
+  }
 
   if (isLoginPage && isLoggedIn) {
     const raw = nextUrl.searchParams.get("callbackUrl") || "/";
@@ -29,5 +39,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

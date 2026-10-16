@@ -345,9 +345,10 @@ export function UserMaster() {
                       type="password"
                       value={draft.password}
                       autoComplete="new-password"
-                      placeholder={draft.id ? "Kosongkan jika tidak diubah" : ""}
+                      placeholder={draft.id ? "Kosongkan jika tidak diubah" : "Minimal 8 karakter"}
                       onChange={(event) => setDraft({ ...draft, password: event.target.value })}
                       required={!draft.id}
+                      minLength={draft.id ? undefined : 8}
                     />
                   </label>
                 </div>
