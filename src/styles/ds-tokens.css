@@ -154,6 +154,10 @@
   --ds-body-sm-line: 22px;
   --ds-body-xs-size: 12px;
   --ds-body-xs-line: 18px;
+  --ds-body-2xs-size: 11px;
+  --ds-body-2xs-line: 16px;
+  --ds-body-3xs-size: 10px;
+  --ds-body-3xs-line: 16px;
 
   /* Responsive Layout Grid (Figma 2:4146)
      Phone 360 / Tablet 768 / Desktop 1280 — margins 16 / 32 / 64 */
@@ -210,49 +214,99 @@
   --ds-carousel-nav-icon: 24px;
   --ds-carousel-nav-sm: 32px;
 
-  /* Typography (Figma 1:5287) — Inter scale via --font-body */
+  /* Typography (Figma 1:5287) — Inter via --font-body
+     Desktop + Mobile text styles from Design System TU */
 
-  /* Page section titles outside tables — below navbar ARMOR (16–18)
-     Title sm → Title md (14–16), never larger than .brand */
-  --ds-title-page-size: clamp(0.875rem, 0.25vw + 0.8rem, 1rem); /* 14–16px */
-  --ds-title-page-line: clamp(1.375rem, 0.35vw + 1.2rem, 1.5rem); /* 22–24px */
+  /* Headline */
+  --ds-headline-6xl-size: 2.5rem; /* 40 */
+  --ds-headline-6xl-line: 3.75rem; /* 60 */
+  --ds-headline-6xl-weight: 700;
+  --ds-headline-6xl-tracking: 0;
+  --ds-headline-5xl-size: 2.25rem; /* 36 */
+  --ds-headline-5xl-line: 3.375rem; /* 54 */
+  --ds-headline-5xl-weight: 700;
+  --ds-headline-5xl-tracking: -0.0625rem; /* -1 */
+  --ds-headline-2xl-size: 1.5rem; /* 24 — mobile */
+  --ds-headline-2xl-line: 2.25rem; /* 36 */
+  --ds-headline-2xl-weight: 700;
+  --ds-headline-2xl-tracking: -0.03125rem; /* -0.5 */
+
+  /* Title */
+  --ds-title-4xl-size: 2rem; /* 32 */
+  --ds-title-4xl-line: 3rem; /* 48 */
+  --ds-title-4xl-weight: 700;
+  --ds-title-4xl-tracking: -0.0625rem; /* -1 */
+  --ds-title-3xl-size: 1.75rem; /* 28 */
+  --ds-title-3xl-line: 2.625rem; /* 42 */
+  --ds-title-3xl-weight: 700;
+  --ds-title-3xl-tracking: -0.03125rem; /* -0.5 */
+  --ds-title-2xl-size: 1.5rem; /* 24 */
+  --ds-title-2xl-line: 2.25rem; /* 36 */
+  --ds-title-2xl-weight: 700;
+  --ds-title-2xl-tracking: -0.03125rem;
+  --ds-title-xl-size: 1.25rem; /* 20 */
+  --ds-title-xl-line: 1.875rem; /* 30 */
+  --ds-title-xl-weight: 700;
+  --ds-title-xl-tracking: -0.03125rem;
+  --ds-title-lg-size: 1.125rem; /* 18 */
+  --ds-title-lg-line: 1.75rem; /* 28 */
+  --ds-title-lg-weight: 700;
+  --ds-title-lg-tracking: -0.03125rem; /* -0.5 */
+  --ds-title-md-size: 1rem; /* 16 */
+  --ds-title-md-line: 1.5rem; /* 24 */
+  --ds-title-md-weight: 700;
+  --ds-title-md-tracking: 0;
+  --ds-title-sm-size: 0.875rem; /* 14 */
+  --ds-title-sm-line: 1.375rem; /* 22 */
+  --ds-title-sm-weight: 700;
+  --ds-title-sm-tracking: 0;
+
+  /* Page section titles — Title sm → md (14–16), below navbar brand */
+  --ds-title-page-size: clamp(0.875rem, 0.25vw + 0.8rem, 1rem);
+  --ds-title-page-line: clamp(1.375rem, 0.35vw + 1.2rem, 1.5rem);
   --ds-title-page-weight: 700;
   --ds-title-page-tracking: 0;
 
-  /* Title lg (modals / secondary heads): 18/28, tracking −0.5 */
-  --ds-title-lg-size: 1.125rem;
-  --ds-title-lg-line: 1.75rem;
-  --ds-title-lg-weight: 700;
-  --ds-title-lg-tracking: -0.03125rem;
-
-  /* Title md: 16/24 */
-  --ds-title-md-size: 1rem;
-  --ds-title-md-line: 1.5rem;
-  --ds-title-md-weight: 700;
-  --ds-title-md-tracking: 0;
-
-  /* Title sm: 14/22 */
-  --ds-title-sm-size: 0.875rem;
-  --ds-title-sm-line: 1.375rem;
-  --ds-title-sm-weight: 700;
-
-  /* Subtitle */
-  --ds-subtitle-md-size: 1rem;
-  --ds-subtitle-md-line: 1.5rem;
+  /* Subtitle — Semibold 600 */
+  --ds-subtitle-md-size: 1rem; /* 16 */
+  --ds-subtitle-md-line: 1.5rem; /* 24 */
   --ds-subtitle-md-weight: 600;
-  --ds-subtitle-sm-size: 0.875rem;
-  --ds-subtitle-sm-line: 1.375rem;
+  --ds-subtitle-md-tracking: 0;
+  --ds-subtitle-sm-size: 0.875rem; /* 14 */
+  --ds-subtitle-sm-line: 1.375rem; /* 22 */
   --ds-subtitle-sm-weight: 600;
+  --ds-subtitle-sm-tracking: 0;
   --ds-subtitle-xs-weight: 600;
+  --ds-subtitle-xs-tracking: 0;
 
   /* Body regular / bold */
-  --ds-body-md-size: 1rem;
-  --ds-body-md-line: 1.5rem;
+  --ds-body-xl-size: 1.25rem; /* 20 */
+  --ds-body-xl-line: 1.875rem; /* 30 */
+  --ds-body-xl-weight: 400;
+  --ds-body-xl-bold-weight: 700;
+  --ds-body-xl-tracking: 0.0625rem; /* 1 */
+  --ds-body-lg-size: 1.125rem; /* 18 */
+  --ds-body-lg-line: 1.75rem; /* 28 */
+  --ds-body-lg-weight: 400;
+  --ds-body-lg-bold-weight: 700;
+  --ds-body-lg-tracking: 0.0625rem; /* 1 */
+  --ds-body-md-size: 1rem; /* 16 */
+  --ds-body-md-line: 1.5rem; /* 24 */
+  --ds-body-md-weight: 400;
+  --ds-body-md-bold-weight: 700;
+  --ds-body-md-tracking: 0;
   --ds-body-sm-weight: 400;
   --ds-body-sm-bold-weight: 700;
+  --ds-body-sm-tracking: 0;
   --ds-body-xs-weight: 400;
+  --ds-body-xs-bold-weight: 700;
+  --ds-body-xs-tracking: 0;
+  --ds-body-2xs-weight: 400;
+  --ds-body-2xs-bold-weight: 700;
+  --ds-body-3xs-weight: 400;
+  --ds-body-3xs-bold-weight: 700;
 
-  /* Button type — Bold; default sm, lg = md, xs = xs */
+  /* Button — Bold */
   --ds-btn-md-size: 1rem; /* 16 */
   --ds-btn-md-line: 1.5rem; /* 24 */
   --ds-btn-sm-size: 0.875rem; /* 14 */
@@ -262,14 +316,17 @@
   --ds-btn-weight: 700;
   --ds-btn-tracking: 0;
 
-  /* Label — Dropdown sm uses subtitle-xs 12/18; lg uses subtitle-sm 14/22 */
-  --ds-label-md-size: 1rem;
-  --ds-label-md-line: 1.5rem;
-  --ds-label-sm-size: 0.875rem;
-  --ds-label-sm-line: 1.375rem;
-  --ds-label-field-size: 0.75rem; /* 12 — Figma dropdown sm label */
+  /* Label — Semibold 600 */
+  --ds-label-md-size: 1rem; /* 16 */
+  --ds-label-md-line: 1.5rem; /* 24 */
+  --ds-label-sm-size: 0.875rem; /* 14 */
+  --ds-label-sm-line: 1.375rem; /* 22 */
+  --ds-label-field-size: 0.75rem; /* 12 — dropdown sm */
   --ds-label-field-line: 1.125rem; /* 18 */
-  --ds-label-xs-size: 0.75rem;
-  --ds-label-xs-line: 1.125rem;
+  --ds-label-xs-size: 0.75rem; /* 12 */
+  --ds-label-xs-line: 1.125rem; /* 18 */
+  --ds-label-2xs-size: 0.625rem; /* 10 */
+  --ds-label-2xs-line: 1rem; /* 16 */
   --ds-label-weight: 600;
+  --ds-label-tracking: 0;
 }
