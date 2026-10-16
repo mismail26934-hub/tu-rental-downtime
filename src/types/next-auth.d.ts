@@ -17,5 +17,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     level: string;
+    lastCheck?: number;
   }
 }

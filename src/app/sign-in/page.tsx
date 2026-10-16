@@ -29,7 +29,15 @@ function LoginForm() {
         callbackUrl: target,
       });
       if (!result || result.error) {
-        setError("Username atau password salah.");
+        const locked =
+          result?.code === "login_locked" ||
+          result?.error === "login_locked" ||
+          String(result?.error || "").toLowerCase().includes("login_locked");
+        setError(
+          locked
+            ? "Terlalu banyak percobaan gagal. Coba lagi dalam ±15 menit."
+            : "Username atau password salah."
+        );
         return;
       }
       window.location.href = target;

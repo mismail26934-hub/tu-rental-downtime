@@ -13,7 +13,7 @@ import { SisaValue } from "@/components/SisaValue";
 import { compareNumber, compareText, SortColumn, type SortDir } from "@/components/SortColumn";
 import { useUnits } from "@/components/UnitSelect";
 import { Topbar } from "@/components/Topbar";
-import { canManage } from "@/lib/access";
+import { canManage, isSuperuser } from "@/lib/access";
 import { formatHourClock, formatHours, formatQuotaDisplay } from "@/lib/format";
 import { rehydrateMasterView, useMasterView } from "@/lib/master-view";
 import { rehydrateModelCardFields } from "@/lib/model-card-fields";
@@ -22,6 +22,7 @@ import { PERIODS, periodQuota, type PeriodKey, type SummaryReport, type SummaryR
 import { toSummaryAmount, useSummaryView, type SummaryColumns, type SummaryMetric, type SummaryUnit } from "@/lib/summary-view";
 import { sisaRemainder } from "@/lib/unit-sisa";
 import { formatQuota, parseQuota, validateUnitInput, type UnitMaster } from "@/lib/units";
+import { rehydrateWaScheduleView } from "@/lib/wa-schedule-view";
 
 type Draft = {
   id: string;
@@ -70,6 +71,7 @@ const emptyDraft = (): Draft => ({
 export function UnitMaster() {
   const { data: session } = useSession();
   const canWrite = canManage(session?.user?.level);
+  const allowSchedule = isSuperuser(session?.user?.level);
   const queryClient = useQueryClient();
   const unitsQuery = useUnits();
   const year = useSheetYear((state) => state.year);
@@ -107,6 +109,7 @@ export function UnitMaster() {
       await useSummaryView.persist.rehydrate();
       await rehydrateMasterView();
       await rehydrateModelCardFields();
+      await rehydrateWaScheduleView();
       if (cancel) return;
       if (localStorage.getItem("tu-rental-freeze") === "0") setFreezeCols(false);
       setReady(true);
@@ -356,7 +359,8 @@ export function UnitMaster() {
             mode={mode}
             hidden={cardsHidden}
             onToggle={() => setCardsHidden(!cardsHidden)}
-            allowWhatsapp
+            allowWhatsapp={canWrite}
+            allowSchedule={allowSchedule}
             year={year}
           />
           <CollapseBoard

@@ -669,6 +669,7 @@ export function HandoverBoard() {
                 }}
                 onExport={openExport}
                 onUpload={canWrite ? () => setUploadOpen(true) : undefined}
+                canWrite={canWrite}
               />
               {canWrite ? (
                 <button className="btn" type="button" aria-label="Upload Excel" onClick={() => setUploadOpen(true)}>
@@ -731,11 +732,13 @@ function ManageMenu({
   onFreeze,
   onExport,
   onUpload,
+  canWrite = false,
 }: {
   freezeCols: boolean;
   onFreeze: (next: boolean) => void;
   onExport: () => void;
   onUpload?: () => void;
+  canWrite?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -806,10 +809,12 @@ function ManageMenu({
             <UnitIcon />
             Master unit
           </Link>
-          <Link className="kelola-item" role="menuitem" href="/backup" onClick={() => setOpen(false)}>
-            <BackupIcon />
-            Backup data
-          </Link>
+          {canWrite ? (
+            <Link className="kelola-item" role="menuitem" href="/backup" onClick={() => setOpen(false)}>
+              <BackupIcon />
+              Backup data
+            </Link>
+          ) : null}
           </div>
         </>
       ) : null}

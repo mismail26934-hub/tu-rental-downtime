@@ -5,6 +5,7 @@ import { CARD_FIELDS, CARD_FIELD_LABEL, useModelCardFields, type CardFieldState 
 import { presentModelCards, type ModelSummaryUnit } from "@/lib/model-cards";
 import type { SummaryReport } from "@/lib/summary";
 import type { SummaryUnit } from "@/lib/summary-view";
+import { useWaScheduleView } from "@/lib/wa-schedule-view";
 
 export type { ModelSummaryUnit };
 
@@ -17,6 +18,7 @@ export function ModelSummary({
   hidden,
   onToggle,
   allowWhatsapp = false,
+  allowSchedule = false,
   year = "",
 }: {
   units: ModelSummaryUnit[];
@@ -27,6 +29,7 @@ export function ModelSummary({
   hidden: boolean;
   onToggle: () => void;
   allowWhatsapp?: boolean;
+  allowSchedule?: boolean;
   year?: string;
 }) {
   const stored = useModelCardFields();
@@ -43,7 +46,7 @@ export function ModelSummary({
       hiddenLabel="Summary by Model disembunyikan"
       onToggle={onToggle}
       fields
-      whatsapp={allowWhatsapp ? { year, mode, fields } : undefined}
+      whatsapp={allowWhatsapp ? { year, mode, fields, schedule: allowSchedule } : undefined}
     >
       <div className="model-cards">
         {cards.map((card) => (
@@ -123,7 +126,7 @@ export function CollapseBoard({
   onToggle: () => void;
   fields?: boolean;
   ariaLabel?: string;
-  whatsapp?: { year: string; mode: SummaryUnit; fields: CardFieldState };
+  whatsapp?: { year: string; mode: SummaryUnit; fields: CardFieldState; schedule?: boolean };
   children: ReactNode;
 }) {
   const spoken = ariaLabel || (typeof label === "string" ? label : "");
@@ -133,7 +136,7 @@ export function CollapseBoard({
         <span>{hidden ? hiddenLabel : label}</span>
         <div className="collapse-board-actions">
           {whatsapp ? <SendWhatsappButton year={whatsapp.year} mode={whatsapp.mode} fields={whatsapp.fields} /> : null}
-          {whatsapp ? <ScheduleWhatsappButton year={whatsapp.year} mode={whatsapp.mode} fields={whatsapp.fields} /> : null}
+          {whatsapp?.schedule ? <ScheduleWhatsappButton year={whatsapp.year} mode={whatsapp.mode} fields={whatsapp.fields} /> : null}
           {fields ? <CardFieldSettings /> : null}
           <button
             className="btn btn-icon"
@@ -291,28 +294,29 @@ type SchedulePayload = {
 };
 
 function ScheduleWhatsappButton({ year, mode, fields }: { year: string; mode: SummaryUnit; fields: CardFieldState }) {
+  const storedEnabled = useWaScheduleView((state) => state.enabled);
+  const storedInterval = useWaScheduleView((state) => state.intervalMinutes);
+  const storedFrom = useWaScheduleView((state) => state.activeFrom);
+  const storedUntil = useWaScheduleView((state) => state.activeUntil);
+  const setSchedule = useWaScheduleView((state) => state.setSchedule);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [enabled, setEnabled] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [intervalMinutes, setIntervalMinutes] = useState(60);
-  const [activeFrom, setActiveFrom] = useState("06:00");
-  const [activeUntil, setActiveUntil] = useState("22:00");
+  const [enabled, setEnabled] = useState(storedEnabled);
+  const [intervalMinutes, setIntervalMinutes] = useState(storedInterval);
+  const [activeFrom, setActiveFrom] = useState(storedFrom);
+  const [activeUntil, setActiveUntil] = useState(storedUntil);
   const [nextRunAt, setNextRunAt] = useState("");
   const [lastError, setLastError] = useState("");
   const [note, setNote] = useState("");
   const [failed, setFailed] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  function apply(body: SchedulePayload) {
-    setEnabled(body.enabled);
-    setSaved(body.enabled);
-    setIntervalMinutes(body.intervalMinutes || 60);
-    setActiveFrom(body.activeFrom || "06:00");
-    setActiveUntil(body.activeUntil || "22:00");
-    setNextRunAt(body.nextRunAt || "");
-    setLastError(body.lastError || "");
-  }
+  useEffect(() => {
+    setEnabled(storedEnabled);
+    setIntervalMinutes(storedInterval);
+    setActiveFrom(storedFrom);
+    setActiveUntil(storedUntil);
+  }, [storedEnabled, storedInterval, storedFrom, storedUntil]);
 
   useEffect(() => {
     let cancel = false;
@@ -320,7 +324,9 @@ function ScheduleWhatsappButton({ year, mode, fields }: { year: string; mode: Su
       .then(async (response) => {
         if (!response.ok) return;
         const body = (await response.json()) as SchedulePayload;
-        if (!cancel) apply(body);
+        if (cancel) return;
+        setNextRunAt(body.nextRunAt || "");
+        setLastError(body.lastError || "");
       })
       .catch(() => undefined);
     return () => {
@@ -349,7 +355,14 @@ function ScheduleWhatsappButton({ year, mode, fields }: { year: string; mode: Su
       });
       const body = (await response.json().catch(() => null)) as (SchedulePayload & { error?: string }) | null;
       if (!response.ok || !body || body.error) throw new Error(body?.error || "Gagal menyimpan jadwal");
-      apply(body);
+      setSchedule({
+        enabled: body.enabled,
+        intervalMinutes: body.intervalMinutes || 60,
+        activeFrom: body.activeFrom || "06:00",
+        activeUntil: body.activeUntil || "22:00",
+      });
+      setNextRunAt(body.nextRunAt || "");
+      setLastError(body.lastError || "");
       setNote(body.enabled ? "Jadwal aktif." : "Jadwal dimatikan.");
     } catch (error) {
       setFailed(true);
@@ -365,11 +378,11 @@ function ScheduleWhatsappButton({ year, mode, fields }: { year: string; mode: Su
   return (
     <div className="summary-settings" ref={rootRef}>
       <button
-        className={`btn btn-icon${saved ? " is-on" : ""}`}
+        className={`btn btn-icon${storedEnabled ? " is-on" : ""}`}
         type="button"
         aria-label="Jadwal WhatsApp"
         aria-expanded={open}
-        title={saved ? "Kirim otomatis aktif" : "Kirim otomatis"}
+        title={storedEnabled ? "Kirim otomatis aktif" : "Kirim otomatis"}
         onClick={() => setOpen((value) => !value)}
       >
         <ClockIcon />
@@ -401,7 +414,7 @@ function ScheduleWhatsappButton({ year, mode, fields }: { year: string; mode: Su
               </div>
             </div>
             <p>Di luar jam ini pesan tidak dikirim. Memakai tahun, mode, dan data kartu yang sedang tampil.</p>
-            {saved && nextLabel ? <p>Berikutnya {nextLabel}.</p> : null}
+            {storedEnabled && nextLabel ? <p>Berikutnya {nextLabel}.</p> : null}
             {lastError ? <p className="is-error">{lastError}</p> : null}
             <button className="btn" type="button" disabled={busy} onClick={() => void save()}>{busy ? "Menyimpan" : "Simpan"}</button>
             {note ? <p className={failed ? "is-error" : ""} role="status">{note}</p> : null}

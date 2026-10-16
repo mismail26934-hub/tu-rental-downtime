@@ -81,6 +81,26 @@ export async function findUserById(id: string): Promise<PublicUser | null> {
   return rows[0] ? toPublic(rows[0]) : null;
 }
 
+/** Lightweight lookup for session revalidation (active + level + name). */
+export async function findAuthUserById(
+  id: string
+): Promise<{ id: string; level: string; name: string; active: "1" | "0" } | null> {
+  const key = String(id || "").trim();
+  if (!key) return null;
+  const [rows] = await getPool().query<RowDataPacket[]>(
+    "SELECT id, name, level, active FROM users WHERE id = ? LIMIT 1",
+    [key]
+  );
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    id: String(row.id),
+    name: String(row.name || ""),
+    level: String(row.level || "user"),
+    active: Number(row.active) === 1 ? "1" : "0",
+  };
+}
+
 export async function insertUser(input: {
   id: string;
   username: string;

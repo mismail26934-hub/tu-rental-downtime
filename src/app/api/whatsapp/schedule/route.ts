@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readWaSchedule, writeWaSchedule, type WaSchedule } from "@/db/wa-schedule";
-import { badRequest, requireUser, unauthorized } from "@/lib/http";
+import { badRequest, requireWriter } from "@/lib/http";
 import type { CardFieldState } from "@/lib/model-card-fields";
 import { cardFields } from "@/lib/send-model-summary";
 import type { SummaryUnit } from "@/lib/summary-view";
@@ -9,14 +9,14 @@ import { clampInterval, formatLocalDateTime, nextFutureSlot, normalizeClock } fr
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   return NextResponse.json(await readWaSchedule());
 }
 
 export async function PUT(request: Request) {
-  const user = await requireUser();
-  if (!user) return unauthorized();
+  const user = await requireWriter();
+  if (user instanceof NextResponse) return user;
   const body = (await request.json().catch(() => null)) as {
     enabled?: boolean;
     intervalMinutes?: number;

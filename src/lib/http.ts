@@ -1,11 +1,18 @@
 import { auth } from "@/auth";
+import { findAuthUserById } from "@/db/users";
 import { canManage, isSuperuser } from "@/lib/access";
 import { NextResponse } from "next/server";
 
 export async function requireUser() {
   const session = await auth();
   if (!session?.user?.id) return null;
-  return session.user;
+  const dbUser = await findAuthUserById(session.user.id);
+  if (!dbUser || dbUser.active !== "1") return null;
+  return {
+    ...session.user,
+    level: dbUser.level,
+    name: dbUser.name || session.user.name,
+  };
 }
 
 export async function requireWriter() {

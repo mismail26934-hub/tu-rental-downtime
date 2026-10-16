@@ -1,11 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { SisaValue } from "@/components/SisaValue";
 import { SummaryUnitToggle } from "@/components/SummaryUnitToggle";
 import { Topbar } from "@/components/Topbar";
+import { canManage } from "@/lib/access";
 import { formatHourClock, formatHours, formatQuotaDisplay, sheetTitle } from "@/lib/format";
 import { periodQuota, summaryUnitMarks, type PeriodKey, type SummaryReport, type SummaryRow } from "@/lib/summary";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
@@ -285,6 +287,8 @@ function SummarySettings() {
 }
 
 function SummaryManage({ freezeCols, onFreeze }: { freezeCols: boolean; onFreeze: (next: boolean) => void }) {
+  const { data: session } = useSession();
+  const canWrite = canManage(session?.user?.level);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -334,10 +338,12 @@ function SummaryManage({ freezeCols, onFreeze }: { freezeCols: boolean; onFreeze
             <UnitIcon />
             Master unit
           </Link>
-          <Link className="kelola-item" role="menuitem" href="/backup" onClick={() => setOpen(false)}>
-            <BackupIcon />
-            Backup data
-          </Link>
+          {canWrite ? (
+            <Link className="kelola-item" role="menuitem" href="/backup" onClick={() => setOpen(false)}>
+              <BackupIcon />
+              Backup data
+            </Link>
+          ) : null}
           </div>
         </>
       ) : null}
