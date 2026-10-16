@@ -267,13 +267,13 @@ export function UserMaster() {
                       <td>{LEVEL_LABEL[user.level] || user.level}</td>
                       <td>{user.active === "1" ? "Aktif" : "Nonaktif"}</td>
                       <td className="col-act">
-                        <button className="btn btn-sm btn-edit" type="button" aria-label="Ubah" onClick={() => openEdit(user)}>
+                        <button className="btn btn-xs btn-edit" type="button" aria-label="Ubah" onClick={() => openEdit(user)}>
                           <EditIcon />
                           <span className="btn-label">Ubah</span>
                         </button>
                         {user.id === selfId ? null : (
                           <button
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-xs btn-danger"
                             type="button"
                             aria-label="Hapus"
                             onClick={() => setDeleteTarget(user)}

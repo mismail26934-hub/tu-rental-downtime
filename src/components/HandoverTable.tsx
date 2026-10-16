@@ -178,11 +178,11 @@ export function HandoverTable({
                   })}
                   {editable ? (
                     <td className="col-act">
-                      <button className="btn btn-sm btn-edit" type="button" aria-label="Ubah" onClick={() => onEdit(row)}>
+                      <button className="btn btn-xs btn-edit" type="button" aria-label="Ubah" onClick={() => onEdit(row)}>
                         <EditIcon />
                         <span className="btn-label">Ubah</span>
                       </button>
-                      <button className="btn btn-sm btn-danger" type="button" aria-label="Hapus" onClick={() => onDelete(row)}>
+                      <button className="btn btn-xs btn-danger" type="button" aria-label="Hapus" onClick={() => onDelete(row)}>
                         <TrashIcon />
                         <span className="btn-label">Hapus</span>
                       </button>

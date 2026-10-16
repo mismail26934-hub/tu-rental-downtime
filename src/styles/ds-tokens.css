@@ -165,28 +165,33 @@
   --ds-bp-md: 768px;
   --ds-bp-lg: 1280px;
 
-  /* Button Action (Figma 3:4420) — fixed sizes */
+  /* Button Action (Figma 3:4420) — Primary sizes
+     Text: pad-x; TextLeftIcon: pad-x + pad-trail; TextRightIcon: pad-trail + pad-x */
   --ds-btn-xs-h: 28px;
   --ds-btn-xs-radius: 4px;
   --ds-btn-xs-pad-x: 12px;
+  --ds-btn-xs-pad-icon: 8px; /* side next to icon */
   --ds-btn-xs-gap: 4px;
   --ds-btn-xs-icon: 16px;
 
   --ds-btn-sm-h: 36px;
   --ds-btn-sm-radius: 6px;
   --ds-btn-sm-pad-x: 16px;
+  --ds-btn-sm-pad-trail: 24px; /* far side when icon present */
   --ds-btn-sm-gap: 8px;
   --ds-btn-sm-icon: 20px;
 
   --ds-btn-md-h: 44px;
   --ds-btn-md-radius: 8px;
   --ds-btn-md-pad-x: 16px;
+  --ds-btn-md-pad-trail: 24px;
   --ds-btn-md-gap: 8px;
   --ds-btn-md-icon: 20px;
 
   --ds-btn-lg-h: 52px;
   --ds-btn-lg-radius: 8px;
   --ds-btn-lg-pad-x: 16px;
+  --ds-btn-lg-pad-trail: 24px;
   --ds-btn-lg-gap: 8px;
   --ds-btn-lg-icon: 24px;
 
@@ -267,6 +272,10 @@
   --ds-title-page-weight: 700;
   --ds-title-page-tracking: 0;
 
+  /* Brand wordmark — Mobile Title md 16 → Desktop Title lg 18 (match tus-best) */
+  --ds-brand-size: var(--ds-title-md-size);
+  --ds-brand-line: var(--ds-title-md-line);
+
   /* Subtitle — Semibold 600 */
   --ds-subtitle-md-size: 1rem; /* 16 */
   --ds-subtitle-md-line: 1.5rem; /* 24 */
@@ -329,4 +338,20 @@
   --ds-label-2xs-line: 1rem; /* 16 */
   --ds-label-weight: 600;
   --ds-label-tracking: 0;
+}
+
+/* Tablet — brand wordmark Title lg (match tus-best) */
+@media (min-width: 600px) {
+  :root {
+    --ds-brand-size: var(--ds-title-lg-size); /* 18 */
+    --ds-brand-line: var(--ds-title-lg-line);
+  }
+}
+
+/* Desktop — keep brand Title lg */
+@media (min-width: 1240px) {
+  :root {
+    --ds-brand-size: var(--ds-title-lg-size);
+    --ds-brand-line: var(--ds-title-lg-line);
+  }
 }

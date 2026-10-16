@@ -213,7 +213,7 @@ export function BackupList() {
                           </td>
                           <td className="col-act">
                             <button
-                              className="btn btn-sm"
+                              className="btn btn-xs"
                               type="button"
                               aria-expanded={open}
                               onClick={() => setOpenId(open ? null : item.id)}

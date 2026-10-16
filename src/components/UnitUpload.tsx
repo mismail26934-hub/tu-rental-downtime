@@ -202,10 +202,10 @@ export function UnitUpload({ year, onClose, onSaved }: Props) {
         {preview.length ? (
           <>
             <div className="upload-select-bar">
-              <button className="btn btn-sm" type="button" disabled={busy || !readyLines.length} onClick={selectAllReady}>
+              <button className="btn btn-xs" type="button" disabled={busy || !readyLines.length} onClick={selectAllReady}>
                 Select all
               </button>
-              <button className="btn btn-sm" type="button" disabled={busy || selected.size === 0} onClick={deselectAll}>
+              <button className="btn btn-xs" type="button" disabled={busy || selected.size === 0} onClick={deselectAll}>
                 Deselect all
               </button>
               <span className="upload-select-count">

@@ -247,12 +247,12 @@ export function GroupMaster() {
                       <td className="col-num">{formatQuota(group.quota_hrs)}</td>
                       {canWrite ? (
                         <td className="col-act">
-                          <button className="btn btn-sm btn-edit" type="button" aria-label="Ubah" onClick={() => openEdit(group)}>
+                          <button className="btn btn-xs btn-edit" type="button" aria-label="Ubah" onClick={() => openEdit(group)}>
                             <EditIcon />
                             <span className="btn-label">Ubah</span>
                           </button>
                           <button
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-xs btn-danger"
                             type="button"
                             aria-label="Hapus"
                             onClick={() => setDeleteTarget(group)}

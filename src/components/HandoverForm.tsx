@@ -63,7 +63,7 @@ export function HandoverForm({
     >
       <div className="panel-head">
         <h2 id="unit-form-title">{mode === "edit" ? "Ubah unit" : "Tambah unit"}</h2>
-        <button className="btn btn-sm" type="button" onClick={onDiscardDraft}>
+        <button className="btn btn-xs" type="button" onClick={onDiscardDraft}>
           Buang draft
         </button>
       </div>
