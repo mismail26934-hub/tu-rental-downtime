@@ -56,6 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name || user.username,
           email: user.username,
           level: user.level,
+          photo_name: user.photo_name || "",
         };
       },
     }),
@@ -66,6 +67,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id || "";
         token.level = user.level;
         token.name = user.name;
+        token.photo_name = user.photo_name || "";
         token.lastCheck = Date.now();
         return token;
       }
@@ -80,12 +82,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!dbUser || dbUser.active !== "1") return null;
       token.level = dbUser.level;
       token.name = dbUser.name || token.name;
+      token.photo_name = dbUser.photo_name || "";
       token.lastCheck = Date.now();
       return token;
     },
     session({ session, token }) {
       session.user.id = String(token.id || "");
       session.user.level = String(token.level || "");
+      session.user.photo_name = String(token.photo_name || "");
       if (token.name) session.user.name = String(token.name);
       return session;
     },

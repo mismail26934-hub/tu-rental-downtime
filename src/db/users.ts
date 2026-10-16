@@ -77,11 +77,11 @@ export async function findUserById(id: string): Promise<PublicUser | null> {
 /** Lightweight lookup for session revalidation (active + level + name). */
 export async function findAuthUserById(
   id: string
-): Promise<{ id: string; level: string; name: string; active: "1" | "0" } | null> {
+): Promise<{ id: string; level: string; name: string; photo_name: string; active: "1" | "0" } | null> {
   const key = String(id || "").trim();
   if (!key) return null;
   const [rows] = await getPool().query<RowDataPacket[]>(
-    "SELECT id, name, level, active FROM users WHERE id = ? LIMIT 1",
+    "SELECT id, name, level, active, photo_name FROM users WHERE id = ? LIMIT 1",
     [key]
   );
   const row = rows[0];
@@ -90,6 +90,7 @@ export async function findAuthUserById(
     id: String(row.id),
     name: String(row.name || ""),
     level: String(row.level || "user"),
+    photo_name: String(row.photo_name || ""),
     active: Number(row.active) === 1 ? "1" : "0",
   };
 }

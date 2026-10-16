@@ -2377,10 +2377,11 @@ html[data-theme="light"] .offline-sync-chip--error {
 .nav-sheet-profile-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
   width: 100%;
-  margin-bottom: 4px;
-  padding-bottom: 4px;
+  margin: 0 0 8px;
+  padding: 4px 0 12px;
   border-bottom: 1px dashed var(--line-dashed);
 }
 .nav-user--menu-btn {
@@ -2389,7 +2390,7 @@ html[data-theme="light"] .offline-sync-chip--error {
   border: 0;
   border-bottom: 0;
   margin: 0;
-  padding: 4px 2px;
+  padding: 2px 0;
   flex: 1 1 auto;
   min-width: 0;
   text-align: left;
@@ -2399,6 +2400,11 @@ html[data-theme="light"] .offline-sync-chip--error {
   align-items: center;
   gap: 12px;
   color: inherit;
+}
+.nav-sheet-profile-row .nav-user--menu {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding: 0;
 }
 .nav-user--menu-btn:focus-visible {
   outline: 2px solid var(--amber);
@@ -2749,6 +2755,31 @@ html[data-theme="light"] .year-filter.nav-year:focus {
   font-size: 0.78rem;
   font-weight: 600;
 }
+/* Sheet profile: keep avatar + name on one centered row (beats .nav-user column). */
+.nav-user.nav-user--menu,
+.nav-user.nav-user--menu-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  max-width: none;
+  overflow: visible;
+  width: 100%;
+  line-height: 1.25;
+  font-size: 1rem;
+  font-weight: inherit;
+  color: var(--text);
+}
+.nav-user.nav-user--menu .nav-user-text,
+.nav-user.nav-user--menu-btn .nav-user-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  min-width: 0;
+  line-height: 1.25;
+}
 .nav-user-name,
 .nav-user-level {
   max-width: 100%;
@@ -2775,14 +2806,24 @@ html[data-theme="light"] .year-filter.nav-year:focus {
   border-radius: 50%;
   display: grid;
   place-items: center;
+  object-fit: cover;
   background: var(--bg-0);
   border: 1px solid var(--line);
   color: var(--text);
   flex-shrink: 0;
 }
+img.nav-avatar {
+  display: block;
+  padding: 0;
+}
 .nav-avatar svg {
   width: 16px;
   height: 16px;
+}
+.nav-user--menu .nav-avatar,
+.nav-sheet-profile-row .nav-avatar {
+  width: 44px;
+  height: 44px;
 }
 .nav-manage-menu {
   position: fixed;
@@ -3370,6 +3411,17 @@ html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar 
     flex: 0 0 var(--ctrl-size-ui);
     border-radius: var(--ctrl-radius);
   }
+  .top-actions-panel--float .nav-sheet-logout {
+    background: var(--ds-btn-primary);
+    border-color: transparent;
+    color: var(--ds-cloudy-120);
+  }
+  .top-actions-panel--float .nav-sheet-logout:hover:not(:disabled),
+  .top-actions-panel--float .nav-sheet-logout:active:not(:disabled),
+  .top-actions-panel--float .nav-sheet-logout:focus-visible {
+    background: var(--ds-btn-secondary);
+    color: var(--ds-white);
+  }
   .top-actions-panel--float .nav-menu-prefs .btn svg,
   .top-actions-panel--float .nav-sheet-logout svg {
     width: var(--ctrl-glyph);
@@ -3379,6 +3431,10 @@ html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar 
     width: auto;
     min-height: 0;
     justify-content: flex-start;
+    align-items: center;
+  }
+  .top-actions-panel--float .nav-sheet-profile-row .nav-avatar {
+    align-self: center;
   }
   .top-actions-panel--float .nav-menu-prefs .year-filter.nav-year {
     display: inline-block;

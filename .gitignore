@@ -2,3 +2,5 @@ node_modules
 .next
 .env
 npm-debug.log*
+data/user-photos/*
+!data/user-photos/.gitkeep

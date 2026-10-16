@@ -9,6 +9,7 @@ import { OfflineChip } from "@/components/OfflineChip";
 import { canManage, isSuperuser } from "@/lib/access";
 import { passwordPolicyError } from "@/lib/password-policy";
 import { useSheetYear, yearChoices } from "@/lib/sheet-year";
+import { userPhotoPublicUrl } from "@/lib/user-photo-url";
 
 type Copy = {
   refresh: string;
@@ -111,6 +112,7 @@ export function Topbar({ busy = false, onRefresh }: Props) {
   const topbarRef = useRef<HTMLElement>(null);
   const name = data?.user?.name || data?.user?.email || "Pengguna";
   const level = levelLabel(data?.user?.level || "");
+  const avatarUrl = userPhotoPublicUrl(data?.user?.photo_name || "");
   const superuser = isSuperuser(data?.user?.level);
   const writer = canManage(data?.user?.level);
 
@@ -292,7 +294,7 @@ export function Topbar({ busy = false, onRefresh }: Props) {
                     <span className="nav-user-name">{shortName(name)}</span>
                     <span className="nav-user-level">{level}</span>
                   </span>
-                  <PersonAvatar />
+                  <AccountAvatar url={avatarUrl} size={28} />
                 </button>
               </div>
             </div>
@@ -348,7 +350,7 @@ export function Topbar({ busy = false, onRefresh }: Props) {
                     aria-label={text.account}
                     onClick={() => setSheetAccountOpen(true)}
                   >
-                    <PersonAvatar size={44} />
+                    <AccountAvatar url={avatarUrl} size={44} />
                     <span className="nav-user-text">
                       <span className="nav-user-name">{name}</span>
                       <span className="nav-user-level">{level}</span>
@@ -356,7 +358,7 @@ export function Topbar({ busy = false, onRefresh }: Props) {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-icon nav-sheet-logout"
+                    className="btn btn-primary btn-icon nav-sheet-logout"
                     aria-label={text.logout}
                     title={text.logout}
                     onClick={() => {
@@ -676,14 +678,34 @@ function SunIcon() {
   );
 }
 
-function PersonAvatar({ size = 28 }: { size?: number }) {
-  const glyph = Math.round(size * 0.54);
+function AccountAvatar({ url, size = 28 }: { url: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setFailed(false);
+  }, [url]);
+  const glyph = Math.max(14, Math.round(size * 0.55));
+  if (!url || failed) {
+    return (
+      <span
+        className="nav-avatar"
+        style={{ width: size, height: size }}
+        aria-hidden="true"
+      >
+        <svg width={glyph} height={glyph} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </span>
+    );
+  }
   return (
-    <span className="nav-avatar" style={{ width: size, height: size }} aria-hidden="true">
-      <svg width={glyph} height={glyph} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    </span>
+    <img
+      className="nav-avatar"
+      src={url}
+      alt=""
+      width={size}
+      height={size}
+      onError={() => setFailed(true)}
+    />
   );
 }
