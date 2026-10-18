@@ -690,12 +690,6 @@ export function HandoverBoard() {
                 canWrite={canWrite}
               />
               {canWrite ? (
-                <button className="btn" type="button" aria-label="Upload Excel" onClick={() => setUploadOpen(true)}>
-                  <UploadIcon />
-                  <span className="btn-label">Upload</span>
-                </button>
-              ) : null}
-              {canWrite ? (
                 <button className="btn btn-primary" type="button" aria-label="Tambah unit" onClick={openCreate}>
                   <PlusIcon />
                   <span className="btn-label">Tambah unit</span>

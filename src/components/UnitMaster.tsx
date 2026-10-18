@@ -303,28 +303,23 @@ export function UnitMaster() {
                   <span className="btn-label">Master group</span>
                 </Link>
                 {canWrite ? (
-                  <>
-                    <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
-                      <PlusIcon />
-                      <span className="btn-label">Tambah</span>
-                    </button>
-                    <button className="btn" type="button" aria-label="Upload Excel" onClick={() => setUploadOpen(true)}>
-                      <UploadIcon />
-                      <span className="btn-label">Upload</span>
-                    </button>
-                  </>
+                  <button className="btn btn-primary" type="button" aria-label="Tambah" onClick={openCreate}>
+                    <PlusIcon />
+                    <span className="btn-label">Tambah</span>
+                  </button>
                 ) : null}
-                <button className="btn" type="button" aria-label="Export" disabled={!unitsQuery.data || exporting} onClick={() => void exportExcel()}>
-                  <DownloadIcon />
-                  <span className="btn-label">{exporting ? "Mengekspor…" : "Export"}</span>
-                </button>
-                <MasterSettings
+                <MasterKelola
                   mode={mode}
                   freezeCols={freezeCols}
                   onFreeze={(next) => {
                     setFreezeCols(next);
                     localStorage.setItem("tu-rental-freeze", next ? "1" : "0");
                   }}
+                  canWrite={canWrite}
+                  canExport={Boolean(unitsQuery.data) && !exporting}
+                  exporting={exporting}
+                  onUpload={() => setUploadOpen(true)}
+                  onExport={() => void exportExcel()}
                 />
               </div>
               <div className="search-pair">
@@ -618,39 +613,100 @@ function PeriodCells({
   });
 }
 
-function MasterSettings({
+function MasterKelola({
   mode,
   freezeCols,
   onFreeze,
+  canWrite,
+  canExport,
+  exporting,
+  onUpload,
+  onExport,
 }: {
   mode: SummaryUnit;
   freezeCols: boolean;
   onFreeze: (next: boolean) => void;
+  canWrite: boolean;
+  canExport: boolean;
+  exporting: boolean;
+  onUpload: () => void;
+  onExport: () => void;
 }) {
   const columns = useSummaryView((state) => state.columns);
   const setColumn = useSummaryView((state) => state.setColumn);
-  const [open, setOpen] = useState(false);
+  const [panel, setPanel] = useState<"menu" | "settings" | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const shown = visibleMetrics(columns).length;
+  const open = panel !== null;
 
   useEffect(() => {
     if (!open) return;
     function onPointer(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(event.target as Node)) setPanel(null);
     }
     document.addEventListener("pointerdown", onPointer);
     return () => document.removeEventListener("pointerdown", onPointer);
   }, [open]);
 
   return (
-    <div className="summary-settings" ref={rootRef}>
-      <button className="btn" type="button" aria-label="Setting" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-        <SettingsIcon />
-        <span className="btn-label">Setting</span>
+    <div className="kelola" ref={rootRef}>
+      <button
+        className="btn"
+        type="button"
+        aria-label="Kelola"
+        aria-expanded={open}
+        onClick={() => setPanel((value) => (value ? null : "menu"))}
+      >
+        <ManageIcon />
+        <span className="btn-label">Kelola</span>
       </button>
-      {open ? (
+      {panel === "menu" ? (
         <>
-          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setOpen(false)} />
+          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setPanel(null)} />
+          <div className="kelola-menu" role="menu">
+            <p className="sheet-title">Kelola</p>
+            <button
+              className="kelola-item"
+              type="button"
+              role="menuitem"
+              onClick={() => setPanel("settings")}
+            >
+              <SettingsIcon />
+              Setting
+            </button>
+            {canWrite ? (
+              <button
+                className="kelola-item"
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setPanel(null);
+                  onUpload();
+                }}
+              >
+                <UploadIcon />
+                Upload Excel
+              </button>
+            ) : null}
+            <button
+              className="kelola-item"
+              type="button"
+              role="menuitem"
+              disabled={!canExport}
+              onClick={() => {
+                setPanel(null);
+                onExport();
+              }}
+            >
+              <DownloadIcon />
+              {exporting ? "Mengekspor…" : "Export Excel"}
+            </button>
+          </div>
+        </>
+      ) : null}
+      {panel === "settings" ? (
+        <>
+          <button className="sheet-backdrop" type="button" aria-label="Tutup" onClick={() => setPanel(null)} />
           <div className="summary-settings-menu" role="group" aria-label="Kolom periode">
             <p className="sheet-title">Setting</p>
             {PERIOD_METRICS.map((metric) => (
@@ -672,6 +728,19 @@ function MasterSettings({
         </>
       ) : null}
     </div>
+  );
+}
+
+function ManageIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 7h16" />
+      <path d="M4 12h16" />
+      <path d="M4 17h16" />
+      <circle cx="8" cy="7" r="2" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="17" r="2" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 
