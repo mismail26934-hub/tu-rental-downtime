@@ -143,7 +143,9 @@ export function Topbar({ busy = false, onRefresh }: Props) {
     const el = topbarRef.current;
     if (!el) return;
     const sync = () => {
+      const bottom = Math.ceil(el.getBoundingClientRect().bottom);
       document.documentElement.style.setProperty("--topbar-height", `${el.offsetHeight}px`);
+      document.documentElement.style.setProperty("--topbar-offset", `${bottom + 8}px`);
       document.documentElement.classList.toggle("topbar-scrolled", window.scrollY > 4);
     };
     sync();

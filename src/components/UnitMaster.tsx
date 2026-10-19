@@ -482,11 +482,11 @@ export function UnitMaster() {
                 </div>
                 {error ? <div className="error">{error}</div> : null}
                 <div className="form-actions">
+                  <button className="btn btn-secondary" type="button" onClick={closeDraft}>
+                    Batal
+                  </button>
                   <button className="btn btn-primary" type="submit" disabled={saveMutation.isPending || unitUnchanged}>
                     {saveMutation.isPending ? "Menyimpan…" : "Simpan"}
-                  </button>
-                  <button className="btn" type="button" onClick={closeDraft}>
-                    Batal
                   </button>
                 </div>
               </form>

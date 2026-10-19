@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -13,13 +12,16 @@ const display = localFont({
   adjustFontFallback: "Arial",
 });
 
-/* Design System TU Typography (Figma 1:5287) — Inter */
-const body = Inter({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+/* Design System TU Typography (Figma 1:5287) — Inter (self-hosted; no Google Fonts fetch) */
+const body = localFont({
+  src: [
+    { path: "../fonts/inter-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/inter-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/inter-latin-700-normal.woff2", weight: "700", style: "normal" },
+  ],
   display: "swap",
   variable: "--font-body",
-  adjustFontFallback: true,
+  adjustFontFallback: "Arial",
 });
 
 const themeScript = `try{var t=localStorage.getItem("tu-rental-theme");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){}`;

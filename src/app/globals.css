@@ -31,6 +31,7 @@
   --topbar-glass-bg: color-mix(in srgb, var(--ds-cloudy-130) 88%, transparent);
   --topbar-glass-border: color-mix(in srgb, var(--ds-white) 10%, transparent);
   --topbar-height: 3.5rem;
+  --topbar-offset: calc(var(--topbar-height) + 8px);
   --overlay: rgba(0, 0, 0, 0.72);
   --line-dashed: color-mix(in srgb, var(--line) 70%, transparent);
   /* Navbar chrome — fluid like tus-best; desktop locks to md 44 */
@@ -3529,11 +3530,20 @@ html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar 
     min-width: 0;
   }
   .board-bar .unit-search + .btn { order: 2; }
-  .panel-actions .btn:has(.btn-label) {
+  /*
+    Icon-only square controls — beat default .btn sm padding-left/right
+    (:has(> svg) rules) so width === height on phone/tablet.
+  */
+  .panel-actions .btn:has(.btn-label),
+  .panel-actions .btn:not(.btn-lg):not(.btn-md):not(.btn-xs):has(> svg:first-child):not(.btn-icon),
+  .panel-actions a.btn:has(.btn-label),
+  .panel-actions .search-pair .btn,
+  .action-row .btn:has(.btn-label) {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
     width: var(--ctrl-size-ui);
     height: var(--ctrl-size-ui);
     min-width: var(--ctrl-size-ui);
@@ -3541,6 +3551,8 @@ html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar 
     max-width: var(--ctrl-size-ui);
     max-height: var(--ctrl-size-ui);
     padding: 0;
+    padding-left: 0;
+    padding-right: 0;
     gap: 0;
     aspect-ratio: 1 / 1;
     flex: 0 0 var(--ctrl-size-ui);
@@ -4002,6 +4014,320 @@ html[data-theme="light"] .topbar .nav-account[aria-expanded="true"] .nav-avatar 
     min-height: 40px;
     min-width: 40px;
     height: 40px;
+  }
+}
+
+/*
+  Tablet Medium (≥600, ≤767) — keep popovers near the trigger and center
+  dialogs (Master unit Kelola / Tambah unit).
+*/
+@media (min-width: 600px) and (max-width: 767px) {
+  .kelola .sheet-backdrop,
+  .summary-info .sheet-backdrop,
+  .summary-settings .sheet-backdrop {
+    display: none;
+  }
+
+  .kelola-menu,
+  .summary-info-menu,
+  .summary-settings-menu {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    right: 0;
+    left: auto;
+    bottom: auto;
+    width: auto;
+    min-width: 190px;
+    max-height: min(70vh, 520px);
+    padding: 6px;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  }
+
+  .sheet-title {
+    margin: 4px 8px 6px;
+  }
+
+  .sheet-title::before {
+    display: none;
+  }
+
+  .kelola-item,
+  .summary-settings-menu label {
+    min-height: 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: inherit;
+  }
+
+  .form-modal-backdrop,
+  .nav-dialog-backdrop {
+    align-items: center;
+    justify-items: center;
+    place-items: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.55);
+  }
+
+  .form-modal,
+  .nav-dialog {
+    width: min(560px, 100%);
+    max-height: min(88vh, 720px);
+    border-radius: 12px;
+  }
+
+  .form-modal.upload-modal {
+    width: min(760px, 100%);
+  }
+
+  .form-modal.upload-modal-wide {
+    width: min(920px, 100%);
+  }
+
+  .export-modal,
+  .form-modal.export-modal {
+    width: min(420px, 100%);
+  }
+
+  .form-modal::before,
+  .nav-dialog::before {
+    display: none;
+  }
+}
+
+/*
+  Phone (incl. Small 360) — under-topbar panel like PRIMA (tus-best ≤720).
+  Overlay starts below the navbar; dialog fills remaining viewport.
+*/
+@media (max-width: 599px) {
+  .form-modal-backdrop,
+  .nav-dialog-backdrop {
+    inset: auto 0 0 0;
+    top: var(--topbar-offset, calc(var(--topbar-height) + 8px));
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    place-items: stretch;
+    align-content: stretch;
+    padding-block: 0 max(16px, env(safe-area-inset-bottom, 0px));
+    padding-inline: max(var(--ds-margin), env(safe-area-inset-left, 0px))
+      max(var(--ds-margin), env(safe-area-inset-right, 0px));
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 100;
+  }
+
+  .form-modal,
+  .nav-dialog,
+  .export-modal {
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    max-height: calc(100% - 12px);
+    margin-top: 12px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  .form-modal::before,
+  .nav-dialog::before {
+    display: none;
+  }
+
+  .form-modal-backdrop.alert-backdrop {
+    top: 0;
+    inset: 0;
+    place-items: center;
+    align-content: center;
+    padding: 16px;
+    z-index: 10060;
+  }
+
+  .form-modal.alert-modal {
+    width: min(380px, 100%);
+    max-height: none;
+    align-self: center;
+    padding: 18px;
+  }
+
+  .form-modal .form,
+  .form-modal form.form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+    gap: 0;
+  }
+
+  .form-modal .panel-head {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .form-modal .panel-head h2 {
+    margin: 0;
+    font-family: var(--font-body), "Segoe UI", sans-serif;
+    font-size: var(--ds-title-page-size);
+    font-weight: var(--ds-title-page-weight);
+    line-height: var(--ds-title-page-line);
+    letter-spacing: var(--ds-title-page-tracking);
+    text-transform: none;
+  }
+
+  .form-modal .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    overflow: auto;
+    min-height: 0;
+    flex: 1 1 auto;
+    padding: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .form-modal .form label {
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    color: var(--muted);
+    font-size: var(--ds-label-field-size);
+    font-weight: var(--ds-label-weight);
+    line-height: var(--ds-label-field-line);
+  }
+
+  .form-modal .form input,
+  .form-modal .form textarea,
+  .form-modal .form select,
+  .form-modal .unit-select > input {
+    min-height: 44px;
+    border-radius: var(--ds-radius-md);
+  }
+
+  .form-modal .error {
+    margin: 0 16px 12px;
+  }
+
+  .form-modal .form-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+    flex: 0 0 auto;
+    position: sticky;
+    bottom: 0;
+    margin: 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--line);
+    background: var(--bg-1);
+  }
+
+  .form-modal .form-actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    height: var(--ds-btn-md-h);
+    min-height: var(--ds-btn-md-h);
+    max-height: var(--ds-btn-md-h);
+    padding: 0 var(--ds-btn-md-pad-x);
+    border-radius: var(--ds-btn-md-radius);
+    font-size: var(--ds-btn-md-size);
+    line-height: var(--ds-btn-md-line);
+  }
+
+  /* Cancel / secondary — outline so primary stands out */
+  .form-modal .form-actions .btn:not(.btn-primary):not(.btn-danger),
+  .form-modal .form-actions .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line);
+    box-shadow: none;
+  }
+
+  .form-modal .form-actions .btn-primary {
+    order: 2;
+  }
+
+  .form-modal .form-actions .btn:not(.btn-primary):not(.btn-danger),
+  .form-modal .form-actions .btn-secondary {
+    order: 1;
+  }
+
+  html[data-theme="light"] .form-modal .form-actions {
+    background: #fff;
+  }
+
+  html[data-theme="light"] .form-modal .form-actions .btn:not(.btn-primary):not(.btn-danger),
+  html[data-theme="light"] .form-modal .form-actions .btn-secondary {
+    background: #fff;
+    color: #111;
+    border-color: rgba(0, 0, 0, 0.16);
+  }
+
+  /* Kelola / sheet menus — same under-topbar panel language as form-modal */
+  .kelola .sheet-backdrop,
+  .summary-info .sheet-backdrop,
+  .summary-settings .sheet-backdrop {
+    top: var(--topbar-offset, calc(var(--topbar-height) + 8px));
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 100;
+  }
+
+  .kelola-menu,
+  .summary-info-menu,
+  .summary-settings-menu {
+    top: calc(var(--topbar-offset, calc(var(--topbar-height) + 8px)) + 12px);
+    right: max(var(--ds-margin), env(safe-area-inset-right, 0px));
+    left: max(var(--ds-margin), env(safe-area-inset-left, 0px));
+    bottom: auto;
+    width: auto;
+    max-height: calc(
+      100dvh - var(--topbar-offset, calc(var(--topbar-height) + 8px)) - 28px
+    );
+    padding: 12px;
+    border-radius: 14px;
+    gap: 4px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sheet-title {
+    display: block;
+    margin: 0 4px 10px;
+    padding: 4px 4px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--font-body), "Segoe UI", sans-serif;
+    font-size: var(--ds-title-page-size);
+    font-weight: var(--ds-title-page-weight);
+    line-height: var(--ds-title-page-line);
+    letter-spacing: var(--ds-title-page-tracking);
+    text-transform: none;
+  }
+
+  .sheet-title::before {
+    display: none;
+  }
+
+  .kelola-item,
+  .summary-settings-menu label {
+    min-height: 48px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: var(--ds-body-md-size);
+    font-weight: 600;
+  }
+
+  .kelola-item svg {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    opacity: 0.9;
   }
 }
 
